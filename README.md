@@ -54,17 +54,45 @@ HR/
     └── shared/        types, enums and validation used by both apps
 ```
 
-`apps/` and `packages/` are created by FND-01.
+`packages/shared` is added when the first shared code is needed.
 
 ## Getting started
 
-Setup steps are added here as part of FND-01 (project skeleton) and FND-02 (database).
+### Prerequisites
 
-Prerequisites:
+- Node.js 22 (check with `node -v`)
+- pnpm, turned on once with `corepack enable`
+- Docker Desktop (needed from FND-02, the database)
 
-- Node.js 20 or newer
-- pnpm (enabled with `corepack enable`)
-- Docker Desktop
+### First-time setup
+
+```bash
+pnpm install
+cp apps/api/.env.example apps/api/.env
+```
+
+### Run the apps
+
+| Command | What it starts | Address |
+| --- | --- | --- |
+| `pnpm dev:api` | NestJS backend | http://localhost:4000 |
+| `pnpm dev:web` | Next.js frontend | http://localhost:3000 |
+
+### Other commands
+
+| Command | What it does |
+| --- | --- |
+| `pnpm lint` | Checks both apps for code mistakes |
+| `pnpm format` | Formats all code with Prettier |
+| `pnpm format:check` | Only reports formatting problems |
+
+### Settings (environment variables)
+
+| App | File | Variable | Default | Meaning |
+| --- | --- | --- | --- | --- |
+| api | `apps/api/.env` | `PORT` | `4000` | Port the backend listens on |
+
+Restart the backend after changing `.env`.
 
 ## Working conventions
 
