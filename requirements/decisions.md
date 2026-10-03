@@ -18,7 +18,7 @@ Status values:
 | D-01 | Backend is NestJS (TypeScript). Frontend is Next.js (TypeScript, App Router) with Tailwind CSS. PostgreSQL, S3-compatible file storage, a Redis-backed job queue, the OpenAI compliance service and company_id tenancy stay as in Appendix B. | SRS Appendix B (Django + DRF, React + Vite) | Agreed | Oct 1, 2026 |
 | D-02 | MVP supports fixed shifts only. Weekly rotation shifts move to v1.1. The data model keeps `shift_assignments.kind` so rotation can be added without a migration of existing rows. | FR-SH-3 (Should); section 2.4 "and simple weekly rotations" | Agreed | Oct 1, 2026 |
 | D-03 | The AI "Ask" chat (free-form questions to the assistant) moves to v1.1. The MVP keeps the nightly check, policy check and the "Explain" button. | FR-AI-10 (Should) | Agreed | Oct 1, 2026 |
-| D-04 | Whether to store an employee disability field for the 45-day annual leave entitlement (EG-05) is left to decide later. | SRS 2.5, Appendix A open item | Open | Oct 1, 2026 |
+| D-04 | Employees get an optional "has a disability" field. It appears only when the company turns on law mode (FR-CS-6), so each company's HR decides whether it is used. Only Admins can see it. It lets the system apply the 45-day annual leave entitlement (EG-05) and is sent to the AI only as a yes/no fact with the employee code. | SRS 2.5, Appendix A open item | Agreed | Oct 3, 2026 |
 
 ## 2. Product decisions carried from the SRS
 

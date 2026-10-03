@@ -28,6 +28,7 @@ Changes in v1.2:
 - Settings that rules already used are now named: minimum overtime minutes (FR-CS-5), contract "expiring soon" days (FR-CT-2), AI daily limits (FR-AI-7, FR-AI-12).
 - Section 2.5 links each open item to its working assumption in `assumptions.md`.
 - Section 7.2 writes the roadmap out as text, with v1.1 updated.
+- The disability field is decided (D-04): optional, shown only when law mode is on, visible only to Admins (FR-EM-2, FR-AI-2, NFR-3, employees table).
 
 ## 1. Introduction
 
@@ -137,7 +138,6 @@ There are no departments or reporting lines in the MVP, so every approval goes t
 ### 2.5 Assumptions to confirm before development
 
 - Final legal values in Appendix A must be verified before production launch (A-01). FR-LV-2 already uses them in the MVP, so the review is needed before a real company uses the system.
-- Decide whether the MVP stores an employee disability field for the statutory annual-leave rule (EG-05). Until decided, the field is not stored and the 45-day entitlement is not checked (D-04, A-02).
 - Confirm the public-holiday overtime interpretation and the night-work definition used by the legal reference (EG-13). Until confirmed, public-holiday overtime uses the 2.00 multiplier and all overtime is classed as day overtime (A-03, A-04).
 - The other working assumptions are listed in `assumptions.md`.
 
@@ -175,7 +175,7 @@ There are no departments or reporting lines in the MVP, so every approval goes t
 | ID | Requirement | Priority |
 | --- | --- | --- |
 | FR-EM-1 | The Admin creates an employee manually or, from MVP-2, by converting a hired candidate (3.4). The system assigns an employee code. | Must |
-| FR-EM-2 | Personal data: full name (Arabic and English), national ID number, date of birth, gender, phone, email, address, emergency contact name and phone, profile photo. | Must |
+| FR-EM-2 | Personal data: full name (Arabic and English), national ID number, date of birth, gender, phone, email, address, emergency contact name and phone, profile photo. When law mode is on, an optional "has a disability" field is shown, visible only to Admins (D-04). | Must |
 | FR-EM-3 | Job data: job title, employment type (full-time, part-time, trainee), hire date, probation end date, training end date (trainees), assigned shift, base salary with effective date. | Must |
 | FR-EM-4 | Salary history: every base salary change is kept with its effective date; payroll uses the salary valid in each period. | Must |
 | FR-EM-5 | Recurring pay items: fixed monthly allowances or deductions per employee (e.g. transport allowance) that are added to every payroll run automatically. | Should |
@@ -301,7 +301,7 @@ Release: MVP-2, except FR-AI-10, which moves to v1.1.
 | ID | Requirement | Priority |
 | --- | --- | --- |
 | FR-AI-1 | Integration with the OpenAI API using a small, low-cost model (for example GPT-5 mini) with structured JSON output. The model name is a setting, so it can be changed without a release. | Must |
-| FR-AI-2 | Every night the system builds a fact sheet per active employee from existing data: employment type, months of service, age band, contract type and end date, probation end, scheduled hours per day and week, rest days in the last 7 days, break minutes, leave granted and taken by type, overtime hours and the multiplier paid, maternity leave dates. | Must |
+| FR-AI-2 | Every night the system builds a fact sheet per active employee from existing data: employment type, months of service, age band, contract type and end date, probation end, scheduled hours per day and week, rest days in the last 7 days, break minutes, leave granted and taken by type, overtime hours and the multiplier paid, maternity leave dates, has a disability (yes/no, law mode only). | Must |
 | FR-AI-3 | Rules given to the AI: with law mode on, the versioned law reference in Appendix A plus the company's rules text; with law mode off, the company's rules text only. The Admin writes company rules as free text and they are sent as written. | Must |
 | FR-AI-4 | Nightly check: fact sheets are sent in batches (e.g. 20 employees per call) with the rules. The AI returns findings: employee code, rule, severity (yellow or red), message, suggested action, and the facts it relied on. | Must |
 | FR-AI-5 | Guardrail: the system checks that every fact a finding quotes matches the fact sheet. A finding that quotes a wrong value is discarded and logged. | Must |
@@ -387,7 +387,7 @@ The MVP uses approximately 30 relational tables. Every company-owned table carri
 | companies | name, logo, time\_zone, currency, law\_mode, company\_rules\_text, settings (daily-rate divisor, lateness policy, overtime minimum, contract expiring-soon days, check-in window, IP allow-list) |
 | users | email, phone, password\_hash, role (admin, employee, interviewer), employee\_id, status (invited, active, locked, deactivated), invite\_token, invite\_expires\_at, language, failed\_login\_attempts, locked\_until |
 | job\_titles | company\_id, name\_ar, name\_en |
-| employees | code, name\_ar, name\_en, national\_id, birth\_date, gender, phone, email, address, emergency\_name, emergency\_phone, photo, job\_title\_id, employment\_type, hire\_date, probation\_end, training\_end, status, termination\_date, termination\_reason, candidate\_id |
+| employees | code, name\_ar, name\_en, national\_id, birth\_date, gender, phone, email, address, emergency\_name, emergency\_phone, photo, job\_title\_id, employment\_type, hire\_date, probation\_end, training\_end, status, termination\_date, termination\_reason, has\_disability, candidate\_id |
 | salary\_history | employee\_id, base\_salary, effective\_from |
 | recurring\_pay\_items | employee\_id, kind (addition, deduction), label, amount, valid\_from, valid\_to |
 | documents | owner\_type (employee, candidate), owner\_id, doc\_type, file\_key, expiry\_date, uploaded\_by |
@@ -444,7 +444,7 @@ When a hired candidate is converted, candidates.employee\_id and employees.candi
 | --- | --- | --- |
 | NFR-1 | Tenant isolation | Every read and write is scoped to the user's company on the server. Automated tests prove one company cannot reach another's records or files. |
 | NFR-2 | Security | Passwords hashed with bcrypt or Argon2; HTTPS only; sessions expire after 12 hours of inactivity; 5 consecutive failed logins lock the user account for 15 minutes. Failed login attempts must never delete, terminate, suspend or deactivate the employee record. |
-| NFR-3 | Privacy | National ID, salary and documents are visible only to Admins and the employee concerned. Files are served through short-lived signed links. Personal data is handled in line with Egypt's Personal Data Protection Law No. 151 of 2020. |
+| NFR-3 | Privacy | National ID, salary and documents are visible only to Admins and the employee concerned. The disability field is visible only to Admins. Files are served through short-lived signed links. Personal data is handled in line with Egypt's Personal Data Protection Law No. 151 of 2020. |
 | NFR-4 | Performance | Pages load in under 2 seconds for a company of up to 50 employees; a payroll run for 50 employees completes in under 10 seconds under normal MVP conditions. |
 | NFR-5 | Reliability | Daily database backups kept for 30 days. Nightly jobs (roster, attendance labels, compliance) are safe to re-run without creating duplicates. |
 | NFR-6 | Localisation | Full Arabic (right-to-left) and English interfaces; dates, numbers and EGP amounts formatted per language. |
@@ -542,7 +542,7 @@ Two checks are system rules, not law: an Active employee with an expired contrac
 
 Open items:
 
-- EG-05 needs a "disability" field on the employee to apply the 45-day entitlement. Decide whether to store it in the MVP. Still open (D-04); until decided, the 45-day entitlement is not checked (A-02).
+- EG-05: the 45-day entitlement uses the optional disability field on the employee, shown only when law mode is on (D-04).
 - EG-13: confirm how the public holiday rate is applied (total 2× or 3× the hourly wage) and which hours count as night work. Working assumptions until confirmed: A-03 and A-04.
 - EG-09: the MVP does not store pregnancy dates, so only the post-birth overtime rule is checked.
 
