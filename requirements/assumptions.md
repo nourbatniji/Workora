@@ -20,7 +20,7 @@ Development starts on the assumptions below. Each one is either **To confirm** (
 
 | ID | Assumption | Depends on it | If wrong | Status |
 | --- | --- | --- | --- | --- |
-| A-08 | A user belongs to exactly one company. An email address or phone number can be used by only one user in the whole system (D-26). | FR-UA-3, NFR-1 | Add a company picker at login | Working |
+| A-08 | A user belongs to exactly one company. An email address or phone number can be used by only one user in the whole system (D-26). | FR-UA-3, NFR-1 | Add a company picker at login | Closed (SRS v1.3) |
 | A-09 | Phone numbers are stored in international format (+20…). Users can type the local format and it is normalised. | FR-UA-3 | Normalisation rule only | Working |
 | A-10 | An Admin who is also on the payroll has both an `admin` user role and a linked employee record, and sees the employee self-service pages too. | 2.2, FR-UA-7 | Separate admin and employee accounts | Working |
 | A-11 | An interviewer may be an existing employee or an outside person with an interviewer-only login. | 2.2, FR-RC-6 | Restrict interviewers to employees | Working |
@@ -33,17 +33,17 @@ Development starts on the assumptions below. Each one is either **To confirm** (
 | --- | --- | --- | --- | --- |
 | A-14 | Employee codes are sequential per company (EMP-0001, EMP-0002 …) and never reused. | FR-EM-1 | Code format setting | Working |
 | A-15 | The 50-employee limit counts Active and Suspended employees. Terminated employees and candidates do not count. Creating employee 51 shows a clear message. | 2.4, D-05 | Change the count rule | To confirm |
-| A-16 | A contract's agreed salary is informational. Payroll uses `salary_history` only; the Admin updates salary history separately. | FR-CT-1, FR-EM-4 | Create a salary history row when a contract is saved | To confirm |
+| A-16 | A contract's agreed salary is informational. Payroll uses `salary_history` only; the Admin updates salary history separately. | FR-CT-1, FR-EM-4 | Create a salary history row when a contract is saved | Closed (SRS v1.3) |
 
 ## 4. Shifts, attendance and leave
 
 | ID | Assumption | Depends on it | If wrong | Status |
 | --- | --- | --- | --- | --- |
 | A-17 | Every working employee has one fixed shift assignment (D-02). An employee with no assignment has no roster, so no attendance is expected and no exceptions are created. | FR-SH-2, FR-SH-4 | Add a default company shift | Working |
-| A-18 | Attendance labelling runs every 15 minutes and labels each shift whose end + 2 hours has passed. It is not a once-a-night job. | FR-AT-4, BR-4 | Job schedule only | Working |
-| A-19 | One check-in and one check-out per shift date. A second check-in after check-out is refused. | FR-AT-1, FR-AT-3 | Support multiple punch pairs per day | Working |
+| A-18 | Attendance labelling runs every 15 minutes and labels each shift whose check-out window (shift end + check-out window, default 6 hours) has closed. It is not a once-a-night job. | FR-AT-4, BR-4 | Job schedule only | Working |
+| A-19 | One check-in and one check-out per shift date. A second check-in after check-out is refused. | FR-AT-1, FR-AT-3 | Support multiple punch pairs per day | Closed (SRS v1.3) |
 | A-20 | The employee's 3-day window to add a reason to an exception counts calendar days from its creation time. | FR-EX-3 | Count working days | Working |
-| A-21 | A half-day leave counts as 0.5 day against the balance. | FR-LV-5 | Count half days in hours | Working |
+| A-21 | A half-day leave counts as 0.5 day against the balance. | FR-LV-5 | Count half days in hours | Closed (SRS v1.3) |
 | A-22 | The leave year is the calendar year. Entitlements are granted on 1 January or on the eligibility date, and carry-over is applied on 1 January. | FR-LV-4 | Add a configurable leave-year start | Working |
 | A-23 | Converting an exception to leave (FR-EX-4) takes the exception's minutes as a fraction of a day (minutes ÷ shift working minutes), rounded up to 0.5 day. | FR-EX-4 | Change the conversion rule | To confirm |
 

@@ -69,3 +69,12 @@ Status values:
 | Weekly rotation shifts | v1.1 | D-02 |
 | AI "Ask" chat | v1.1 | D-03 |
 | Everything in SRS 7.1 (departments, job postings, devices, native app, tax and insurance calculation, accounting, analytics, email/WhatsApp notifications, multi-level approvals) | Roadmap (SRS 7.2) | SRS 7.1 |
+
+## 5. Decisions from the SRS review (Oct 3, 2026)
+
+| ID | Decision | SRS ref | Status | Date |
+| --- | --- | --- | --- | --- |
+| D-37 | Suspended employees stay employed: no working shifts are scheduled (never marked Absent), they can log in to view their data and payslips but cannot check in, and they keep full base pay unless the Admin adds a manual deduction line. | FR-EM-7, FR-SH-5, FR-AT-2, A-30 | Agreed | Oct 3, 2026 |
+| D-38 | Check-out is accepted until shift end plus a check-out window, a company setting with a default of 6 hours. Days are labelled when that window closes. | FR-CS-7, FR-AT-2, FR-AT-4, BR-4 | Agreed | Oct 3, 2026 |
+| D-39 | The total lateness and early-leave deduction for one day never exceeds one daily rate. | BR-7 | Agreed | Oct 3, 2026 |
+| D-40 | The Admin can delete a candidate who was not hired, together with their CV, documents, notes and interviews. Hired candidates linked to an employee cannot be deleted. | FR-RC-10 | Agreed | Oct 3, 2026 |

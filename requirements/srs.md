@@ -1,6 +1,6 @@
 # MDARJ HR & Payroll System — Software Requirements Specification
 
-MVP + Roadmap · Consolidated Edition v1.2 · Oct 3, 2026 · @trendow
+MVP + Roadmap · Consolidated Edition v1.3 · Oct 3, 2026 · @trendow
 
 ## Document information
 
@@ -10,6 +10,7 @@ Revision v1.2 (Oct 3, 2026) brings the SRS in line with the agreed decisions in 
 
 | Source edition | Date | What it contributes |
 | --- | --- | --- |
+| Revision v1.3 | Oct 3, 2026 | Gaps found in the SRS review closed: employee status history and Suspended rules, shift snapshots, settings history, punch and check-out rules, leave edge cases, Admin rules, deletion rules, wider audit log |
 | Revision v1.2 | Oct 3, 2026 | Decisions D-01 to D-03 applied; release split into MVP and MVP-2; missing settings named; open items linked to `assumptions.md`; roadmap written out as text |
 | Revised / Fixed Edition | Oct 1, 2026 | Maximum 50 employees per company for the MVP; failed logins lock the user account only; user account status; Appendix B implementation baseline |
 | Original MVP SRS | Sep 30, 2026 | Full requirement wording and priorities, worked payroll example, Appendix A usage and severity, roadmap v1.1 to v4 |
@@ -29,6 +30,22 @@ Changes in v1.2:
 - Section 2.5 links each open item to its working assumption in `assumptions.md`.
 - Section 7.2 writes the roadmap out as text, with v1.1 updated.
 - The disability field is decided (D-04): optional, shown only when law mode is on, visible only to Admins (FR-EM-2, FR-AI-2, NFR-3, employees table).
+
+Changes in v1.3:
+
+- Employee status changes are kept in a status history, and the Suspended status has defined rules (FR-EM-7, D-37). Employees with records are never deleted (FR-EM-11).
+- Roster days keep a copy of their shift's break and grace values, so editing a template never changes past days (FR-SH-4).
+- Settings are stored as dated versions (company\_settings\_versions table, D-27).
+- One check-in and one check-out per shift; repeated taps are ignored (FR-AT-8). Check-out has a window after shift end, default 6 hours (FR-AT-2, BR-4, D-38).
+- Everything from a shift belongs to the payroll month of its shift date (FR-AT-3).
+- Leave: rules re-checked at approval (FR-LV-7), first or second half day (FR-LV-5), leave across 31 December split between years (BR-11).
+- Contract agreed salary is reference only; payroll uses salary history (FR-CT-1).
+- Admins can invite Admins, and a company always keeps one Active Admin (FR-UA-7, FR-UA-9). One email or phone belongs to one user in the whole system (FR-UA-3).
+- Office IP list accepts ranges (FR-CS-7).
+- Lateness plus early-leave deductions are capped at one day's pay (BR-7, D-39).
+- Payroll reopening rules made explicit; Paid runs never reopen (FR-PR-6, BR-17).
+- Admin can delete candidates who were not hired (FR-RC-10, D-40).
+- Audit log covers more changes (FR-DB-4, NFR-8).
 
 ## 1. Introduction
 
@@ -153,7 +170,7 @@ There are no departments or reporting lines in the MVP, so every approval goes t
 | FR-CS-4 | Work week defines working days and weekly rest days (e.g. Friday and Saturday). | Must |
 | FR-CS-5 | Payroll settings define: daily rate formula (monthly salary ÷ 30 by default, or ÷ 26, or ÷ working days of the month); hourly rate (BR-6); lateness policy (exact per minute, or tiered bands); overtime multipliers; minimum overtime minutes (default 30, BR-5). | Must |
 | FR-CS-6 | Compliance mode is a yes/no choice: "Follow the Egyptian Labor Law". The Admin can also write company rules as free text (see 3.12). | Must |
-| FR-CS-7 | Check-in settings: allowed check-in window before shift start (default 60 min) and an optional list of allowed office IP addresses. | Should |
+| FR-CS-7 | Check-in settings: allowed check-in window before shift start (default 60 min); check-out window after shift end (default 6 hours, see FR-AT-2); an optional list of allowed office IP addresses or ranges (IPv4 or IPv6, single addresses or ranges such as 41.33.10.0/24). | Should |
 | FR-CS-8 | Every setting can be changed later from Settings. A change applies from its effective date and never alters an approved payroll run. | Must |
 | FR-CS-9 | Job titles are a company list managed in Settings and picked on each employee. | Must |
 
@@ -163,12 +180,13 @@ There are no departments or reporting lines in the MVP, so every approval goes t
 | --- | --- | --- |
 | FR-UA-1 | Employees and interviewers cannot sign up on their own. The Admin creates them and the system issues an invite link, valid 7 days, to set a password. | Must |
 | FR-UA-2 | The invite link is sent by email when the person has one, and can always be copied so HR can share it by WhatsApp or SMS. | Must |
-| FR-UA-3 | Users log in with email or phone number plus password. Workers without email use their phone number. | Must |
+| FR-UA-3 | Users log in with email or phone number plus password. Workers without email use their phone number. An email address or phone number belongs to one user in the whole system, so login never asks which company; in the MVP a person cannot be a user of two companies (D-26). | Must |
 | FR-UA-4 | Password reset: by email link when an email exists; otherwise the Admin generates a new invite link. | Must |
 | FR-UA-5 | Permissions are enforced on the server. An Employee sees only their own data; an Interviewer sees only the candidates on their interviews. | Must |
 | FR-UA-6 | Terminating an employee deactivates their login on the termination date. | Must |
-| FR-UA-7 | A company can have several Admins. | Should |
+| FR-UA-7 | A company can have several Admins. An Admin can invite a user as Admin, and can remove the Admin role from or deactivate another Admin. | Should |
 | FR-UA-8 | User account status (Invited, Active, Locked, Deactivated) is distinct from employee employment status. Failed-login locking changes user access only; it never deletes, terminates, suspends or deactivates the employee record. | Must |
+| FR-UA-9 | A company always keeps at least one Active Admin. The last Active Admin cannot be deactivated or lose the Admin role. | Must |
 
 ### 3.3 Employees (EM)
 
@@ -180,10 +198,11 @@ There are no departments or reporting lines in the MVP, so every approval goes t
 | FR-EM-4 | Salary history: every base salary change is kept with its effective date; payroll uses the salary valid in each period. | Must |
 | FR-EM-5 | Recurring pay items: fixed monthly allowances or deductions per employee (e.g. transport allowance) that are added to every payroll run automatically. | Should |
 | FR-EM-6 | Documents: upload PDF, JPG or PNG files (max 10 MB each) with a document type and an optional expiry date. | Must |
-| FR-EM-7 | Employee status: Active, Suspended or Terminated. Termination records date and reason. | Must |
+| FR-EM-7 | Employee status: Active, Suspended or Terminated. Every change is kept in the status history with its effective date, reason and the user who made it. Termination records date and reason. A Suspended employee stays employed: no working shifts are scheduled for them, so they are never marked Absent; they can log in to view their own data and payslips but cannot check in; they stay in the payroll run with full base pay unless the Admin adds a manual deduction line (D-37). | Must |
 | FR-EM-8 | The employee profile shows tabs: Personal, Job, Contract, Documents, Attendance, Leave, Payroll, Compliance. Until MVP-2, the Compliance tab shows an empty state. | Must |
 | FR-EM-9 | The employee list can be searched and filtered by status, employment type, job title and shift, and exported to Excel. | Must |
 | FR-EM-10 | Employees can view their own profile and request corrections; only the Admin edits data. | Should |
+| FR-EM-11 | An employee who has any attendance, leave, contract, document or payroll record is never deleted; the Admin terminates them instead. An employee with no such records may be deleted (for example, one created by mistake). | Must |
 
 ### 3.4 Recruitment (RC)
 
@@ -200,12 +219,13 @@ Release: MVP-2. There are no job postings in the MVP. Candidates are added by th
 | FR-RC-7 | The system warns when a new candidate has the same phone or email as an existing one. | Should |
 | FR-RC-8 | Rejected and On hold candidates stay searchable and can be moved back into the pipeline. | Must |
 | FR-RC-9 | "Convert to employee" on a Hired candidate creates an employee pre-filled with the candidate's data and keeps the link to the candidate record. | Must |
+| FR-RC-10 | The Admin can delete a candidate who was not hired. The candidate's CV, documents, notes and interviews are deleted with them. A Hired candidate linked to an employee cannot be deleted (D-40). | Must |
 
 ### 3.5 Contracts (CT)
 
 | ID | Requirement | Priority |
 | --- | --- | --- |
-| FR-CT-1 | The Admin uploads a contract file (PDF, JPG or PNG, max 10 MB) to an employee and enters type (indefinite, fixed-term, trainee, part-time), start date, end date (required for fixed-term), agreed salary and notes. | Must |
+| FR-CT-1 | The Admin uploads a contract file (PDF, JPG or PNG, max 10 MB) to an employee and enters type (indefinite, fixed-term, trainee, part-time), start date, end date (required for fixed-term), agreed salary and notes. The agreed salary is for reference only: payroll always uses the salary history (FR-EM-4). If the agreed salary differs from the current base salary, the system shows a warning. | Must |
 | FR-CT-2 | The system computes contract status: Upcoming, Active, Expiring soon (end date within the company's "expiring soon" days; company setting, default 30), Expired. | Must |
 | FR-CT-3 | An employee has at most one Active contract at a time. A renewal creates a new contract linked to the previous one; history is kept. | Must |
 | FR-CT-4 | The dashboard shows counts of Expiring soon and Expired contracts, and the contracts list can be filtered by status. | Must |
@@ -220,8 +240,8 @@ The Admin sets shifts up once; the system then builds the daily roster on its ow
 | FR-SH-1 | Shift template fields: name, start time, end time, crosses midnight (yes/no), unpaid break minutes, late grace minutes, early-leave grace minutes, working days of the week. | Must |
 | FR-SH-2 | Fixed assignment: an employee is assigned one shift template from a start date. | Must |
 | FR-SH-3 | Weekly rotation: an employee or group follows an ordered list of templates that repeats every N weeks from a start date (e.g. week 1 morning, week 2 evening, week 3 night). Moved to v1.1 (D-02); not built in the MVP. | v1.1 |
-| FR-SH-4 | A nightly job generates roster entries (employee, shift date, shift template, expected start and end) for the next 14 days, and regenerates them when an assignment changes. | Must |
-| FR-SH-5 | Roster generation marks weekly rest days, public holidays and approved leave instead of a working shift. | Must |
+| FR-SH-4 | A nightly job generates roster entries (employee, shift date, shift template, expected start and end) for the next 14 days, and regenerates them when an assignment changes. Each entry keeps a copy of the template's break and grace minutes, so editing a template later never changes past days; a template edit rebuilds only days that have not started. | Must |
+| FR-SH-5 | Roster generation marks weekly rest days, public holidays, approved leave and days when the employee is Suspended instead of a working shift. | Must |
 | FR-SH-6 | The Admin can override one roster day (another shift, or a day off) with a reason; the change is logged. | Must |
 | FR-SH-7 | A weekly roster grid shows employees by days; employees see their own upcoming shifts. | Must |
 
@@ -230,12 +250,13 @@ The Admin sets shifts up once; the system then builds the daily roster on its ow
 | ID | Requirement | Priority |
 | --- | --- | --- |
 | FR-AT-1 | The employee portal shows a Check in / Check out button for today's shift. The server time is recorded, never the device time; the IP address is stored with each punch. | Must |
-| FR-AT-2 | Check-in is accepted from the configured window before shift start until shift end. If an IP allow-list is set, a punch from another IP is refused with a clear message. | Must |
-| FR-AT-3 | A check-out closes the open record for that shift. A night shift record belongs to its shift date, not the calendar date of the check-out. | Must |
-| FR-AT-4 | After each shift ends (plus 2 hours), the system labels the day: Present, Late, Early leave, Absent, Overtime, Missing check-out, On leave, Rest day, Public holiday. A day can carry more than one label (e.g. Late and Early leave). | Must |
+| FR-AT-2 | Check-in is accepted from the configured window before shift start until shift end. Check-out is accepted from check-in until shift end plus the check-out window (company setting, default 6 hours). Suspended employees cannot check in. If an IP allow-list is set, a punch from another IP is refused with a clear message; the IP is read from the hosting's trusted proxy, never from a header the browser sends. | Must |
+| FR-AT-3 | A check-out closes the open record for that shift. A night shift record belongs to its shift date, not the calendar date of the check-out. Labels, exceptions, overtime and payroll lines from a shift all belong to the payroll month that contains its shift date. | Must |
+| FR-AT-4 | When each shift's check-out window closes (shift end plus the check-out window), the system labels the day: Present, Late, Early leave, Absent, Overtime, Missing check-out, On leave, Rest day, Public holiday. A day can carry more than one label (e.g. Late and Early leave). | Must |
 | FR-AT-5 | The Admin can add or correct a punch with a mandatory reason; the original values and the change are kept in the audit log. | Must |
 | FR-AT-6 | Views: a live "today" board (in, late, not yet in, absent, on leave); a monthly calendar per employee with totals of late minutes, absent days and overtime hours. | Must |
 | FR-AT-7 | Monthly attendance can be exported to Excel. | Should |
+| FR-AT-8 | Each employee has one attendance record per shift date, with one check-in and one check-out. A second check-in after check-out is refused. A repeated tap or a request sent twice is ignored and never recorded twice. | Must |
 
 ### 3.8 Attendance exceptions inbox (EX)
 
@@ -262,9 +283,9 @@ Each company defines its own leave types and request rules; the system enforces 
 | FR-LV-2 | When law mode is on, the system pre-creates the statutory leave types from Appendix A; the Admin may make them more generous but not less. | Must |
 | FR-LV-3 | Balances are kept per employee, per leave type, per year. Opening balances can be entered when a company starts using the system. | Must |
 | FR-LV-4 | The yearly entitlement is granted on 1 January or on the eligibility date, optionally pro-rated by the months left in the year. Unused days carry over up to the type's maximum. | Must |
-| FR-LV-5 | An employee requests leave with type, start date, end date, full or half day, reason and attachment. | Must |
+| FR-LV-5 | An employee requests leave with type, start date, end date, full day or half day (first half or second half of the shift), reason and attachment. A half day counts as 0.5 day; on a half-day leave, attendance is expected only for the other half of the shift. | Must |
 | FR-LV-6 | The system validates the request against the rules in BR-10 to BR-15 and refuses it with the reason when a rule fails. | Must |
-| FR-LV-7 | The Admin approves or rejects with an optional note. On approval the balance is deducted and the roster days are marked On leave. | Must |
+| FR-LV-7 | The Admin approves or rejects with an optional note. At the moment of approval the system checks BR-10 to BR-15 again; if a rule now fails (for example, another approved request used the balance), the approval is refused with the reason. On approval the balance is deducted and the roster days are marked On leave. | Must |
 | FR-LV-8 | The employee can cancel a pending request. The Admin can cancel an approved future leave; the balance is restored. | Must |
 | FR-LV-9 | A leave calendar shows who is off on which days. | Should |
 
@@ -288,7 +309,7 @@ The MVP formula is: net salary = base salary + additions − deductions. Social 
 | FR-PR-3 | Additions are pulled automatically from approved exceptions (overtime) and recurring allowances; deductions from approved exceptions (lateness, early leave, absence) and unpaid leave days. | Must |
 | FR-PR-4 | The Admin can add manual lines per employee: bonus, allowance, penalty, advance repayment, social insurance, income tax, other; each with a label and an amount. | Must |
 | FR-PR-5 | Before approval the run shows warnings: pending exceptions for the month, employees with no base salary, negative net salaries. | Must |
-| FR-PR-6 | Run states: Draft, Approved (locked), Paid (optional payment date). Only an Admin can reopen an approved run, with a mandatory reason that is logged. | Must |
+| FR-PR-6 | Run states: Draft, Approved (locked), Paid (optional payment date). An Admin can reopen an Approved run back to Draft with a mandatory reason that is logged; it must then be approved again. A Paid run can never be reopened. | Must |
 | FR-PR-7 | Each employee gets a payslip (company, employee, month, base, every addition and deduction line, net) as a PDF. Employees see their own payslips once the run is approved. | Must |
 | FR-PR-8 | The payroll register lists every employee's base, additions, deductions and net with column totals, exportable to Excel and PDF. | Must |
 
@@ -320,7 +341,7 @@ Release: MVP-2, except FR-AI-10, which moves to v1.1.
 | FR-DB-1 | Admin dashboard: today's attendance counts, pending leave requests, pending exceptions, contracts expiring or expired, compliance summary, candidates by status. The compliance summary and candidates by status are filled from MVP-2. | Must |
 | FR-DB-2 | Employee home: today's shift and check-in button, leave balances, status of own requests, latest payslip. | Must |
 | FR-DB-3 | In-app notification centre with unread count, for: leave requested or decided, exception created or decided, payslip available, red finding (from MVP-2), contract expiring. | Must |
-| FR-DB-4 | An audit log records who changed what and when for salaries, punches, approvals, payroll runs and settings. | Must |
+| FR-DB-4 | An audit log records who changed what and when for salaries, punches, approvals, payroll runs, settings, employee status, contracts, user roles and account status, Admin changes, leave balance adjustments and document deletions. | Must |
 
 ## 4. Business rules
 
@@ -333,7 +354,7 @@ Every amount the system suggests follows from the rules below and the company's 
 | BR-1 | Late: check-in after shift start + late grace. Late minutes are counted from shift start. |
 | BR-2 | Early leave: check-out before shift end − early-leave grace. Early minutes = shift end − check-out. |
 | BR-3 | Absent: no check-in by shift end on a working roster day without approved leave. |
-| BR-4 | Missing check-out: a check-in with no check-out 2 hours after shift end. |
+| BR-4 | Missing check-out: a check-in with no check-out when the check-out window closes (shift end + check-out window, default 6 hours). |
 | BR-5 | Overtime: time worked after shift end of at least the minimum overtime minutes (company setting, default 30), and any time worked on a rest day or public holiday. Arriving early is not overtime. |
 
 ### 4.2 Calculations
@@ -341,7 +362,7 @@ Every amount the system suggests follows from the rules below and the company's 
 | ID | Rule |
 | --- | --- |
 | BR-6 | Daily rate = monthly base salary ÷ divisor (30, 26 or working days of the month; company setting). Hourly rate = daily rate ÷ (shift hours − unpaid break). |
-| BR-7 | Lateness and early-leave deduction. Exact mode: minutes × hourly rate ÷ 60. Tiered mode: company bands, for example 16–60 min = ¼ day, 61–120 min = ½ day, over 120 min = 1 day. |
+| BR-7 | Lateness and early-leave deduction. Exact mode: minutes × hourly rate ÷ 60. Tiered mode: company bands, for example 16–60 min = ¼ day, 61–120 min = ½ day, over 120 min = 1 day. In both modes, the total lateness and early-leave deduction for one day never exceeds one daily rate (D-39). |
 | BR-8 | Absence deduction suggestion = 1 daily rate per absent day. A multiplier above 1 counts as a penalty and raises a yellow finding for review. |
 | BR-9 | Overtime amount = overtime hours × hourly rate × multiplier. With law mode on, multipliers come from Appendix A. |
 
@@ -352,7 +373,7 @@ Worked example: shift 11:00–19:00 (no break), base salary 9,000 EGP, divisor 3
 | ID | Rule |
 | --- | --- |
 | BR-10 | Notice: leave start − request time ≥ minimum notice hours, unless the leave type is exempt from notice. |
-| BR-11 | Balance: requested days ≤ available balance for paid types with an entitlement. Unpaid leave has no balance check but respects its maximum days. |
+| BR-11 | Balance: requested days ≤ available balance for paid types with an entitlement. Unpaid leave has no balance check but respects its maximum days. A leave that crosses 31 December uses each year's balance for the days in that year. |
 | BR-12 | No overlap with another pending or approved leave of the same employee. |
 | BR-13 | Eligibility: months of service ≥ the type's minimum; gender restriction; maximum times per employment. |
 | BR-14 | Requested days ≤ the type's maximum consecutive days. |
@@ -363,7 +384,7 @@ Worked example: shift 11:00–19:00 (no break), base salary 9,000 EGP, divisor 3
 | ID | Rule |
 | --- | --- |
 | BR-16 | Only approved exceptions enter a run. If the Admin approves a run with pending exceptions, those carry forward to the next month. |
-| BR-17 | An approved run is locked. Later corrections for that month reach the next run as carried-forward lines, never by editing the locked run. |
+| BR-17 | An Approved or Paid run is locked. Later corrections for that month reach the next run as carried-forward lines, never by editing the locked run. The only exception is reopening an Approved run that is not yet Paid (FR-PR-6). |
 | BR-18 | Net = pro-rated base + additions − deductions, rounded to 2 decimals. A negative net blocks approval until the Admin confirms it. |
 
 ### 4.5 Compliance
@@ -384,10 +405,12 @@ The MVP uses approximately 30 relational tables. Every company-owned table carri
 
 | Table | Key fields |
 | --- | --- |
-| companies | name, logo, time\_zone, currency, law\_mode, company\_rules\_text, settings (daily-rate divisor, lateness policy, overtime minimum, contract expiring-soon days, check-in window, IP allow-list) |
-| users | email, phone, password\_hash, role (admin, employee, interviewer), employee\_id, status (invited, active, locked, deactivated), invite\_token, invite\_expires\_at, language, failed\_login\_attempts, locked\_until |
+| companies | name, logo, time\_zone, currency, law\_mode, company\_rules\_text |
+| company\_settings\_versions | company\_id, effective\_from, daily-rate divisor, lateness policy, overtime multipliers, overtime minimum, contract expiring-soon days, check-in window, check-out window, IP allow-list, created\_by. Payroll and attendance use the version in force on each date (FR-CS-8, D-27). |
+| users | company\_id, email (unique), phone (unique), password\_hash, role (admin, employee, interviewer), employee\_id, status (invited, active, locked, deactivated), invite\_token, invite\_expires\_at, language, failed\_login\_attempts, locked\_until |
 | job\_titles | company\_id, name\_ar, name\_en |
 | employees | code, name\_ar, name\_en, national\_id, birth\_date, gender, phone, email, address, emergency\_name, emergency\_phone, photo, job\_title\_id, employment\_type, hire\_date, probation\_end, training\_end, status, termination\_date, termination\_reason, has\_disability, candidate\_id |
+| employee\_status\_history | employee\_id, from\_status, to\_status, effective\_date, reason, changed\_by |
 | salary\_history | employee\_id, base\_salary, effective\_from |
 | recurring\_pay\_items | employee\_id, kind (addition, deduction), label, amount, valid\_from, valid\_to |
 | documents | owner\_type (employee, candidate), owner\_id, doc\_type, file\_key, expiry\_date, uploaded\_by |
@@ -411,12 +434,12 @@ When a hired candidate is converted, candidates.employee\_id and employees.candi
 | --- | --- |
 | shift\_templates | name, start\_time, end\_time, crosses\_midnight, break\_min, late\_grace\_min, early\_grace\_min, working\_days |
 | shift\_assignments | employee\_id, kind (fixed; rotation from v1.1), template\_ids (ordered), cycle\_weeks (v1.1), start\_date, end\_date |
-| roster\_entries | employee\_id, shift\_date, template\_id, expected\_start, expected\_end, day\_type (work, rest, holiday, leave), override\_reason |
+| roster\_entries | employee\_id, shift\_date, template\_id, expected\_start, expected\_end, break\_min, late\_grace\_min, early\_grace\_min (copied from the template), day\_type (work, rest, holiday, leave, half\_leave, suspended), override\_reason |
 | attendance\_records | employee\_id, roster\_entry\_id, shift\_date, check\_in\_at, check\_out\_at, check\_in\_ip, check\_out\_ip, labels, late\_min, early\_min, overtime\_min, source (self, admin) |
 | attendance\_exceptions | attendance\_record\_id, employee\_id, type, minutes, days, suggested\_amount, final\_amount, policy\_snapshot, employee\_reason, attachment\_key, status, decided\_by, decided\_at, note, leave\_request\_id, payroll\_run\_id |
 | leave\_types | name\_ar, name\_en, paid, entitlement\_days, count\_mode, min\_notice\_hours, notice\_exempt, max\_consecutive, eligible\_after\_months, attachment\_required, gender, max\_times, carry\_over\_max, statutory |
 | leave\_balances | employee\_id, leave\_type\_id, year, opening, granted, used, carried\_over |
-| leave\_requests | employee\_id, leave\_type\_id, start\_date, end\_date, half\_day, days, reason, attachment\_key, status, decided\_by, decided\_at, note |
+| leave\_requests | employee\_id, leave\_type\_id, start\_date, end\_date, duration\_type (full, first\_half, second\_half), days, reason, attachment\_key, status, decided\_by, decided\_at, note |
 | public\_holidays | name, start\_date, end\_date, paid, confirmed |
 
 ### 5.4 Payroll
@@ -449,7 +472,7 @@ When a hired candidate is converted, candidates.employee\_id and employees.candi
 | NFR-5 | Reliability | Daily database backups kept for 30 days. Nightly jobs (roster, attendance labels, compliance) are safe to re-run without creating duplicates. |
 | NFR-6 | Localisation | Full Arabic (right-to-left) and English interfaces; dates, numbers and EGP amounts formatted per language. |
 | NFR-7 | Usability | Works on phone screens from 360 px wide; check-in takes no more than 2 taps after login. |
-| NFR-8 | Auditability | Changes to salaries, punches, approvals, payroll and settings are written to an immutable audit log that users cannot edit or delete. |
+| NFR-8 | Auditability | Every change listed in FR-DB-4 is written to an immutable audit log that users cannot edit or delete. |
 | NFR-9 | AI cost control | AI calls per company per day are capped, and checks run once a night in batches with a small model. If OpenAI is unavailable, the last results stay on screen with their date and every other module keeps working. Applies from MVP-2. |
 | NFR-10 | Maintainability | The law reference given to the AI is stored as versioned data, so a legal change is a data update, not a code release. |
 
