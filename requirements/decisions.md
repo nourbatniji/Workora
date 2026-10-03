@@ -41,26 +41,26 @@ Status values:
 | D-19 | Contract expiry is shown as an in-app badge and dashboard count, with no email alert. | 2.4, FR-CT-4 | Agreed (SRS) |
 | D-20 | Arabic (RTL) and English are built into the frontend foundation from the first screen. | NFR-6, Appendix B | Agreed (SRS) |
 
-## 3. Implementation decisions (proposed)
+## 3. Implementation decisions (agreed Oct 3, 2026)
 
 | ID | Decision | Reason | Status |
 | --- | --- | --- | --- |
-| D-21 | One repository with pnpm workspaces: `apps/api` (NestJS), `apps/web` (Next.js), `packages/shared` (types, enums, validation schemas, money and date helpers). | Shares types and validation between API and UI. | Proposed |
-| D-22 | ORM: Prisma with PostgreSQL migrations. | Typed queries, readable schema, a client extension can enforce tenant scoping. | Proposed |
-| D-23 | Background jobs: BullMQ on Redis, with repeatable jobs scheduled per company time zone. | NestJS equivalent of Celery + Redis (allowed by Appendix B). | Proposed |
-| D-24 | Authentication: server-side sessions in an httpOnly, Secure, SameSite cookie; Argon2id password hashing; 12-hour inactivity expiry. | Matches NFR-2 and makes forced logout on termination (FR-UA-6) immediate. | Proposed |
-| D-25 | Tenant scoping: the company_id comes only from the session, a Prisma extension adds it to every query on company-owned tables, and each module has an automated cross-tenant test. | NFR-1. | Proposed |
-| D-26 | `users` gets a `company_id` column, and email and phone are unique across the whole system, so login never asks which company. | The SRS users table has no company link. | Proposed |
-| D-27 | Company settings that affect money or attendance are stored as effective-dated versions (`company_settings_versions`) instead of one JSON field on `companies`. | FR-CS-8: a change applies from its effective date and never alters an approved run. | Proposed |
-| D-28 | Money is stored as `numeric(12,2)` and calculated with a decimal library, never JavaScript floats. Each payroll line is rounded half-up to 2 decimals. | BR-18 and reproducible payslips. | Proposed |
-| D-29 | Timestamps are stored as `timestamptz` in UTC. `shift_date` is a plain date in the company time zone. | FR-AT-3 night shifts and FR-CS-3 time zones. | Proposed |
-| D-30 | Validation schemas are written once in `packages/shared` (zod) and used by both API and web forms. | One rule set for both sides. | Proposed |
-| D-31 | Frontend i18n with next-intl; layout uses Tailwind logical properties (`ms-`, `me-`, `ps-`, `pe-`) so RTL works without separate styles. | NFR-6, D-20. | Proposed |
-| D-32 | Payslip and register PDFs are rendered from HTML with headless Chromium. | Correct Arabic shaping and RTL in PDFs. | Proposed |
-| D-33 | Excel exports use exceljs (.xlsx). | FR-EM-9, FR-AT-7, FR-PR-8. | Proposed |
-| D-34 | Idempotent jobs rely on unique constraints: roster (employee_id, shift_date), attendance record (employee_id, shift_date), exception (attendance_record_id, type), open finding (employee_id, rule_ref), payroll run (company_id, month). | NFR-5, BR-20. | Proposed |
-| D-35 | Business rules BR-1 to BR-18 live in a pure domain layer with no database access, covered by unit tests including the SRS worked example (187.50 EGP). | Appendix B implementation rules. | Proposed |
-| D-36 | Local development runs PostgreSQL, Redis, MinIO (S3) and Mailpit (email catcher) in Docker Compose. | No paid services needed during development. | Proposed |
+| D-21 | One repository with pnpm workspaces: `apps/api` (NestJS), `apps/web` (Next.js), `packages/shared` (types, enums, validation schemas, money and date helpers). | Shares types and validation between API and UI. | Agreed |
+| D-22 | ORM: Prisma with PostgreSQL migrations. | Typed queries, readable schema, a client extension can enforce tenant scoping. | Agreed |
+| D-23 | Background jobs: BullMQ on Redis, with repeatable jobs scheduled per company time zone. | NestJS equivalent of Celery + Redis (allowed by Appendix B). | Agreed |
+| D-24 | Authentication: server-side sessions in an httpOnly, Secure, SameSite cookie; Argon2id password hashing; 12-hour inactivity expiry. | Matches NFR-2 and makes forced logout on termination (FR-UA-6) immediate. | Agreed |
+| D-25 | Tenant scoping: the company_id comes only from the session, a Prisma extension adds it to every query on company-owned tables, and each module has an automated cross-tenant test. | NFR-1. | Agreed |
+| D-26 | `users` gets a `company_id` column, and email and phone are unique across the whole system, so login never asks which company. | The SRS users table has no company link. | Agreed |
+| D-27 | Company settings that affect money or attendance are stored as effective-dated versions (`company_settings_versions`) instead of one JSON field on `companies`. | FR-CS-8: a change applies from its effective date and never alters an approved run. | Agreed |
+| D-28 | Money is stored as `numeric(12,2)` and calculated with a decimal library, never JavaScript floats. Each payroll line is rounded half-up to 2 decimals. | BR-18 and reproducible payslips. | Agreed |
+| D-29 | Timestamps are stored as `timestamptz` in UTC. `shift_date` is a plain date in the company time zone. | FR-AT-3 night shifts and FR-CS-3 time zones. | Agreed |
+| D-30 | Validation schemas are written once in `packages/shared` (zod) and used by both API and web forms. | One rule set for both sides. | Agreed |
+| D-31 | Frontend i18n with next-intl; layout uses Tailwind logical properties (`ms-`, `me-`, `ps-`, `pe-`) so RTL works without separate styles. | NFR-6, D-20. | Agreed |
+| D-32 | Payslip and register PDFs are rendered from HTML with headless Chromium. | Correct Arabic shaping and RTL in PDFs. | Agreed |
+| D-33 | Excel exports use exceljs (.xlsx). | FR-EM-9, FR-AT-7, FR-PR-8. | Agreed |
+| D-34 | Idempotent jobs rely on unique constraints: roster (employee_id, shift_date), attendance record (employee_id, shift_date), exception (attendance_record_id, type), open finding (employee_id, rule_ref), payroll run (company_id, month). | NFR-5, BR-20. | Agreed |
+| D-35 | Business rules BR-1 to BR-18 live in a pure domain layer with no database access, covered by unit tests including the SRS worked example (187.50 EGP). | Appendix B implementation rules. | Agreed |
+| D-36 | Local development runs PostgreSQL, Redis, MinIO (S3) and Mailpit (email catcher) in Docker Compose. | No paid services needed during development. | Agreed |
 
 ## 4. Deferred to later releases
 

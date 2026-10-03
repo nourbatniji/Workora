@@ -550,14 +550,14 @@ Sources: ZenHR, Egypt Labor Law at a Glance (EG-01 to EG-16) · Clyde & Co, New 
 
 ## Appendix B. Developer implementation baseline
 
-This section translates the SRS into implementation constraints. It does not add product scope. The stack follows decision D-01 (Oct 1, 2026). Implementation choices still marked Proposed, such as the ORM and the job library, are in `decisions.md`.
+This section translates the SRS into implementation constraints. It does not add product scope. The stack follows decision D-01 (Oct 1, 2026). Implementation choices such as the ORM and the job library are recorded in `decisions.md` (D-21 to D-36).
 
 | Area | Baseline |
 | --- | --- |
 | Backend | NestJS (TypeScript) |
 | Frontend | Next.js (TypeScript, App Router) + Tailwind CSS |
 | Database | PostgreSQL |
-| Background jobs | Redis-backed job queue with scheduled, retryable jobs (BullMQ proposed, D-23) |
+| Background jobs | Redis-backed job queue with scheduled, retryable jobs (BullMQ, D-23) |
 | File storage | S3-compatible object storage; the database stores file metadata/keys |
 | AI | OpenAI API behind a dedicated compliance service with structured output validation and rate/cost limits |
 | Multi-tenancy | company\_id on every company-owned table; server-side tenant scoping is mandatory |
