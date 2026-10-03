@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "description": "",
-
-
+  "scripts": {
+    "dev:api": "pnpm --filter api start:dev",
+    "dev:web": "pnpm --filter web dev",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -16,5 +21,8 @@
     }
   },
   "packageManager": "pnpm@12.8.1",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "prettier": "^3.9.9"
+  }
 }
