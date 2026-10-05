@@ -6,7 +6,7 @@ The interface is bilingual (Arabic right-to-left and English) and works on deskt
 
 ## Status
 
-Requirements are signed off. Done: project skeleton (SCRUM-20, FND-01). In progress: database and first migrations (SCRUM-21, FND-02).
+Requirements are signed off. Done: project skeleton (SCRUM-20, FND-01) and database (SCRUM-21, FND-02). In progress: company data isolation (SCRUM-22, FND-03).
 
 | Release | Target date | Contents |
 | --- | --- | --- |
@@ -92,6 +92,8 @@ The seed creates "MDARJ Demo Company" with one Admin. Log in with `SEED_ADMIN_EM
 | `pnpm db:migrate` | Applies new migrations to the local database |
 | `pnpm db:generate` | Rebuilds the Prisma client after a schema change (Prisma 7 no longer does this inside `db:migrate`) |
 | `pnpm db:seed` | Adds the demo company and its Admin |
+| `pnpm test` | Runs the backend unit tests (no database needed) |
+| `pnpm test:e2e` | Runs the backend tests that use the database (start it first with `pnpm db:up`) |
 | `pnpm lint` | Checks both apps for code mistakes |
 | `pnpm format` | Formats all code with Prettier |
 | `pnpm format:check` | Only reports formatting problems |
@@ -113,4 +115,6 @@ Restart the backend after changing `.env`.
 - One branch per Jira task, for example `feat/scrum-20-project-skeleton`. Never commit straight to `main`.
 - Commit and pull request titles use `type(scope): description`, for example `feat(auth): log in with email or phone`.
 - Put the Jira key and the SRS requirement ID in the commit or pull request, for example `SCRUM-31, FR-UA-3`.
+- Company data (D-25): modules read and write through `TenantPrismaService` (`this.tenantPrisma.db`). Its guard adds the logged-in user's company to every query and blocks queries with no company. New rows carry `companyId: requireCompanyId()`. Code that uses company data runs inside `runInCompany(companyId, async () => ...)`. The plain `PrismaService` is only for system work: sign-up, login lookup, seed and scheduled jobs.
+- A new table with `company_id` must be added to `COMPANY_TABLES` in `apps/api/src/common/tenancy/tenancy.extension.ts`. A unit test fails until it is.
 - A task is done when it meets the definition of done in [`development-plan.md`](requirements/development-plan.md) section 6: Arabic and English, 360 px phones, server-side permission and company checks, audit log where needed, tests passing.
