@@ -1,0 +1,12 @@
+{
+  "Shell": {
+    "appName": "MDARJ",
+    "switchLanguage": "العربية"
+  },
+  "Home": {
+    "title": "Welcome to MDARJ",
+    "description": "HR and payroll system",
+    "today": "Today: {date}",
+    "sampleSalary": "Sample salary: {amount}"
+  }
+}

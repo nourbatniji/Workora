@@ -1,0 +1,12 @@
+{
+  "Shell": {
+    "appName": "مدارج",
+    "switchLanguage": "English"
+  },
+  "Home": {
+    "title": "مرحبًا بك في مدارج",
+    "description": "نظام الموارد البشرية والرواتب",
+    "today": "اليوم: {date}",
+    "sampleSalary": "راتب تجريبي: {amount}"
+  }
+}
