@@ -1,6 +1,6 @@
 # MDARJ HR & Payroll System — Software Requirements Specification
 
-MVP + Roadmap · Consolidated Edition v1.3 · Oct 3, 2026 · @trendow
+MVP + Roadmap · Consolidated Edition v1.4 · Oct 5, 2026 · @trendow
 
 ## Document information
 
@@ -10,6 +10,7 @@ Revision v1.2 (Oct 3, 2026) brings the SRS in line with the agreed decisions in 
 
 | Source edition | Date | What it contributes |
 | --- | --- | --- |
+| Revision v1.4 | Oct 5, 2026 | The user account stores the person's own name, for Admins and Interviewers with no employee record (D-41) |
 | Revision v1.3 | Oct 3, 2026 | Gaps found in the SRS review closed: employee status history and Suspended rules, shift snapshots, settings history, punch and check-out rules, leave edge cases, Admin rules, deletion rules, wider audit log |
 | Revision v1.2 | Oct 3, 2026 | Decisions D-01 to D-03 applied; release split into MVP and MVP-2; missing settings named; open items linked to `assumptions.md`; roadmap written out as text |
 | Revised / Fixed Edition | Oct 1, 2026 | Maximum 50 employees per company for the MVP; failed logins lock the user account only; user account status; Appendix B implementation baseline |
@@ -46,6 +47,10 @@ Changes in v1.3:
 - Payroll reopening rules made explicit; Paid runs never reopen (FR-PR-6, BR-17).
 - Admin can delete candidates who were not hired (FR-RC-10, D-40).
 - Audit log covers more changes (FR-DB-4, NFR-8).
+
+Changes in v1.4:
+
+- The users table gets a name column, so the owner who signs up, other Admins and Interviewers have a name without an employee record (FR-CS-1, D-41).
 
 ## 1. Introduction
 
@@ -164,7 +169,7 @@ There are no departments or reporting lines in the MVP, so every approval goes t
 
 | ID | Requirement | Priority |
 | --- | --- | --- |
-| FR-CS-1 | A company owner signs up with company name, own name, email and password, and becomes the first Admin. | Must |
+| FR-CS-1 | A company owner signs up with company name, own name, email and password, and becomes the first Admin. The owner's name is stored on their user account (D-41). | Must |
 | FR-CS-2 | After sign-up, a setup wizard walks the Admin through: company profile, work week, public holidays, job titles, shift templates, leave types, payroll settings, compliance mode, check-in settings. Each step can be skipped and finished later. | Must |
 | FR-CS-3 | Company profile holds name, logo, address, phone, time zone (default Africa/Cairo) and currency (EGP). | Must |
 | FR-CS-4 | Work week defines working days and weekly rest days (e.g. Friday and Saturday). | Must |
@@ -407,7 +412,7 @@ The MVP uses approximately 30 relational tables. Every company-owned table carri
 | --- | --- |
 | companies | name, logo, time\_zone, currency, law\_mode, company\_rules\_text |
 | company\_settings\_versions | company\_id, effective\_from, daily-rate divisor, lateness policy, overtime multipliers, overtime minimum, contract expiring-soon days, check-in window, check-out window, IP allow-list, created\_by. Payroll and attendance use the version in force on each date (FR-CS-8, D-27). |
-| users | company\_id, email (unique), phone (unique), password\_hash, role (admin, employee, interviewer), employee\_id, status (invited, active, locked, deactivated), invite\_token, invite\_expires\_at, language, failed\_login\_attempts, locked\_until |
+| users | company\_id, name, email (unique), phone (unique), password\_hash, role (admin, employee, interviewer), employee\_id, status (invited, active, locked, deactivated), invite\_token, invite\_expires\_at, language, failed\_login\_attempts, locked\_until |
 | job\_titles | company\_id, name\_ar, name\_en |
 | employees | code, name\_ar, name\_en, national\_id, birth\_date, gender, phone, email, address, emergency\_name, emergency\_phone, photo, job\_title\_id, employment\_type, hire\_date, probation\_end, training\_end, status, termination\_date, termination\_reason, has\_disability, candidate\_id |
 | employee\_status\_history | employee\_id, from\_status, to\_status, effective\_date, reason, changed\_by |

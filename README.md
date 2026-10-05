@@ -6,7 +6,7 @@ The interface is bilingual (Arabic right-to-left and English) and works on deskt
 
 ## Status
 
-Requirements are signed off. Development starts with the project skeleton (Jira SCRUM-20, FND-01).
+Requirements are signed off. Done: project skeleton (SCRUM-20, FND-01). In progress: database and first migrations (SCRUM-21, FND-02).
 
 | Release | Target date | Contents |
 | --- | --- | --- |
@@ -21,7 +21,7 @@ All product and technical decisions live in [`requirements/`](requirements/):
 
 | File | What it holds |
 | --- | --- |
-| [`srs.md`](requirements/srs.md) | What the system must do: functional requirements (FR-…), business rules (BR-…), non-functional requirements (NFR-…). Current version: v1.3. |
+| [`srs.md`](requirements/srs.md) | What the system must do: functional requirements (FR-…), business rules (BR-…), non-functional requirements (NFR-…). Current version: v1.4. |
 | [`decisions.md`](requirements/decisions.md) | Why and how: every decision that shapes the build (D-01 …), with its status. |
 | [`assumptions.md`](requirements/assumptions.md) | Points not yet confirmed (A-01 …) and what changes if they are wrong. |
 | [`development-plan.md`](requirements/development-plan.md) | Architecture, modules, scheduled jobs and test plan. The dates in Jira replace its sprint calendar. |
@@ -69,7 +69,13 @@ HR/
 ```bash
 pnpm install
 cp apps/api/.env.example apps/api/.env
+pnpm db:up        # start PostgreSQL in Docker
+pnpm db:migrate   # create the tables
+pnpm db:generate  # build the Prisma client
+pnpm db:seed      # add the demo company and its Admin
 ```
+
+The seed creates "MDARJ Demo Company" with one Admin. Log in with `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` from `apps/api/.env`. Running the seed again is safe: it never creates duplicates and resets the Admin's password to the value in `.env`.
 
 ### Run the apps
 
@@ -82,6 +88,10 @@ cp apps/api/.env.example apps/api/.env
 
 | Command | What it does |
 | --- | --- |
+| `pnpm db:up` | Starts PostgreSQL in Docker |
+| `pnpm db:migrate` | Applies new migrations to the local database |
+| `pnpm db:generate` | Rebuilds the Prisma client after a schema change (Prisma 7 no longer does this inside `db:migrate`) |
+| `pnpm db:seed` | Adds the demo company and its Admin |
 | `pnpm lint` | Checks both apps for code mistakes |
 | `pnpm format` | Formats all code with Prettier |
 | `pnpm format:check` | Only reports formatting problems |
@@ -91,6 +101,9 @@ cp apps/api/.env.example apps/api/.env
 | App | File | Variable | Default | Meaning |
 | --- | --- | --- | --- | --- |
 | api | `apps/api/.env` | `PORT` | `4000` | Port the backend listens on |
+| api | `apps/api/.env` | `DATABASE_URL` | `postgresql://mdarj:mdarj@localhost:5432/mdarj?schema=public` | PostgreSQL connection |
+| api | `apps/api/.env` | `SEED_ADMIN_EMAIL` | `admin@demo.mdarj.test` | Email of the demo Admin |
+| api | `apps/api/.env` | `SEED_ADMIN_PASSWORD` | `ChangeMe123!` | Password of the demo Admin |
 
 Restart the backend after changing `.env`.
 

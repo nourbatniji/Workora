@@ -1,0 +1,252 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────── Lists of allowed values (enums) ─────────
+
+enum UserRole {
+  admin
+  employee
+  interviewer
+}
+
+enum UserStatus {
+  invited
+  active
+  locked
+  deactivated
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum EmploymentType {
+  full_time
+  part_time
+  trainee
+}
+
+enum EmployeeStatus {
+  active
+  suspended
+  terminated
+}
+
+enum ContractType {
+  indefinite
+  fixed_term
+  trainee
+  part_time
+}
+
+enum DocumentOwnerType {
+  employee
+  candidate
+}
+
+enum DailyRateDivisor {
+  days_30
+  days_26
+  working_days
+}
+
+// ───────── Company and its settings ─────────
+
+model Company {
+  id               String   @id @default(uuid())
+  name             String
+  logo             String?
+  address          String?
+  phone            String?
+  timeZone         String   @default("Africa/Cairo") @map("time_zone")
+  currency         String   @default("EGP")
+  lawMode          Boolean  @default(false) @map("law_mode")
+  companyRulesText String?  @map("company_rules_text")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  settingsVersions CompanySettingsVersion[]
+  users            User[]
+  jobTitles        JobTitle[]
+  employees        Employee[]
+  salaryHistory    SalaryHistory[]
+  statusHistory    EmployeeStatusHistory[]
+  documents        Document[]
+  contracts        Contract[]
+
+  @@map("companies")
+}
+
+model CompanySettingsVersion {
+  id                    String           @id @default(uuid())
+  companyId             String           @map("company_id")
+  company               Company          @relation(fields: [companyId], references: [id])
+  effectiveFrom         DateTime         @map("effective_from") @db.Date
+  restDays              Int[]            @map("rest_days")
+  dailyRateDivisor      DailyRateDivisor @default(days_30) @map("daily_rate_divisor")
+  latenessPolicy        Json             @map("lateness_policy")
+  overtimeDayRate       Decimal          @default(1.35) @map("overtime_day_rate") @db.Decimal(4, 2)
+  overtimeNightRate     Decimal          @default(1.70) @map("overtime_night_rate") @db.Decimal(4, 2)
+  overtimeRestDayRate   Decimal          @default(2.00) @map("overtime_rest_day_rate") @db.Decimal(4, 2)
+  overtimeHolidayRate   Decimal          @default(2.00) @map("overtime_holiday_rate") @db.Decimal(4, 2)
+  overtimeMinMinutes    Int              @default(30) @map("overtime_min_minutes")
+  contractExpiringDays  Int              @default(30) @map("contract_expiring_days")
+  checkInWindowMinutes  Int              @default(60) @map("check_in_window_minutes")
+  checkOutWindowMinutes Int              @default(360) @map("check_out_window_minutes")
+  ipAllowList           String[]         @map("ip_allow_list")
+  createdById           String?          @map("created_by")
+  createdAt             DateTime         @default(now()) @map("created_at")
+
+  @@unique([companyId, effectiveFrom])
+  @@map("company_settings_versions")
+}
+
+// ───────── Users (logins) ─────────
+
+model User {
+  id                  String     @id @default(uuid())
+  companyId           String     @map("company_id")
+  name                String?
+  company             Company    @relation(fields: [companyId], references: [id])
+  email               String?    @unique
+  phone               String?    @unique
+  passwordHash        String?    @map("password_hash")
+  role                UserRole
+  status              UserStatus @default(invited)
+  employeeId          String?    @unique @map("employee_id")
+  employee            Employee?  @relation(fields: [employeeId], references: [id])
+  inviteToken         String?    @unique @map("invite_token")
+  inviteExpiresAt     DateTime?  @map("invite_expires_at")
+  language            String     @default("ar")
+  failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime?  @map("locked_until")
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+// ───────── Employees ─────────
+
+model JobTitle {
+  id        String     @id @default(uuid())
+  companyId String     @map("company_id")
+  company   Company    @relation(fields: [companyId], references: [id])
+  nameAr    String     @map("name_ar")
+  nameEn    String     @map("name_en")
+  employees Employee[]
+
+  @@map("job_titles")
+}
+
+model Employee {
+  id                String         @id @default(uuid())
+  companyId         String         @map("company_id")
+  company           Company        @relation(fields: [companyId], references: [id])
+  code              String
+  nameAr            String         @map("name_ar")
+  nameEn            String         @map("name_en")
+  nationalId        String?        @map("national_id")
+  birthDate         DateTime?      @map("birth_date") @db.Date
+  gender            Gender?
+  phone             String?
+  email             String?
+  address           String?
+  emergencyName     String?        @map("emergency_name")
+  emergencyPhone    String?        @map("emergency_phone")
+  photo             String?
+  jobTitleId        String?        @map("job_title_id")
+  jobTitle          JobTitle?      @relation(fields: [jobTitleId], references: [id])
+  employmentType    EmploymentType @map("employment_type")
+  hireDate          DateTime       @map("hire_date") @db.Date
+  probationEnd      DateTime?      @map("probation_end") @db.Date
+  trainingEnd       DateTime?      @map("training_end") @db.Date
+  status            EmployeeStatus @default(active)
+  terminationDate   DateTime?      @map("termination_date") @db.Date
+  terminationReason String?        @map("termination_reason")
+  hasDisability     Boolean        @default(false) @map("has_disability")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  user          User?
+  salaryHistory SalaryHistory[]
+  statusHistory EmployeeStatusHistory[]
+  contracts     Contract[]
+
+  @@unique([companyId, code])
+  @@map("employees")
+}
+
+model SalaryHistory {
+  id            String   @id @default(uuid())
+  companyId     String   @map("company_id")
+  company       Company  @relation(fields: [companyId], references: [id])
+  employeeId    String   @map("employee_id")
+  employee      Employee @relation(fields: [employeeId], references: [id])
+  baseSalary    Decimal  @map("base_salary") @db.Decimal(12, 2)
+  effectiveFrom DateTime @map("effective_from") @db.Date
+  createdById   String?  @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([employeeId, effectiveFrom])
+  @@map("salary_history")
+}
+
+model EmployeeStatusHistory {
+  id            String          @id @default(uuid())
+  companyId     String          @map("company_id")
+  company       Company         @relation(fields: [companyId], references: [id])
+  employeeId    String          @map("employee_id")
+  employee      Employee        @relation(fields: [employeeId], references: [id])
+  fromStatus    EmployeeStatus? @map("from_status")
+  toStatus      EmployeeStatus  @map("to_status")
+  effectiveDate DateTime        @map("effective_date") @db.Date
+  reason        String?
+  changedById   String?         @map("changed_by")
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  @@map("employee_status_history")
+}
+
+model Document {
+  id           String            @id @default(uuid())
+  companyId    String            @map("company_id")
+  company      Company           @relation(fields: [companyId], references: [id])
+  ownerType    DocumentOwnerType @map("owner_type")
+  ownerId      String            @map("owner_id")
+  docType      String            @map("doc_type")
+  fileKey      String            @map("file_key")
+  expiryDate   DateTime?         @map("expiry_date") @db.Date
+  uploadedById String?           @map("uploaded_by")
+  createdAt    DateTime          @default(now()) @map("created_at")
+
+  @@map("documents")
+}
+
+model Contract {
+  id                 String       @id @default(uuid())
+  companyId          String       @map("company_id")
+  company            Company      @relation(fields: [companyId], references: [id])
+  employeeId         String       @map("employee_id")
+  employee           Employee     @relation(fields: [employeeId], references: [id])
+  type               ContractType
+  startDate          DateTime     @map("start_date") @db.Date
+  endDate            DateTime?    @map("end_date") @db.Date
+  agreedSalary       Decimal?     @map("agreed_salary") @db.Decimal(12, 2)
+  fileKey            String?      @map("file_key")
+  previousContractId String?      @unique @map("previous_contract_id")
+  previousContract   Contract?    @relation("ContractRenewal", fields: [previousContractId], references: [id])
+  renewedBy          Contract?    @relation("ContractRenewal")
+  notes              String?
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  @@map("contracts")
+}
