@@ -1,3 +1,5 @@
+import MobileMenu from '@/components/mobile-menu';
+import NavLinks from '@/components/nav-links';
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
@@ -20,13 +22,22 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
 
   return (
     <html lang={locale} dir={dir} className="h-full antialiased">
-      <body className="flex min-h-full flex-col">
+      <body className="min-h-full">
         <NextIntlClientProvider>
-          <header className="flex items-center justify-between border-b px-4 py-3">
-            <span className="font-bold">{t('appName')}</span>
+          <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b bg-background px-4 py-3">
+            <div className="flex items-center gap-2">
+              <MobileMenu />
+              <span className="font-bold">{t('appName')}</span>
+            </div>
             <LanguageSwitcher />
           </header>
-          <main className="flex-1 p-4">{children}</main>
+
+          <div className="flex">
+            <aside className="hidden w-56 shrink-0 border-e p-4 md:block">
+              <NavLinks />
+            </aside>
+            <main className="min-w-0 flex-1 p-4">{children}</main>
+          </div>
         </NextIntlClientProvider>
       </body>
     </html>
