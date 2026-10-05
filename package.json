@@ -10,6 +10,8 @@
     "db:migrate": "pnpm --filter api db:migrate",
     "db:generate": "pnpm --filter api db:generate",
     "db:seed": "pnpm --filter api db:seed",
+    "test": "pnpm --filter api test",
+    "test:e2e": "pnpm --filter api test:e2e",
     "lint": "pnpm -r lint",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
