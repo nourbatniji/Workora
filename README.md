@@ -21,7 +21,7 @@ All product and technical decisions live in [`requirements/`](requirements/):
 
 | File | What it holds |
 | --- | --- |
-| [`srs.md`](requirements/srs.md) | What the system must do: functional requirements (FR-…), business rules (BR-…), non-functional requirements (NFR-…). Current version: v1.3. |
+| [`srs.md`](requirements/srs.md) | What the system must do: functional requirements (FR-…), business rules (BR-…), non-functional requirements (NFR-…). Current version: v1.4. |
 | [`decisions.md`](requirements/decisions.md) | Why and how: every decision that shapes the build (D-01 …), with its status. |
 | [`assumptions.md`](requirements/assumptions.md) | Points not yet confirmed (A-01 …) and what changes if they are wrong. |
 | [`development-plan.md`](requirements/development-plan.md) | Architecture, modules, scheduled jobs and test plan. The dates in Jira replace its sprint calendar. |
@@ -71,6 +71,7 @@ pnpm install
 cp apps/api/.env.example apps/api/.env
 pnpm db:up        # start PostgreSQL in Docker
 pnpm db:migrate   # create the tables
+pnpm db:generate  # build the Prisma client
 pnpm db:seed      # add the demo company and its Admin
 ```
 
@@ -89,6 +90,7 @@ The seed creates "MDARJ Demo Company" with one Admin. Log in with `SEED_ADMIN_EM
 | --- | --- |
 | `pnpm db:up` | Starts PostgreSQL in Docker |
 | `pnpm db:migrate` | Applies new migrations to the local database |
+| `pnpm db:generate` | Rebuilds the Prisma client after a schema change (Prisma 7 no longer does this inside `db:migrate`) |
 | `pnpm db:seed` | Adds the demo company and its Admin |
 | `pnpm lint` | Checks both apps for code mistakes |
 | `pnpm format` | Formats all code with Prettier |

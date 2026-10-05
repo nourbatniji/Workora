@@ -113,6 +113,7 @@ model CompanySettingsVersion {
 model User {
   id                  String     @id @default(uuid())
   companyId           String     @map("company_id")
+  name                String?
   company             Company    @relation(fields: [companyId], references: [id])
   email               String?    @unique
   phone               String?    @unique

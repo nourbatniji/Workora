@@ -8,6 +8,7 @@
     "dev:web": "pnpm --filter web dev",
     "db:up": "docker compose up -d db",
     "db:migrate": "pnpm --filter api db:migrate",
+    "db:generate": "pnpm --filter api db:generate",
     "db:seed": "pnpm --filter api db:seed",
     "lint": "pnpm -r lint",
     "format": "prettier --write .",
