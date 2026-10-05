@@ -1,12 +1,32 @@
 {
   "Shell": {
     "appName": "مدارج",
-    "switchLanguage": "English"
+    "switchLanguage": "English",
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق"
   },
   "Home": {
+    "employeesTitle": "موظفون تجريبيون",
     "title": "مرحبًا بك في مدارج",
     "description": "نظام الموارد البشرية والرواتب",
     "today": "اليوم: {date}",
     "sampleSalary": "راتب تجريبي: {amount}"
+  },
+  "Nav": {
+    "dashboard": "الرئيسية",
+    "employees": "الموظفون",
+    "attendance": "الحضور",
+    "leave": "الإجازات",
+    "payroll": "الرواتب",
+    "settings": "الإعدادات"
+  },
+  "Columns": {
+    "code": "الرمز",
+    "name": "الاسم",
+    "jobTitle": "المسمى الوظيفي",
+    "hireDate": "تاريخ التعيين",
+    "salary": "الراتب",
+    "status": "الحالة",
+    "active": "نشط"
   }
 }
