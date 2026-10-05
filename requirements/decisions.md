@@ -78,3 +78,10 @@ Status values:
 | D-38 | Check-out is accepted until shift end plus a check-out window, a company setting with a default of 6 hours. Days are labelled when that window closes. | FR-CS-7, FR-AT-2, FR-AT-4, BR-4 | Agreed | Oct 3, 2026 |
 | D-39 | The total lateness and early-leave deduction for one day never exceeds one daily rate. | BR-7 | Agreed | Oct 3, 2026 |
 | D-40 | The Admin can delete a candidate who was not hired, together with their CV, documents, notes and interviews. Hired candidates linked to an employee cannot be deleted. | FR-RC-10 | Agreed | Oct 3, 2026 |
+
+## 6. Decisions during the build (Oct 5, 2026)
+
+| ID | Decision | SRS ref | Status | Date |
+| --- | --- | --- | --- | --- |
+| D-41 | `users` gets a `name` column for the person's own name. It is needed for users with no employee record: the owner who signs up as the first Admin, other Admins and Interviewers. A user linked to an employee shows the employee's Arabic or English name. | FR-CS-1, FR-UA-1, SRS 5.1 users | Agreed | Oct 5, 2026 |
+| D-42 | SRS 5.1 tables are built with the task that first uses them: `recurring_pay_items` in EM-05 (FR-EM-5) and `employees.candidate_id` in RC-09 (FR-RC-9, MVP-2, when the `candidates` table exists). FND-02 builds the rest of SRS 5.1. | SRS 5.1, FR-EM-5, FR-RC-9 | Agreed | Oct 5, 2026 |
