@@ -7,3 +7,5 @@ allowBuilds:
   '@prisma/engines': true
   prisma: true
   esbuild: true
+  '@parcel/watcher': false
+  '@swc/core': false
