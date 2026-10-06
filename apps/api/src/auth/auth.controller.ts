@@ -1,11 +1,13 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import {
@@ -16,6 +18,7 @@ import {
 } from '@mdarj/shared';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
 import { AuthService } from './auth.service.js';
+import { SessionGuard } from './session.guard.js';
 import { SESSION_COOKIE } from './session-token.js';
 
 @Controller('auth')
@@ -52,5 +55,21 @@ export class AuthController {
     });
 
     return { user };
+  }
+
+  // GET /auth/me: who is logged in
+  @Get('me')
+  @UseGuards(SessionGuard)
+  me(@Req() req: Request) {
+    return this.authService.me(req.auth!.userId);
+  }
+
+  // POST /auth/logout: end this session and remove the cookie
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(SessionGuard)
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    await this.authService.logout(req.auth!.sessionId);
+    res.clearCookie(SESSION_COOKIE, { path: '/' });
   }
 }

@@ -8,6 +8,7 @@ import { hash, verify } from '@node-rs/argon2';
 import type { LoginInput, SignUpInput } from '@mdarj/shared';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { TenantPrismaService } from '../prisma/tenant-prisma.service.js';
 import { hashSessionToken, newSessionToken } from './session-token.js';
 
 /** Today's date in Cairo as a plain date, for the first settings version */
@@ -21,7 +22,11 @@ function todayInCairo(): Date {
 @Injectable()
 export class AuthService {
   // The plain client: at sign-up nobody is logged in and the company doesn't exist yet (D-25)
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    // The guarded client: only this request's company (D-25)
+    private readonly tenantPrisma: TenantPrismaService,
+  ) {}
 
   async signUp(input: SignUpInput) {
     // Hash first: it's slow, so keep it outside the transaction (D-24, Argon2id)
@@ -131,5 +136,30 @@ export class AuthService {
         language: user.language,
       },
     };
+  }
+
+  /** Who is logged in (GET /auth/me). Runs inside the company badge, so it uses the guarded client. */
+  async me(userId: string) {
+    const user = await this.tenantPrisma.db.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        language: true,
+        company: { select: { id: true, name: true } },
+      },
+    });
+    return { user };
+  }
+
+  /** Ends one session (POST /auth/logout). The row stays, marked revoked, as a record. */
+  async logout(sessionId: string) {
+    await this.prisma.session.update({
+      where: { id: sessionId },
+      data: { revokedAt: new Date() },
+    });
   }
 }
