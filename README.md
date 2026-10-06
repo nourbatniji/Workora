@@ -6,7 +6,7 @@ The interface is bilingual (Arabic right-to-left and English) and works on deskt
 
 ## Status
 
-Requirements are signed off. Done: project skeleton (SCRUM-20, FND-01) and database (SCRUM-21, FND-02). In progress: company data isolation (SCRUM-22, FND-03).
+Requirements are signed off. Done: project skeleton (SCRUM-20, FND-01), database (SCRUM-21, FND-02), company data isolation (SCRUM-22, FND-03), Arabic/English shell (SCRUM-27, FND-08), phone layout (SCRUM-28, FND-09), and the app shell, admin dashboard and exceptions inbox views with mock data (SCRUM-146 to SCRUM-148). In progress: company sign-up (SCRUM-38, CS-01).
 
 | Release | Target date | Contents |
 | --- | --- | --- |

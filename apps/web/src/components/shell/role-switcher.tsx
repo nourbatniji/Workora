@@ -12,6 +12,9 @@ export default function RoleSwitcher() {
   const tRoles = useTranslations('Roles');
   const { role, setRole } = useAppState();
 
+  // Only in `next dev`: production builds never show the switch
+  if (process.env.NODE_ENV !== 'development') return null;
+
   return (
     <label
       title={t('devRoleHint')}
