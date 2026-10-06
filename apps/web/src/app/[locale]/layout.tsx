@@ -2,12 +2,10 @@ import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
-import AppShell from '@/components/shell/app-shell';
 import {
   AppStateProvider,
   themeInitScript,
 } from '@/components/shell/app-state';
-import { ExceptionsProvider } from '@/components/exceptions/exceptions-store';
 import { InlineScript } from '@/components/inline-script';
 import { dmSans, plexArabic } from '../fonts';
 import '../globals.css';
@@ -45,11 +43,8 @@ export default async function LocaleLayout({
       </head>
       <body className="min-h-full">
         <NextIntlClientProvider>
-          <AppStateProvider>
-            <ExceptionsProvider>
-              <AppShell>{children}</AppShell>
-            </ExceptionsProvider>
-          </AppStateProvider>
+          {/* Theme for every page; the (app) and (auth) layouts add the rest */}
+          <AppStateProvider>{children}</AppStateProvider>
         </NextIntlClientProvider>
       </body>
     </html>

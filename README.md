@@ -107,6 +107,7 @@ The seed creates "MDARJ Demo Company" with one Admin. Log in with `SEED_ADMIN_EM
 | api | `apps/api/.env` | `DATABASE_URL` | `postgresql://mdarj:mdarj@localhost:5432/mdarj?schema=public` | PostgreSQL connection |
 | api | `apps/api/.env` | `SEED_ADMIN_EMAIL` | `admin@demo.mdarj.test` | Email of the demo Admin |
 | api | `apps/api/.env` | `SEED_ADMIN_PASSWORD` | `ChangeMe123!` | Password of the demo Admin |
+| web | `apps/web/.env.local` | `API_URL` | `http://localhost:4000` | Where the web app forwards `/api/*` requests |
 
 Restart the backend after changing `.env`.
 
