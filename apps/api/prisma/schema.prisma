@@ -18,7 +18,6 @@ enum UserRole {
 enum UserStatus {
   invited
   active
-  locked
   deactivated
 }
 
@@ -126,8 +125,6 @@ model User {
   inviteToken         String?    @unique @map("invite_token")
   inviteExpiresAt     DateTime?  @map("invite_expires_at")
   language            String     @default("ar")
-  failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
-  lockedUntil         DateTime?  @map("locked_until")
   createdAt           DateTime   @default(now()) @map("created_at")
   updatedAt           DateTime   @updatedAt @map("updated_at")
   sessions            Session[]

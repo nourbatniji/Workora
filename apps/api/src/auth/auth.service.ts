@@ -1,8 +1,14 @@
-import { ConflictException, Injectable } from '@nestjs/common';
-import { hash } from '@node-rs/argon2';
-import type { SignUpInput } from '@mdarj/shared';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { hash, verify } from '@node-rs/argon2';
+import type { LoginInput, SignUpInput } from '@mdarj/shared';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { hashSessionToken, newSessionToken } from './session-token.js';
 
 /** Today's date in Cairo as a plain date, for the first settings version */
 function todayInCairo(): Date {
@@ -76,5 +82,54 @@ export class AuthService {
       }
       throw error;
     }
+  }
+
+  /** Log in with email or phone (UA-03). Returns the new session token for the cookie. */
+  async login(input: LoginInput, client: { ip?: string; userAgent?: string }) {
+    // 1. Find the user: email and phone are unique in the whole system, so no company is needed
+    const user = await this.prisma.user.findUnique({
+      where:
+        input.identifier.kind === 'email'
+          ? { email: input.identifier.value }
+          : { phone: input.identifier.value },
+    });
+    // Same answer for "no such user" and "wrong password", so nobody can test which emails exist
+    if (!user || !user.passwordHash) {
+      throw new UnauthorizedException({ message: 'invalidCredentials' });
+    }
+
+    // 2. Check the password. No limit on attempts (D-46)
+    const passwordOk = await verify(user.passwordHash, input.password);
+    if (!passwordOk) {
+      throw new UnauthorizedException({ message: 'invalidCredentials' });
+    }
+
+    // 3. Right password but the account was switched off
+    if (user.status === 'deactivated') {
+      throw new ForbiddenException({ message: 'accountDeactivated' });
+    }
+
+    // 4. Success: open a session. The employee record is never touched (UA-08)
+    const token = newSessionToken();
+    await this.prisma.session.create({
+      data: {
+        companyId: user.companyId,
+        userId: user.id,
+        tokenHash: hashSessionToken(token),
+        ipAddress: client.ip,
+        userAgent: client.userAgent,
+      },
+    });
+
+    return {
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        language: user.language,
+      },
+    };
   }
 }

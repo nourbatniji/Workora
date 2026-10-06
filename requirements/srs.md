@@ -1,6 +1,6 @@
 # MDARJ HR & Payroll System — Software Requirements Specification
 
-MVP + Roadmap · Consolidated Edition v1.4 · Oct 5, 2026 · @trendow
+MVP + Roadmap · Consolidated Edition v1.5 · Oct 6, 2026 · @trendow
 
 ## Document information
 
@@ -10,6 +10,7 @@ Revision v1.2 (Oct 3, 2026) brings the SRS in line with the agreed decisions in 
 
 | Source edition | Date | What it contributes |
 | --- | --- | --- |
+| Revision v1.5 | Oct 6, 2026 | No limit on failed login attempts: the account lockout and the Locked account status are removed (D-46) |
 | Revision v1.4 | Oct 5, 2026 | The user account stores the person's own name, for Admins and Interviewers with no employee record (D-41) |
 | Revision v1.3 | Oct 3, 2026 | Gaps found in the SRS review closed: employee status history and Suspended rules, shift snapshots, settings history, punch and check-out rules, leave edge cases, Admin rules, deletion rules, wider audit log |
 | Revision v1.2 | Oct 3, 2026 | Decisions D-01 to D-03 applied; release split into MVP and MVP-2; missing settings named; open items linked to `assumptions.md`; roadmap written out as text |
@@ -19,7 +20,7 @@ Revision v1.2 (Oct 3, 2026) brings the SRS in line with the agreed decisions in 
 The two corrections carried into every section:
 
 - The MVP is designed, tested and optimized for companies with up to 50 employees.
-- Failed login attempts lock the user account temporarily. They never delete, terminate, suspend or deactivate the employee record.
+- A user account's status changes access only. It never deletes, terminates, suspends or deactivates the employee record. (Since v1.5 there is no lockout after failed logins, D-46.)
 
 Changes in v1.2:
 
@@ -190,7 +191,7 @@ There are no departments or reporting lines in the MVP, so every approval goes t
 | FR-UA-5 | Permissions are enforced on the server. An Employee sees only their own data; an Interviewer sees only the candidates on their interviews. | Must |
 | FR-UA-6 | Terminating an employee deactivates their login on the termination date. | Must |
 | FR-UA-7 | A company can have several Admins. An Admin can invite a user as Admin, and can remove the Admin role from or deactivate another Admin. | Should |
-| FR-UA-8 | User account status (Invited, Active, Locked, Deactivated) is distinct from employee employment status. Failed-login locking changes user access only; it never deletes, terminates, suspends or deactivates the employee record. | Must |
+| FR-UA-8 | User account status (Invited, Active, Deactivated) is distinct from employee employment status. Changing a user's account status changes access only; it never deletes, terminates, suspends or deactivates the employee record. | Must |
 | FR-UA-9 | A company always keeps at least one Active Admin. The last Active Admin cannot be deactivated or lose the Admin role. | Must |
 
 ### 3.3 Employees (EM)
@@ -412,7 +413,7 @@ The MVP uses approximately 30 relational tables. Every company-owned table carri
 | --- | --- |
 | companies | name, logo, time\_zone, currency, law\_mode, company\_rules\_text |
 | company\_settings\_versions | company\_id, effective\_from, daily-rate divisor, lateness policy, overtime multipliers, overtime minimum, contract expiring-soon days, check-in window, check-out window, IP allow-list, created\_by. Payroll and attendance use the version in force on each date (FR-CS-8, D-27). |
-| users | company\_id, name, email (unique), phone (unique), password\_hash, role (admin, employee, interviewer), employee\_id, status (invited, active, locked, deactivated), invite\_token, invite\_expires\_at, language, failed\_login\_attempts, locked\_until |
+| users | company\_id, name, email (unique), phone (unique), password\_hash, role (admin, employee, interviewer), employee\_id, status (invited, active, deactivated), invite\_token, invite\_expires\_at, language |
 | job\_titles | company\_id, name\_ar, name\_en |
 | employees | code, name\_ar, name\_en, national\_id, birth\_date, gender, phone, email, address, emergency\_name, emergency\_phone, photo, job\_title\_id, employment\_type, hire\_date, probation\_end, training\_end, status, termination\_date, termination\_reason, has\_disability, candidate\_id |
 | employee\_status\_history | employee\_id, from\_status, to\_status, effective\_date, reason, changed\_by |
@@ -471,7 +472,7 @@ When a hired candidate is converted, candidates.employee\_id and employees.candi
 | ID | Area | Requirement |
 | --- | --- | --- |
 | NFR-1 | Tenant isolation | Every read and write is scoped to the user's company on the server. Automated tests prove one company cannot reach another's records or files. |
-| NFR-2 | Security | Passwords hashed with bcrypt or Argon2; HTTPS only; sessions expire after 12 hours of inactivity; 5 consecutive failed logins lock the user account for 15 minutes. Failed login attempts must never delete, terminate, suspend or deactivate the employee record. |
+| NFR-2 | Security | Passwords hashed with bcrypt or Argon2; HTTPS only; sessions expire after 12 hours of inactivity. There is no limit on failed login attempts (D-46). |
 | NFR-3 | Privacy | National ID, salary and documents are visible only to Admins and the employee concerned. The disability field is visible only to Admins. Files are served through short-lived signed links. Personal data is handled in line with Egypt's Personal Data Protection Law No. 151 of 2020. |
 | NFR-4 | Performance | Pages load in under 2 seconds for a company of up to 50 employees; a payroll run for 50 employees completes in under 10 seconds under normal MVP conditions. |
 | NFR-5 | Reliability | Daily database backups kept for 30 days. Nightly jobs (roster, attendance labels, compliance) are safe to re-run without creating duplicates. |

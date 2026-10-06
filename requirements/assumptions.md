@@ -25,7 +25,7 @@ Development starts on the assumptions below. Each one is either **To confirm** (
 | A-10 | An Admin who is also on the payroll has both an `admin` user role and a linked employee record, and sees the employee self-service pages too. | 2.2, FR-UA-7 | Separate admin and employee accounts | Working |
 | A-11 | An interviewer may be an existing employee or an outside person with an interviewer-only login. | 2.2, FR-RC-6 | Restrict interviewers to employees | Working |
 | A-12 | Transactional email (invites, password reset) is sent through a free-tier email provider, which counts as part of "basic hosting". | FR-UA-2, FR-UA-4, 2.4 | Invites go by copied link only | To confirm |
-| A-13 | The lock after 5 failed logins counts consecutive failures for that user account; a successful login resets the count. | NFR-2, FR-UA-8 | Counter logic only | Working |
+| A-13 | The lock after 5 failed logins counts consecutive failures for that user account; a successful login resets the count. | NFR-2, FR-UA-8 | Counter logic only | Dropped: no lockout (D-46) |
 
 ## 3. Employees, recruitment and contracts
 
