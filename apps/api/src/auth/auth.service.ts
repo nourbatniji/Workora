@@ -1,8 +1,15 @@
-import { ConflictException, Injectable } from '@nestjs/common';
-import { hash } from '@node-rs/argon2';
-import type { SignUpInput } from '@mdarj/shared';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { hash, verify } from '@node-rs/argon2';
+import type { LoginInput, SignUpInput } from '@mdarj/shared';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { TenantPrismaService } from '../prisma/tenant-prisma.service.js';
+import { hashSessionToken, newSessionToken } from './session-token.js';
 
 /** Today's date in Cairo as a plain date, for the first settings version */
 function todayInCairo(): Date {
@@ -15,7 +22,11 @@ function todayInCairo(): Date {
 @Injectable()
 export class AuthService {
   // The plain client: at sign-up nobody is logged in and the company doesn't exist yet (D-25)
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    // The guarded client: only this request's company (D-25)
+    private readonly tenantPrisma: TenantPrismaService,
+  ) {}
 
   async signUp(input: SignUpInput) {
     // Hash first: it's slow, so keep it outside the transaction (D-24, Argon2id)
@@ -76,5 +87,79 @@ export class AuthService {
       }
       throw error;
     }
+  }
+
+  /** Log in with email or phone (UA-03). Returns the new session token for the cookie. */
+  async login(input: LoginInput, client: { ip?: string; userAgent?: string }) {
+    // 1. Find the user: email and phone are unique in the whole system, so no company is needed
+    const user = await this.prisma.user.findUnique({
+      where:
+        input.identifier.kind === 'email'
+          ? { email: input.identifier.value }
+          : { phone: input.identifier.value },
+    });
+    // Same answer for "no such user" and "wrong password", so nobody can test which emails exist
+    if (!user || !user.passwordHash) {
+      throw new UnauthorizedException({ message: 'invalidCredentials' });
+    }
+
+    // 2. Check the password. No limit on attempts (D-46)
+    const passwordOk = await verify(user.passwordHash, input.password);
+    if (!passwordOk) {
+      throw new UnauthorizedException({ message: 'invalidCredentials' });
+    }
+
+    // 3. Right password but the account was switched off
+    if (user.status === 'deactivated') {
+      throw new ForbiddenException({ message: 'accountDeactivated' });
+    }
+
+    // 4. Success: open a session. The employee record is never touched (UA-08)
+    const token = newSessionToken();
+    await this.prisma.session.create({
+      data: {
+        companyId: user.companyId,
+        userId: user.id,
+        tokenHash: hashSessionToken(token),
+        ipAddress: client.ip,
+        userAgent: client.userAgent,
+      },
+    });
+
+    return {
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        language: user.language,
+      },
+    };
+  }
+
+  /** Who is logged in (GET /auth/me). Runs inside the company badge, so it uses the guarded client. */
+  async me(userId: string) {
+    const user = await this.tenantPrisma.db.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        language: true,
+        company: { select: { id: true, name: true } },
+      },
+    });
+    return { user };
+  }
+
+  /** Ends one session (POST /auth/logout). The row stays, marked revoked, as a record. */
+  async logout(sessionId: string) {
+    await this.prisma.session.update({
+      where: { id: sessionId },
+      data: { revokedAt: new Date() },
+    });
   }
 }

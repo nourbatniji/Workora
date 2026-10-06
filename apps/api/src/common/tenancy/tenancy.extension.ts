@@ -14,6 +14,7 @@ export const COMPANY_TABLES: string[] = [
   'EmployeeStatusHistory',
   'Document',
   'Contract',
+  'Session',
 ];
 
 // Query types that have a "where" (which rows to read, change or delete)

@@ -94,7 +94,6 @@ All jobs run per company in the company time zone and are safe to re-run (NFR-5,
 | leave-entitlement | Daily 00:15 | Grants yearly entitlement on 1 January or the eligibility date; carry-over on 1 January (FR-LV-4) | Unique (employee_id, leave_type_id, year) |
 | compliance-nightly | Daily 02:00 | Builds fact sheets, calls the AI in batches of 20, validates findings (FR-AI-2 to FR-AI-5) | Unique open finding (employee_id, rule_ref) |
 | invite-expiry | Hourly | Expires invite links older than 7 days (FR-UA-1) | Status check |
-| lock-release | On login attempt | Lock is time-based (`locked_until`), no job needed (NFR-2) | — |
 
 ## 3. Sprint plan
 
@@ -121,13 +120,13 @@ All jobs run per company in the company time zone and are safe to re-run (NFR-5,
 - Docker Compose with PostgreSQL, Redis, MinIO and Mailpit.
 - Prisma schema for companies, company_settings_versions, users (with company_id, D-26), sessions, audit_log, notifications.
 - Sign-up creates the company and first Admin (FR-CS-1).
-- Login by email or phone, sessions with 12-hour inactivity expiry, Argon2id, lock after 5 failures for 15 minutes on the user account only (FR-UA-3, FR-UA-8, NFR-2, D-24).
+- Login by email or phone, sessions with 12-hour inactivity expiry, Argon2id, no limit on failed attempts (FR-UA-3, FR-UA-8, NFR-2, D-24, D-46).
 - Tenancy guard and Prisma extension; a reusable cross-tenant test helper every later module uses (NFR-1, D-25).
 - Audit writer that stores before and after values; no update or delete route for audit rows (NFR-8).
 - Files service: upload to S3, type and 10 MB checks, short-lived signed links (NFR-3).
 - Next.js shell with `ar` and `en` locales, RTL switch, per-user language, 360 px layout (NFR-6, NFR-7).
 
-**Exit:** a company can sign up and log in; a second company cannot read the first company's data in the isolation test; the lockout test proves the employee record is unchanged.
+**Exit:** a company can sign up and log in; a second company cannot read the first company's data in the isolation test; deactivating a user account leaves the employee record unchanged.
 
 ### S2 Company and users
 
@@ -269,7 +268,7 @@ Required test cases (Appendix B):
 - Negative net blocks approval until confirmed.
 - Salary change mid-month uses the salary valid in each period.
 - Settings change with a future effective date does not alter the current or an approved run.
-- 5 failed logins lock the user account and leave the employee record unchanged.
+- Deactivating a user account leaves the employee record unchanged.
 - A terminated employee cannot log in from the termination date.
 - AI guardrail discards a finding that quotes a wrong fact.
 - AI request payload contains no names, national IDs, contacts or salaries.

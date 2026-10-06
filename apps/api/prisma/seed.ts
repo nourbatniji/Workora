@@ -54,8 +54,6 @@ async function main() {
       name: 'Demo Admin',
       passwordHash,
       status: 'active',
-      failedLoginAttempts: 0,
-      lockedUntil: null,
     },
     create: {
       companyId: company.id,

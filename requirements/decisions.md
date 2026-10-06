@@ -25,7 +25,7 @@ Status values:
 | ID | Decision | SRS ref | Status |
 | --- | --- | --- | --- |
 | D-05 | The MVP is free and sized for companies with up to 50 employees. | 2.4, NFR-4 | Agreed (SRS) |
-| D-06 | Failed logins lock the user account only (5 attempts, 15 minutes). They never change the employee record. User account status is separate from employment status. | FR-UA-8, NFR-2 | Agreed (SRS) |
+| D-06 | Failed logins lock the user account only (5 attempts, 15 minutes). They never change the employee record. User account status is separate from employment status. | FR-UA-8, NFR-2 | Superseded by D-46 |
 | D-07 | Attendance labels, exceptions and payroll amounts are deterministic backend logic. The AI only reads facts and returns findings; it never calculates, approves or changes data. | 2.4, 3.11, 3.12, BR-21 | Agreed (SRS) |
 | D-08 | The AI model is a small, low-cost OpenAI model with structured JSON output. The model name is a setting. | FR-AI-1 | Agreed (SRS) |
 | D-09 | The AI receives employee codes only. Names, national IDs, contact details, salary amounts and files are never sent. | FR-AI-11 | Agreed (SRS) |
@@ -87,3 +87,5 @@ Status values:
 | D-42 | SRS 5.1 tables are built with the task that first uses them: `recurring_pay_items` in EM-05 (FR-EM-5) and `employees.candidate_id` in RC-09 (FR-RC-9, MVP-2, when the `candidates` table exists). FND-02 builds the rest of SRS 5.1. | SRS 5.1, FR-EM-5, FR-RC-9 | Agreed | Oct 5, 2026 |
 | D-43 | Passwords are 8 to 128 characters. They are not trimmed, because spaces can be part of a password. | FR-CS-1, FR-UA-1, NFR-2 | Agreed | Oct 6, 2026 |
 | D-44 | Validation errors in `packages/shared` are message keys (for example `passwordTooShort`), not sentences. The web app translates each key into Arabic or English; the API returns the keys per field. | NFR-6, D-30 | Agreed | Oct 6, 2026 |
+| D-45 | Phone numbers are stored and compared in one form: `+` and digits (for example `+201012345678`). Spaces, dashes and brackets are removed, `00` becomes `+`, and an Egyptian mobile written as `01xxxxxxxxx` becomes `+201xxxxxxxxx`. `normalizePhone` in `packages/shared` does this everywhere. | FR-UA-3, FR-UA-1 | Agreed | Oct 6, 2026 |
+| D-46 | No limit on failed login attempts and no account lockout. Only the employee receives the invite link, so only they set the password. `users.failed_login_attempts`, `users.locked_until` and the `locked` account status are removed. Account status (Invited, Active, Deactivated) stays separate from employment status. Accepted trade-off: repeated password guessing on the login page is not blocked. Replaces D-06 and A-13. | NFR-2, FR-UA-8, FR-UA-3 | Agreed | Oct 6, 2026 |
