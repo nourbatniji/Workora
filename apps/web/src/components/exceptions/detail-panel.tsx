@@ -12,7 +12,7 @@ import {
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import Sheet from '@/components/ui/sheet';
-import { Field, inputClass } from '@/components/shell/invite-dialog';
+import { Field, inputClass } from '@/components/ui/field';
 import { dayDate } from '@/lib/dates';
 import { useMoney } from '@/lib/format';
 import {
