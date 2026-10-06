@@ -85,3 +85,5 @@ Status values:
 | --- | --- | --- | --- | --- |
 | D-41 | `users` gets a `name` column for the person's own name. It is needed for users with no employee record: the owner who signs up as the first Admin, other Admins and Interviewers. A user linked to an employee shows the employee's Arabic or English name. | FR-CS-1, FR-UA-1, SRS 5.1 users | Agreed | Oct 5, 2026 |
 | D-42 | SRS 5.1 tables are built with the task that first uses them: `recurring_pay_items` in EM-05 (FR-EM-5) and `employees.candidate_id` in RC-09 (FR-RC-9, MVP-2, when the `candidates` table exists). FND-02 builds the rest of SRS 5.1. | SRS 5.1, FR-EM-5, FR-RC-9 | Agreed | Oct 5, 2026 |
+| D-43 | Passwords are 8 to 128 characters. They are not trimmed, because spaces can be part of a password. | FR-CS-1, FR-UA-1, NFR-2 | Agreed | Oct 6, 2026 |
+| D-44 | Validation errors in `packages/shared` are message keys (for example `passwordTooShort`), not sentences. The web app translates each key into Arabic or English; the API returns the keys per field. | NFR-6, D-30 | Agreed | Oct 6, 2026 |

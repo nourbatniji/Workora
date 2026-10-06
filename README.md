@@ -88,6 +88,7 @@ The seed creates "MDARJ Demo Company" with one Admin. Log in with `SEED_ADMIN_EM
 
 | Command | What it does |
 | --- | --- |
+| `pnpm build:shared` | Builds `packages/shared` (validation rules and types used by both apps). `pnpm dev:api` runs it first; run it yourself after changing shared code while `pnpm dev:web` is running |
 | `pnpm db:up` | Starts PostgreSQL in Docker |
 | `pnpm db:migrate` | Applies new migrations to the local database |
 | `pnpm db:generate` | Rebuilds the Prisma client after a schema change (Prisma 7 no longer does this inside `db:migrate`) |
