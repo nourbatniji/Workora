@@ -331,5 +331,66 @@
     "toastRecalculated": "Day recalculated",
     "undo": "Undo",
     "close": "Close"
+  },
+  "Auth": {
+    "login": {
+      "title": "Log in",
+      "subtitle": "Use the email or phone number on your account.",
+      "identifier": "Email or phone",
+      "identifierHint": "For example name@company.com or 010 1234 5678",
+      "password": "Password",
+      "submit": "Log in",
+      "forgot": "Forgot password?",
+      "noAccount": "New company?",
+      "signUpLink": "Create an account"
+    },
+    "signUp": {
+      "title": "Create your company account",
+      "subtitle": "You'll be the company's first Admin.",
+      "companyName": "Company name",
+      "name": "Your name",
+      "email": "Email",
+      "password": "Password",
+      "passwordHint": "At least {min} characters",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "loginLink": "Log in"
+    },
+    "forgot": {
+      "title": "Forgot your password?",
+      "subtitle": "Enter your email and we'll send you a link to set a new password.",
+      "email": "Email",
+      "submit": "Send link",
+      "sentTitle": "Check your email",
+      "sentBody": "If {email} has an account, you'll get an email with a link to set a new password.",
+      "noEmail": "No email? Ask your company's Admin for a new invite link.",
+      "backToLogin": "Back to log in"
+    },
+    "setPassword": {
+      "title": "Set your password",
+      "subtitle": "Choose a password for your MDARJ account.",
+      "password": "New password",
+      "confirm": "Confirm password",
+      "submit": "Save password",
+      "expiredTitle": "This link has expired",
+      "expiredBody": "Links last 7 days. Ask your company's Admin for a new one.",
+      "backToLogin": "Back to log in"
+    },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "sending": "Sending…"
+  },
+  "Errors": {
+    "required": "This field is required",
+    "tooLong": "This is too long",
+    "emailInvalid": "Enter a valid email address",
+    "phoneInvalid": "Enter a valid phone number or email",
+    "passwordTooShort": "Use at least {min} characters",
+    "languageInvalid": "This language isn't supported",
+    "emailTaken": "This email is already used",
+    "invalidCredentials": "The email, phone or password is wrong",
+    "accountDeactivated": "This account is switched off. Contact your company's Admin.",
+    "passwordsDontMatch": "The passwords don't match",
+    "somethingWrong": "Something went wrong. Please try again."
   }
 }
