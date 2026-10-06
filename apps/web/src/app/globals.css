@@ -1,26 +1,144 @@
 @import 'tailwindcss';
 
+/* dark: classes follow <html data-theme="dark">, not the OS setting */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* ---------- Light theme (default) ---------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --canvas: #f7f8fa;
+  --surface: #ffffff;
+  --line: #eceef2;
+  --text: #0f1222;
+  --muted: #6b6f80;
+
+  --accent: #2f5bf0; /* solid buttons, bars, icons */
+  --accent-fg: #2f5bf0; /* blue text: links, active nav label */
+  --nav-selected: #eef2fe;
+
+  --chart-bar: #dce3fd;
+  --chart-line: #f2a33a;
+
+  --danger: #e5484d;
+  --warning: #f2994a;
+  --success: #1a9e5c;
+
+  /* Only for: attendance card wash, insight meter, compliance orb, payroll progress bar */
+  --brand-gradient: linear-gradient(
+    135deg,
+    #5b7cfa 0%,
+    #c48cf0 38%,
+    #f27497 70%,
+    #f2564b 100%
+  );
+
+  /* Font follows the language (variables come from next/font in layout.tsx) */
+  --font-ui: var(--font-dm), system-ui, sans-serif;
 }
 
+html[lang='ar'] {
+  /* Arabic letters from Plex; Latin letters and digits inside Arabic text fall back to DM Sans */
+  --font-ui: var(--font-plex), var(--font-dm), system-ui, sans-serif;
+}
+
+/* ---------- Dark theme ---------- */
+[data-theme='dark'] {
+  --canvas: #0f1117;
+  --surface: #171a22;
+  --line: #262a35;
+  --text: #e8eaf0; /* 14.5:1 on surface */
+  --muted: #9a9eae; /* 6.5:1 on surface */
+
+  --accent-fg: #8fa8ff; /* royal blue text is only 3.2:1 on dark, this is 7.6:1 */
+  --nav-selected: #1e2645;
+
+  --chart-bar: #26305a;
+}
+
+/* ---------- Tailwind classes: bg-canvas, text-muted, border-line … ---------- */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-nav-selected: var(--nav-selected);
+  --color-chart-bar: var(--chart-bar);
+  --color-chart-line: var(--chart-line);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+
+  /* Old names the current shell still uses; remove once Step 2 replaces it */
+  --color-background: var(--canvas);
+  --color-foreground: var(--text);
+
+  --font-sans: var(--font-ui);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Base element styles live in the base layer, so Tailwind classes (e.g. outline-none) can override them */
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  html[data-theme='dark'] {
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--text);
+    font-family: var(--font-ui);
+  }
+
+  /* Keyboard focus: a thin blue ring, never on mouse click */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Native <dialog> backdrop for modals and the command palette */
+  dialog::backdrop {
+    background: rgb(15 18 34 / 0.32);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Thin scrollbars inside panels and tables */
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+/* Brand gradient running along the reading direction (meter, progress bars) */
+:root {
+  --brand-gradient-inline: linear-gradient(
+    90deg,
+    #5b7cfa 0%,
+    #c48cf0 38%,
+    #f27497 70%,
+    #f2564b 100%
+  );
+}
+[dir='rtl'] {
+  --brand-gradient-inline: linear-gradient(
+    270deg,
+    #5b7cfa 0%,
+    #c48cf0 38%,
+    #f27497 70%,
+    #f2564b 100%
+  );
+}
+
+/* Soft gradient wash in a card's top end corner (attendance insight card only) */
+.corner-wash {
+  background: var(--brand-gradient);
+  opacity: 0.16;
+  mask-image: radial-gradient(circle at 100% 0%, #000 0%, transparent 70%);
+}
+[dir='rtl'] .corner-wash {
+  mask-image: radial-gradient(circle at 0% 0%, #000 0%, transparent 70%);
+}
+[data-theme='dark'] .corner-wash {
+  opacity: 0.22;
 }

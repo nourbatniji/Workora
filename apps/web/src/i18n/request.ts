@@ -16,6 +16,8 @@ export default getRequestConfig(async () => {
   // 3. Load that language's translation file
   return {
     locale,
+    // Company time zone (FR-CS-3 default), so dates and "x minutes ago" match Cairo time
+    timeZone: 'Africa/Cairo',
     messages: (await import(`../../messages/${locale}.json`)).default,
   };
 });

@@ -1,30 +1,70 @@
-import { useFormatter, useTranslations } from 'next-intl';
-import DataTable from '@/components/data-table';
+import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
+import AttendanceInsight from '@/components/dashboard/attendance-insight';
+import LateArrivals from '@/components/dashboard/late-arrivals';
+import TodayBoard from '@/components/dashboard/today-board';
+import {
+  CandidatesCard,
+  ComplianceCard,
+  ContractsCard,
+  LatestExceptions,
+  PendingCard,
+} from '@/components/dashboard/cards';
+import { CURRENT_ADMIN } from '@/mock/exceptions';
+import { today } from '@/mock/dashboard';
+import { dayDate } from '@/lib/dates';
 
-export default function HomePage() {
-  const t = useTranslations('Home');
-  const tc = useTranslations('Columns');
-  const format = useFormatter();
-
-  const today = format.dateTime(new Date(), { dateStyle: 'full' });
-  const salary = format.number(9000, { style: 'currency', currency: 'EGP' });
-  const hireDate = format.dateTime(new Date('2025-03-01'), { dateStyle: 'medium' });
-
-  const columns = [tc('code'), tc('name'), tc('jobTitle'), tc('hireDate'), tc('salary'), tc('status')];
-  const rows = [
-    ['E-001', 'أحمد حسن', 'Accountant', hireDate, salary, tc('active')],
-    ['E-002', 'Sara Ali', 'Driver', hireDate, salary, tc('active')],
-  ];
+/** Admin dashboard (FR-DB-1): a bento grid with cards of different widths */
+export default async function DashboardPage() {
+  const t = await getTranslations('Dashboard');
+  const format = await getFormatter();
+  const locale = (await getLocale()) as 'ar' | 'en';
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold">{t('title')}</h1>
-      <p className="mt-2">{t('description')}</p>
-      <p className="mt-4 border-s-4 ps-3">{t('today', { date: today })}</p>
-      <p className="mt-2 border-s-4 ps-3">{t('sampleSalary', { amount: salary })}</p>
+    <div className="mx-auto max-w-[1280px]">
+      <div className="mb-5">
+        <p className="text-lg font-medium">
+          {t('greeting', { name: CURRENT_ADMIN[locale].split(' ')[0] })}
+        </p>
+        <p className="text-[13px] text-muted">
+          {t('subtitle', {
+            date: format.dateTime(dayDate(today.date), {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+            }),
+          })}
+        </p>
+      </div>
 
-      <h2 className="mt-6 mb-2 text-lg font-semibold">{t('employeesTitle')}</h2>
-      <DataTable columns={columns} rows={rows} />
+      <div className="grid grid-cols-1 gap-4 *:min-w-0 md:grid-cols-2 lg:grid-cols-12">
+        {/* Row 1 */}
+        <div className="md:col-span-2 lg:col-span-5">
+          <AttendanceInsight />
+        </div>
+        <div className="md:col-span-2 lg:col-span-7">
+          <LateArrivals />
+        </div>
+
+        {/* Row 2 */}
+        <div className="lg:col-span-4">
+          <TodayBoard />
+        </div>
+        <div className="lg:col-span-4">
+          <PendingCard />
+        </div>
+        <div className="md:col-span-2 lg:col-span-4">
+          <ComplianceCard />
+        </div>
+
+        {/* Row 3 */}
+        <div className="min-w-0 md:col-span-2 lg:col-span-8">
+          <LatestExceptions />
+        </div>
+        <div className="flex flex-col gap-4 md:col-span-2 md:grid md:grid-cols-2 lg:col-span-4 lg:flex">
+          <ContractsCard />
+          <CandidatesCard />
+        </div>
+      </div>
     </div>
   );
 }
