@@ -80,6 +80,7 @@ model Company {
   statusHistory    EmployeeStatusHistory[]
   documents        Document[]
   contracts        Contract[]
+  sessions         Session[]
 
   @@map("companies")
 }
@@ -129,6 +130,7 @@ model User {
   lockedUntil         DateTime?  @map("locked_until")
   createdAt           DateTime   @default(now()) @map("created_at")
   updatedAt           DateTime   @updatedAt @map("updated_at")
+  sessions            Session[]
 
   @@map("users")
 }
@@ -249,4 +251,24 @@ model Contract {
   updatedAt          DateTime     @updatedAt @map("updated_at")
 
   @@map("contracts")
+}
+
+// ───────── Sessions (D-24) ─────────
+
+// One row per logged-in browser. The cookie holds a random token; only its hash is stored here.
+model Session {
+  id         String    @id @default(uuid())
+  companyId  String    @map("company_id")
+  company    Company   @relation(fields: [companyId], references: [id])
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id])
+  tokenHash  String    @unique @map("token_hash")
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at")
+  revokedAt  DateTime? @map("revoked_at")
+  ipAddress  String?   @map("ip_address")
+  userAgent  String?   @map("user_agent")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("sessions")
 }
