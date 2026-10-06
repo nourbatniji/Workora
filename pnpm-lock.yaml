@@ -172,6 +172,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@mdarj/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@nestjs/common':
         specifier: ^12.0.1
         version: 12.1.2(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
@@ -202,7 +205,7 @@ importers:
     devDependencies:
       '@nestjs/cli':
         specifier: ^12.0.0
-        version: 12.0.8(@types/node@24.19.1)(prettier@3.9.9)
+        version: 12.0.8(@swc/core@1.16.13(@swc/helpers@0.5.23))(@types/node@24.19.1)(prettier@3.9.9)
       '@nestjs/mau':
         specifier: ^0.2.6
         version: 0.2.8
@@ -260,6 +263,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@mdarj/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       lucide-react:
         specifier: ^1.52.0
         version: 1.52.0(@types/react@19.3.0)(react@19.2.8)
@@ -300,6 +306,16 @@ importers:
       typescript:
         specifier: ^5
         version: 5.9.3
+
+  packages/shared:
+    dependencies:
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
+    devDependencies:
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
 
 packages:
 
@@ -5488,7 +5504,7 @@ snapshots:
       '@tybys/wasm-util': 0.10.4
     optional: true
 
-  '@nestjs/cli@12.0.8(@types/node@24.19.1)(prettier@3.9.9)':
+  '@nestjs/cli@12.0.8(@swc/core@1.16.13(@swc/helpers@0.5.23))(@types/node@24.19.1)(prettier@3.9.9)':
     dependencies:
       '@angular-devkit/core': 22.2.0(chokidar@5.0.0)
       '@angular-devkit/schematics': 22.2.0(chokidar@5.0.0)
@@ -5505,6 +5521,8 @@ snapshots:
       ora: 9.4.1
       tsconfig-paths: 4.2.0
       typescript: 6.0.3
+    optionalDependencies:
+      '@swc/core': 1.16.13(@swc/helpers@0.5.23)
     transitivePeerDependencies:
       - '@types/node'
       - prettier
