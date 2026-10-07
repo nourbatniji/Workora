@@ -45,16 +45,18 @@ enum ContractType {
   part_time
 }
 
-enum DocumentOwnerType {
-  employee
-  candidate
-}
-
 enum DailyRateDivisor {
   days_30
   days_26
   working_days
 }
+
+// ───────── Same-company links (D-48, FND-12) ─────────
+//
+// A row that points at another company-owned row stores BOTH ids: the target's id and its own
+// companyId. The foreign key checks the pair, so the database itself refuses a link to a row of
+// another company. That is why each target table has @@unique([id, companyId]) and each link
+// reads: @relation(fields: [xId, companyId], references: [id, companyId]).
 
 // ───────── Company and its settings ─────────
 
@@ -102,6 +104,7 @@ model CompanySettingsVersion {
   checkOutWindowMinutes Int              @default(360) @map("check_out_window_minutes")
   ipAllowList           String[]         @map("ip_allow_list")
   createdById           String?          @map("created_by")
+  createdBy             User?            @relation(fields: [createdById, companyId], references: [id, companyId], onDelete: Restrict)
   createdAt             DateTime         @default(now()) @map("created_at")
 
   @@unique([companyId, effectiveFrom])
@@ -111,24 +114,32 @@ model CompanySettingsVersion {
 // ───────── Users (logins) ─────────
 
 model User {
-  id                  String     @id @default(uuid())
-  companyId           String     @map("company_id")
-  name                String?
-  company             Company    @relation(fields: [companyId], references: [id])
-  email               String?    @unique
-  phone               String?    @unique
-  passwordHash        String?    @map("password_hash")
-  role                UserRole
-  status              UserStatus @default(invited)
-  employeeId          String?    @unique @map("employee_id")
-  employee            Employee?  @relation(fields: [employeeId], references: [id])
-  inviteToken         String?    @unique @map("invite_token")
-  inviteExpiresAt     DateTime?  @map("invite_expires_at")
-  language            String     @default("ar")
-  createdAt           DateTime   @default(now()) @map("created_at")
-  updatedAt           DateTime   @updatedAt @map("updated_at")
-  sessions            Session[]
+  id              String     @id @default(uuid())
+  companyId       String     @map("company_id")
+  name            String?
+  company         Company    @relation(fields: [companyId], references: [id])
+  email           String?    @unique
+  phone           String?    @unique
+  passwordHash    String?    @map("password_hash")
+  role            UserRole
+  status          UserStatus @default(invited)
+  employeeId      String?    @map("employee_id")
+  employee        Employee?  @relation(fields: [employeeId, companyId], references: [id, companyId], onDelete: Restrict)
+  inviteToken     String?    @unique @map("invite_token")
+  inviteExpiresAt DateTime?  @map("invite_expires_at")
+  language        String     @default("ar")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  sessions        Session[]
 
+  // What this user recorded (the "who" columns on other tables)
+  settingsVersionsCreated CompanySettingsVersion[]
+  salaryRowsCreated       SalaryHistory[]
+  statusChangesMade       EmployeeStatusHistory[]
+  documentsUploaded       Document[]
+
+  @@unique([id, companyId])
+  @@unique([employeeId, companyId]) // one login per employee
   @@map("users")
 }
 
@@ -142,6 +153,7 @@ model JobTitle {
   nameEn    String     @map("name_en")
   employees Employee[]
 
+  @@unique([id, companyId])
   @@map("job_titles")
 }
 
@@ -162,7 +174,7 @@ model Employee {
   emergencyPhone    String?        @map("emergency_phone")
   photo             String?
   jobTitleId        String?        @map("job_title_id")
-  jobTitle          JobTitle?      @relation(fields: [jobTitleId], references: [id])
+  jobTitle          JobTitle?      @relation(fields: [jobTitleId, companyId], references: [id, companyId], onDelete: Restrict)
   employmentType    EmploymentType @map("employment_type")
   hireDate          DateTime       @map("hire_date") @db.Date
   probationEnd      DateTime?      @map("probation_end") @db.Date
@@ -178,8 +190,10 @@ model Employee {
   salaryHistory SalaryHistory[]
   statusHistory EmployeeStatusHistory[]
   contracts     Contract[]
+  documents     Document[]
 
   @@unique([companyId, code])
+  @@unique([id, companyId])
   @@map("employees")
 }
 
@@ -188,10 +202,11 @@ model SalaryHistory {
   companyId     String   @map("company_id")
   company       Company  @relation(fields: [companyId], references: [id])
   employeeId    String   @map("employee_id")
-  employee      Employee @relation(fields: [employeeId], references: [id])
+  employee      Employee @relation(fields: [employeeId, companyId], references: [id, companyId])
   baseSalary    Decimal  @map("base_salary") @db.Decimal(12, 2)
   effectiveFrom DateTime @map("effective_from") @db.Date
   createdById   String?  @map("created_by")
+  createdBy     User?    @relation(fields: [createdById, companyId], references: [id, companyId], onDelete: Restrict)
   createdAt     DateTime @default(now()) @map("created_at")
 
   @@unique([employeeId, effectiveFrom])
@@ -203,28 +218,31 @@ model EmployeeStatusHistory {
   companyId     String          @map("company_id")
   company       Company         @relation(fields: [companyId], references: [id])
   employeeId    String          @map("employee_id")
-  employee      Employee        @relation(fields: [employeeId], references: [id])
+  employee      Employee        @relation(fields: [employeeId, companyId], references: [id, companyId])
   fromStatus    EmployeeStatus? @map("from_status")
   toStatus      EmployeeStatus  @map("to_status")
   effectiveDate DateTime        @map("effective_date") @db.Date
   reason        String?
   changedById   String?         @map("changed_by")
+  changedBy     User?           @relation(fields: [changedById, companyId], references: [id, companyId], onDelete: Restrict)
   createdAt     DateTime        @default(now()) @map("created_at")
 
   @@map("employee_status_history")
 }
 
+// An employee's document (D-47). A candidate_id column joins in MVP-2 with the candidates table.
 model Document {
-  id           String            @id @default(uuid())
-  companyId    String            @map("company_id")
-  company      Company           @relation(fields: [companyId], references: [id])
-  ownerType    DocumentOwnerType @map("owner_type")
-  ownerId      String            @map("owner_id")
-  docType      String            @map("doc_type")
-  fileKey      String            @map("file_key")
-  expiryDate   DateTime?         @map("expiry_date") @db.Date
-  uploadedById String?           @map("uploaded_by")
-  createdAt    DateTime          @default(now()) @map("created_at")
+  id           String    @id @default(uuid())
+  companyId    String    @map("company_id")
+  company      Company   @relation(fields: [companyId], references: [id])
+  employeeId   String    @map("employee_id")
+  employee     Employee  @relation(fields: [employeeId, companyId], references: [id, companyId])
+  docType      String    @map("doc_type")
+  fileKey      String    @map("file_key")
+  expiryDate   DateTime? @map("expiry_date") @db.Date
+  uploadedById String?   @map("uploaded_by")
+  uploadedBy   User?     @relation(fields: [uploadedById, companyId], references: [id, companyId], onDelete: Restrict)
+  createdAt    DateTime  @default(now()) @map("created_at")
 
   @@map("documents")
 }
@@ -234,19 +252,21 @@ model Contract {
   companyId          String       @map("company_id")
   company            Company      @relation(fields: [companyId], references: [id])
   employeeId         String       @map("employee_id")
-  employee           Employee     @relation(fields: [employeeId], references: [id])
+  employee           Employee     @relation(fields: [employeeId, companyId], references: [id, companyId])
   type               ContractType
   startDate          DateTime     @map("start_date") @db.Date
   endDate            DateTime?    @map("end_date") @db.Date
   agreedSalary       Decimal?     @map("agreed_salary") @db.Decimal(12, 2)
   fileKey            String?      @map("file_key")
-  previousContractId String?      @unique @map("previous_contract_id")
-  previousContract   Contract?    @relation("ContractRenewal", fields: [previousContractId], references: [id])
+  previousContractId String?      @map("previous_contract_id")
+  previousContract   Contract?    @relation("ContractRenewal", fields: [previousContractId, companyId], references: [id, companyId], onDelete: Restrict)
   renewedBy          Contract?    @relation("ContractRenewal")
   notes              String?
   createdAt          DateTime     @default(now()) @map("created_at")
   updatedAt          DateTime     @updatedAt @map("updated_at")
 
+  @@unique([id, companyId])
+  @@unique([previousContractId, companyId]) // a contract is renewed at most once
   @@map("contracts")
 }
 
@@ -258,7 +278,7 @@ model Session {
   companyId  String    @map("company_id")
   company    Company   @relation(fields: [companyId], references: [id])
   userId     String    @map("user_id")
-  user       User      @relation(fields: [userId], references: [id])
+  user       User      @relation(fields: [userId, companyId], references: [id, companyId])
   tokenHash  String    @unique @map("token_hash")
   lastSeenAt DateTime  @default(now()) @map("last_seen_at")
   revokedAt  DateTime? @map("revoked_at")

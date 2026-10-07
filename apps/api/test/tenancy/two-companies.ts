@@ -48,6 +48,22 @@ export async function setupTwoCompanies(): Promise<TwoCompanies> {
     asB: (fn) => runInCompany(companyB, fn),
     async cleanup() {
       const both = { in: [companyA, companyB] };
+      // Children first: the database refuses to delete a row others still point at
+      await prisma.document.deleteMany({ where: { companyId: both } });
+      await prisma.contract.updateMany({
+        where: { companyId: both },
+        data: { previousContractId: null },
+      });
+      await prisma.contract.deleteMany({ where: { companyId: both } });
+      await prisma.employeeStatusHistory.deleteMany({
+        where: { companyId: both },
+      });
+      await prisma.salaryHistory.deleteMany({ where: { companyId: both } });
+      await prisma.companySettingsVersion.deleteMany({
+        where: { companyId: both },
+      });
+      await prisma.session.deleteMany({ where: { companyId: both } });
+      await prisma.user.deleteMany({ where: { companyId: both } });
       await prisma.employee.deleteMany({ where: { companyId: both } });
       await prisma.jobTitle.deleteMany({ where: { companyId: both } });
       await prisma.company.deleteMany({ where: { id: both } });

@@ -4,3 +4,5 @@ dist
 pnpm-lock.yaml
 next-env.d.ts
 *.md
+# Prisma writes this on every db:generate
+apps/api/src/generated
