@@ -123,6 +123,7 @@ Every row names the SRS rule it comes from. Where the SRS was silent, the cell n
 | Action | Admin | Employee | Interviewer | Source | Why |
 | --- | --- | --- | --- | --- | --- |
 | Create or edit leave types | all | no | no | FR-LV-1, FR-LV-2 | Company policy |
+| View leave types | all | all | no | FR-LV-1, FR-LV-5 | An employee picks a type when requesting leave |
 | Enter opening balances | all | no | no | FR-LV-3 | Set-up by HR |
 | View leave balances | all | own | no | FR-LV-3, FR-DB-2 | Employee home shows "leave balances" |
 | Request leave | own (D-49) | own | no | FR-LV-5 | "An employee requests leave" |
