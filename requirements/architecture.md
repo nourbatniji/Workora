@@ -51,7 +51,7 @@ Request
  → Service / business rules               is it allowed by Workora's rules?
  → Prisma + tenancy extension             read/write only this company's rows
  → PostgreSQL
- → Response         (no global error filter yet)
+ → Response         (errors: ApiExceptionFilter → { message, errors? })
 ```
 
 ## 3. Packages
@@ -83,7 +83,7 @@ Request
 ## 5. Known gaps (from the Oct 7 review)
 
 1. Authorization — permission matrix agreed (requirements/permissions.md, D-49…D-54); RolesGuard still missing (SCRUM-33) — before any Admin-only endpoint
-2. API conventions (errors, lists, data fetching from Next.js) — before many endpoints
+2. ~~API conventions~~ — written in requirements/api-conventions.md (D-55…D-57); every error now leaves as { message, errors? } (ApiExceptionFilter); raw SQL refused on the company-scoped client
 3. Login required by default (today each route must opt in)
 4. ~~Child rows can point at another company's parent~~ — fixed by SCRUM-175: same-company foreign keys (D-48), proven by test/tenancy/related-rows.e2e-spec.ts
 5. Audit log — before settings and salaries
