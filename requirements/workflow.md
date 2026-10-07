@@ -12,7 +12,7 @@ This file says **how** we build and **in what order**. `srs.md` says what, `deci
 | 2 | Epics + User Stories | Done, reorganised Oct 7 | Jira project HR-System (SCRUM): 16 epics, 170 issues | Dependencies added as "blocks" links; UI tasks now built inside their feature (see §5) |
 | 3 | Architecture | Done | `development-plan.md` §2, D-21…D-36 | — |
 | 4 | ERD / Database design | Done for what is built | SRS §5 data model; `schema.prisma` has companies, settings versions, users, job titles, employees, salary history, status history, documents, contracts, sessions. Other tables are added by the task that first uses them (D-42) | Design each new module's tables at the start of its feature (you draft, then compare with SRS §5) |
-| 5 | Roles + Permissions + API design | Designed, guard not built | `permissions.md` (D-49…D-54), `api-conventions.md` (error filter, raw-SQL refusal), `api-endpoints.md` (127 endpoints, 6 jobs; each story's endpoints are in its Jira description) | Role guard (SCRUM-33); D-55, D-56, D-57 waiting for approval |
+| 5 | Roles + Permissions + API design | Designed, guard not built | `permissions.md` (D-49…D-54), `api-conventions.md` (error filter, raw-SQL refusal), `api-endpoints.md` (127 endpoints, 6 jobs; each story's endpoints are in its Jira description) | Role guard (SCRUM-33) |
 | 6 | Project foundation | Mostly done | pnpm workspace, NestJS, Next.js, Prisma + PostgreSQL, tenancy guard + isolation test, next-intl RTL shell, 360 px layout | **CI** (lint, type-check, tests on every PR) and **audit log** (FND-07) are missing. Files (FND-06), email (FND-05) and jobs (FND-04) are built just before the first feature that needs them |
 | 7 | Authentication | Backend done, web half done | Sign-up, login (email or phone), sessions, `/auth/me`, logout, e2e tests; login and sign-up pages call the API (SCRUM-149 branch) | Role guard (UA-05); the web app does not check the session yet (app pages open without login, no logout button); invites + set password (UA-01/02); password reset (UA-04) |
 | 8 | Application shell / shared UI | Done as views | App shell, nav, top bar, command palette, UI kit (SCRUM-146); dashboard and exceptions inbox with mock data (SCRUM-147/148) | Shell must read the real user and role from `/auth/me`. The mock dashboard and inbox stay as UI prototypes and get wired in their own features |
@@ -162,3 +162,4 @@ Changed in Jira:
 Changed in `requirements/`:
 - `api-conventions.md` §3: the `/me/...` own-data rule
 - `permissions.md` §9: "View leave types" (Admin all, Employee all, Interviewer no)
+- `decisions.md`: D-55, D-56, D-57 Agreed; `api-conventions.md` status Agreed

@@ -1,6 +1,6 @@
 # MDARJ (Workora) — API Conventions
 
-SCRUM-167 · FND-10 · Oct 7, 2026 · @trendow · Status: **Proposed — waiting for Trendow (D-55, D-56, D-57)**
+SCRUM-167 · FND-10 · Oct 7, 2026 · @trendow · Status: **Agreed** (D-55, D-56, D-57, Oct 7, 2026)
 
 ## 1. Why this file exists
 
