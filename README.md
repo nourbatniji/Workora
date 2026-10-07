@@ -25,6 +25,7 @@ All product and technical decisions live in [`requirements/`](requirements/):
 | [`decisions.md`](requirements/decisions.md) | Why and how: every decision that shapes the build (D-01 …), with its status. |
 | [`assumptions.md`](requirements/assumptions.md) | Points not yet confirmed (A-01 …) and what changes if they are wrong. |
 | [`development-plan.md`](requirements/development-plan.md) | Architecture, modules, scheduled jobs and test plan. The dates in Jira replace its sprint calendar. |
+| [`workflow.md`](requirements/workflow.md) | How we build: the 15-stage lifecycle and where we are, the vertical feature slice, how Jira is organised, and the build order. |
 
 Order of change: decision first (`decisions.md`), then the SRS, then Jira, then code.
 
