@@ -391,6 +391,17 @@
     "invalidCredentials": "The email, phone or password is wrong",
     "accountDeactivated": "This account is switched off. Contact your company's Admin.",
     "passwordsDontMatch": "The passwords don't match",
-    "somethingWrong": "Something went wrong. Please try again."
+    "somethingWrong": "Something went wrong. Please try again.",
+    "validationFailed": "Some fields need fixing",
+    "badRequest": "This request isn't valid",
+    "notLoggedIn": "Please log in to continue",
+    "sessionExpired": "Your session has ended. Please log in again.",
+    "forbidden": "You don't have permission to do this",
+    "notFound": "We couldn't find what you're looking for",
+    "conflict": "This conflicts with existing data",
+    "invalidReference": "One of the selected items doesn't exist",
+    "payloadTooLarge": "This file is too large",
+    "tooManyRequests": "Too many attempts. Please wait a moment.",
+    "internalError": "Something went wrong on our side. Please try again."
   }
 }

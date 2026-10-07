@@ -102,3 +102,6 @@ Status values:
 | D-52 | In the MVP, only Admins see the leave calendar (who is off on which days). | FR-LV-9 (permissions.md Q4) | Agreed | Oct 7, 2026 |
 | D-53 | An Interviewer records the result, score and notes of their own interviews only; candidate notes (FR-RC-5) are Admin-only. | FR-RC-5, FR-RC-6, FR-UA-5 (permissions.md Q5) | Agreed | Oct 7, 2026 |
 | D-54 | Employees can view the public holidays calendar, read-only. | FR-PH-1 (permissions.md Q6) | Agreed | Oct 7, 2026 |
+| D-55 | No Swagger / OpenAPI in the MVP. The API contract is the shared zod schemas in `packages/shared`, `api-conventions.md` and its endpoint list. Reconsider when a second client (mobile app, integrations) needs the API. | Appendix B, D-30 | Proposed | Oct 7, 2026 |
+| D-56 | The browser calls the API through `/api/...` on the web app (the session cookie goes automatically); Next.js server code calls `API_URL` directly and forwards the incoming `cookie` header. JavaScript never reads the session token. | D-24, api-conventions.md §10 | Proposed | Oct 7, 2026 |
+| D-57 | A record of another company is answered with 404, as if it did not exist; a record of the same company that the user may not touch is answered with 403 `forbidden`. | NFR-1, FR-UA-5, api-conventions.md §6 | Proposed | Oct 7, 2026 |

@@ -3,6 +3,7 @@
 import type { INestApplication } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { sessionMiddleware } from './auth/session.middleware.js';
+import { ApiExceptionFilter } from './common/api-exception.filter.js';
 import { PrismaService } from './prisma/prisma.service.js';
 
 export function setupApp(app: INestApplication) {
@@ -10,4 +11,6 @@ export function setupApp(app: INestApplication) {
   app.use(cookieParser());
   // 2. Find the session and put the company badge on (D-24, D-25)
   app.use(sessionMiddleware(app.get(PrismaService)));
+  // 3. Every error leaves as { message, errors? } (D-44, api-conventions.md §6)
+  app.useGlobalFilters(new ApiExceptionFilter());
 }
