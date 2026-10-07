@@ -1,6 +1,6 @@
 # MDARJ (Workora) — API Conventions
 
-SCRUM-167 · FND-10 · Oct 7, 2026 · @trendow · Status: **Proposed — waiting for Trendow (D-55, D-56, D-57)**
+SCRUM-167 · FND-10 · Oct 7, 2026 · @trendow · Status: **Agreed** (D-55, D-56, D-57, Oct 7, 2026)
 
 ## 1. Why this file exists
 
@@ -31,6 +31,7 @@ Request
 | Nest a resource only when it cannot exist without its parent | `/employees/:id/documents`, `/employees/:id/salary-history` |
 | An action that is not create/read/update/delete is a POST on a verb under the record | `POST /leave-requests/:id/approve`, `POST /payroll-runs/:id/reopen` |
 | Auth actions live under `/auth` | `/auth/login`, `/auth/logout`, `/auth/me` |
+| `/me/...` is the logged-in person's own data: the server takes the employee from the session, so the client never sends its own employee id | `GET /me/leave-balances`, `POST /me/attendance/check-in` |
 | No version prefix in the MVP (the web app is the only client) | — |
 | The browser calls `/api/...`; Next.js forwards it to the API without `/api` | browser `/api/employees` → API `/employees` |
 
