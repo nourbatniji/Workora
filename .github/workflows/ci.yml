@@ -1,0 +1,75 @@
+# SCRUM-168 · FND-11: every pull request is checked on a fresh computer.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:17
+        env:
+          POSTGRES_USER: mdarj
+          POSTGRES_PASSWORD: mdarj
+          POSTGRES_DB: mdarj
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mdarj"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://mdarj:mdarj@localhost:5432/mdarj?schema=public
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install packages (exact versions from the lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Check the Prisma schema
+        run: pnpm --filter api exec prisma validate
+
+      - name: Generate the Prisma client
+        run: pnpm db:generate
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: No raw SQL
+        run: pnpm check:raw-sql
+
+      - name: Apply all migrations to the empty database
+        run: pnpm --filter api exec prisma migrate reset --force
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: End-to-end tests (real database)
+        run: pnpm test:e2e
+
+      - name: Build the API
+        run: pnpm --filter api build
+
+      - name: Build the web app
+        run: pnpm --filter web build
