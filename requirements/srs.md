@@ -1,6 +1,6 @@
 # MDARJ HR & Payroll System — Software Requirements Specification
 
-MVP + Roadmap · Consolidated Edition v1.5 · Oct 6, 2026 · @trendow
+MVP + Roadmap · Consolidated Edition v1.6 · Oct 9, 2026 · @trendow
 
 ## Document information
 
@@ -10,6 +10,7 @@ Revision v1.2 (Oct 3, 2026) brings the SRS in line with the agreed decisions in 
 
 | Source edition | Date | What it contributes |
 | --- | --- | --- |
+| Revision v1.6 | Oct 9, 2026 | Data model (§5) matched to the built tables: documents belong to an employee through `employee_id` (D-47); audit_log gains company_id, entity_type, reason and is append-only (D-58 to D-60) |
 | Revision v1.5 | Oct 6, 2026 | No limit on failed login attempts: the account lockout and the Locked account status are removed (D-46) |
 | Revision v1.4 | Oct 5, 2026 | The user account stores the person's own name, for Admins and Interviewers with no employee record (D-41) |
 | Revision v1.3 | Oct 3, 2026 | Gaps found in the SRS review closed: employee status history and Suspended rules, shift snapshots, settings history, punch and check-out rules, leave edge cases, Admin rules, deletion rules, wider audit log |
@@ -419,7 +420,7 @@ The MVP uses approximately 30 relational tables. Every company-owned table carri
 | employee\_status\_history | employee\_id, from\_status, to\_status, effective\_date, reason, changed\_by |
 | salary\_history | employee\_id, base\_salary, effective\_from |
 | recurring\_pay\_items | employee\_id, kind (addition, deduction), label, amount, valid\_from, valid\_to |
-| documents | owner\_type (employee, candidate), owner\_id, doc\_type, file\_key, expiry\_date, uploaded\_by |
+| documents | employee\_id, doc\_type, file\_key, expiry\_date, uploaded\_by. Candidate documents (MVP-2) add candidate\_id, with exactly one owner per document (D-47) |
 | contracts | employee\_id, type, start\_date, end\_date, agreed\_salary, file\_key, previous\_contract\_id, notes |
 
 ### 5.2 Recruitment
@@ -465,7 +466,7 @@ When a hired candidate is converted, candidates.employee\_id and employees.candi
 | compliance\_findings | run\_id, employee\_id, rule\_ref, severity, message, suggestion, evidence, state, first\_seen, resolved\_at, dismissed\_reason |
 | ai\_usage | usage\_date, calls, tokens\_in, tokens\_out |
 | notifications | user\_id, type, payload, read\_at |
-| audit\_log | user\_id, entity, entity\_id, action, before, after, created\_at |
+| audit\_log | company\_id, user\_id (empty for a scheduled job), entity\_type, entity\_id, action, before, after, reason, created\_at. Append-only: the database refuses UPDATE and DELETE (NFR-8, D-58 to D-60) |
 
 ## 6. Non-functional requirements
 

@@ -8,7 +8,7 @@ This file says **how** we build and **in what order**. `srs.md` says what, `deci
 
 | # | Stage | Status | What exists | Gap to close |
 | --- | --- | --- | --- | --- |
-| 1 | SRS / Requirements | Done | `srs.md` v1.5, `decisions.md` D-01…D-46, `assumptions.md` | Keep in sync: decision → SRS → Jira → code |
+| 1 | SRS / Requirements | Done | `srs.md` v1.6, `decisions.md` D-01…D-63, `assumptions.md` | Keep in sync: decision → SRS → Jira → code |
 | 2 | Epics + User Stories | Done, reorganised Oct 7 | Jira project HR-System (SCRUM): 16 epics, 170 issues | Dependencies added as "blocks" links; UI tasks now built inside their feature (see §5) |
 | 3 | Architecture | Done | `development-plan.md` §2, D-21…D-36 | — |
 | 4 | ERD / Database design | Done for what is built | SRS §5 data model; `schema.prisma` has companies, settings versions, users, job titles, employees, salary history, status history, documents, contracts, sessions. Other tables are added by the task that first uses them (D-42) | Design each new module's tables at the start of its feature (you draft, then compare with SRS §5) |
@@ -192,3 +192,9 @@ Changed in Jira:
 Noticed, not changed:
 - An empty active sprint "SCRUM Sprint 0" (id 2) is still open next to Sprint 2
 - SCRUM-169 UA-12 web login gate: `(app)/layout.tsx` checks the session on the server with `getSession()`; login returns to `?next=`; "session expired" notice; shell shows the real user, company and role; Log out; menu, command palette, saved views and Invite follow the role; mock company removed; decision proposed D-63
+
+### Oct 9, 2026 (foundation check)
+
+- SCRUM-176 FND-13: all 20 checks proven in `requirements/foundation-check.md` against `main` at `14a8eb1` and its green CI run
+- Gaps fixed: `srs.md` v1.6 (documents and audit_log rows match the tables); "UI prototype · sample data" badge on the dashboard and exceptions inbox; dashboard subtitle uses the real company name
+- From here on, a user-facing story is Done only when it works end to end (screen → API → login → role → logic → database → screen, with tests)
