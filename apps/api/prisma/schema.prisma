@@ -51,6 +51,31 @@ enum DailyRateDivisor {
   working_days
 }
 
+// What kind of record an audit entry is about (SRS FR-DB-4)
+enum AuditEntity {
+  company_settings
+  salary
+  employee_status
+  contract
+  document
+  user
+  attendance_record
+  leave_request
+  leave_balance
+  exception
+  payroll_run
+}
+
+// What happened to that record
+enum AuditAction {
+  create
+  update
+  delete
+  approve
+  reject
+  reopen
+}
+
 // ───────── Same-company links (D-48, FND-12) ─────────
 //
 // A row that points at another company-owned row stores BOTH ids: the target's id and its own
@@ -82,6 +107,7 @@ model Company {
   documents        Document[]
   contracts        Contract[]
   sessions         Session[]
+  auditLogs        AuditLog[]
 
   @@map("companies")
 }
@@ -137,6 +163,7 @@ model User {
   salaryRowsCreated       SalaryHistory[]
   statusChangesMade       EmployeeStatusHistory[]
   documentsUploaded       Document[]
+  auditEntries            AuditLog[]
 
   @@unique([id, companyId])
   @@unique([employeeId, companyId]) // one login per employee
@@ -288,4 +315,27 @@ model Session {
 
   @@index([userId])
   @@map("sessions")
+}
+
+// ───────── Audit log (FND-07, FR-DB-4, NFR-8) ─────────
+//
+// One row per audited change. Rows are only ever added: never updated or deleted.
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  companyId  String      @map("company_id")
+  company    Company     @relation(fields: [companyId], references: [id])
+  userId     String?     @map("user_id") // null = a scheduled job, not a person
+  user       User?       @relation(fields: [userId, companyId], references: [id, companyId], onDelete: Restrict)
+  entityType AuditEntity @map("entity_type")
+  entityId   String      @map("entity_id") // the id of the changed row (any table, so no foreign key)
+  action     AuditAction
+  before     Json? // null when the record was created
+  after      Json? // null when the record was deleted
+  reason     String? // required by the service for punch corrections and payroll reopens
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  @@index([companyId, createdAt]) // the audit viewer: newest first, per company
+  @@index([entityType, entityId]) // the history of one record
+  @@map("audit_log")
 }
