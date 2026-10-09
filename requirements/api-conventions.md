@@ -117,9 +117,9 @@ The query is validated by a zod schema like any body. A sort or filter field the
 
 | Rule | Where |
 | --- | --- |
-| Every route needs a session, unless marked `@Public()` (only sign-up and login) | Global guard — SCRUM-33. Until then each private route uses `@UseGuards(SessionGuard)` |
-| Role rules come from `permissions.md`: "Admin only" → `@Roles('admin')` on the route | RolesGuard — SCRUM-33 |
-| "own" rules (an Employee and their own records) are checked in the **service**, with the session's user | Each feature |
+| Every route needs a session, unless marked `@Public()` (sign-up, login, the health check) | `SessionGuard`, global (SCRUM-33) |
+| Every private route lists its roles: "Admin only" → `@Roles('admin')`; any logged-in person → `@Roles(...ALL_ROLES)`. A route with neither `@Roles` nor `@Public` is refused for everyone (deny by default, D-61) | `RolesGuard`, global (SCRUM-33) |
+| "own" rules (an Employee and their own records) are checked in the **service** with `assertOwnEmployee(req.auth, employeeId)` (D-62) | Each feature |
 | Data rules (last Active Admin, payslip only after approval…) are checked in the service | Each feature (`permissions.md`, "Rules that are not role checks") |
 | No session → 401. Wrong role or not their own → 403. Hiding a button in Next.js never replaces a server check | All endpoints |
 

@@ -21,7 +21,9 @@ export function sessionMiddleware(prisma: PrismaService) {
       // Find the session by the token's hash (the database never holds the token itself)
       const session = await prisma.session.findUnique({
         where: { tokenHash: hashSessionToken(token) },
-        include: { user: { select: { status: true, role: true } } },
+        include: {
+          user: { select: { status: true, role: true, employeeId: true } },
+        },
       });
 
       // Unknown, logged out, idle more than 12 hours, or the account was switched off
@@ -46,6 +48,7 @@ export function sessionMiddleware(prisma: PrismaService) {
         userId: session.userId,
         companyId: session.companyId,
         role: session.user.role,
+        employeeId: session.user.employeeId,
       };
 
       // Everything after this line (guards, pipes, the route) runs with the company badge on

@@ -8,9 +8,11 @@ import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { AppModule } from '../../src/app.module.js';
 import { setupApp } from '../../src/app.setup.js';
+import { Public } from '../../src/auth/public.decorator.js';
 import { PrismaService } from '../../src/prisma/prisma.service.js';
 
-// Routes that fail on purpose, added only in this test
+// Routes that fail on purpose, added only in this test (public: this file tests errors, not login)
+@Public()
 @Controller('test-errors')
 class FailingController {
   constructor(private readonly prisma: PrismaService) {}
