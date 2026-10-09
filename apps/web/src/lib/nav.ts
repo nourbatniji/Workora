@@ -12,6 +12,7 @@ import {
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
+import type { Role } from '@/lib/session';
 
 export type NavKey =
   | 'dashboard'
@@ -32,26 +33,90 @@ export type NavItem = {
   icon: LucideIcon;
   /** false = the page shows "coming in the next phase" */
   built: boolean;
+  /** Who sees this item (requirements/permissions.md). The API still checks every request */
+  roles: Role[];
 };
 
+const ALL: Role[] = ['admin', 'employee', 'interviewer'];
+
 export const NAV_ITEMS: NavItem[] = [
-  { key: 'dashboard', href: '/', icon: LayoutGrid, built: true },
-  { key: 'employees', href: '/employees', icon: Users, built: false },
+  { key: 'dashboard', href: '/', icon: LayoutGrid, built: true, roles: ALL },
+  {
+    key: 'employees',
+    href: '/employees',
+    icon: Users,
+    built: false,
+    roles: ['admin'],
+  },
   {
     key: 'recruitment',
     href: '/recruitment',
     icon: UserRoundSearch,
     built: false,
+    roles: ['admin', 'interviewer'],
   },
-  { key: 'shifts', href: '/shifts', icon: CalendarClock, built: false },
-  { key: 'attendance', href: '/attendance', icon: Clock, built: false },
-  { key: 'exceptions', href: '/exceptions', icon: Inbox, built: true },
-  { key: 'leave', href: '/leave', icon: CalendarOff, built: false },
-  { key: 'contracts', href: '/contracts', icon: FileText, built: false },
-  { key: 'payroll', href: '/payroll', icon: Wallet, built: false },
-  { key: 'compliance', href: '/compliance', icon: ShieldCheck, built: false },
-  { key: 'settings', href: '/settings', icon: Settings, built: false },
+  {
+    key: 'shifts',
+    href: '/shifts',
+    icon: CalendarClock,
+    built: false,
+    roles: ['admin', 'employee'],
+  },
+  {
+    key: 'attendance',
+    href: '/attendance',
+    icon: Clock,
+    built: false,
+    roles: ['admin', 'employee'],
+  },
+  {
+    key: 'exceptions',
+    href: '/exceptions',
+    icon: Inbox,
+    built: true,
+    roles: ['admin', 'employee'],
+  },
+  {
+    key: 'leave',
+    href: '/leave',
+    icon: CalendarOff,
+    built: false,
+    roles: ['admin', 'employee'],
+  },
+  {
+    key: 'contracts',
+    href: '/contracts',
+    icon: FileText,
+    built: false,
+    roles: ['admin'],
+  },
+  {
+    key: 'payroll',
+    href: '/payroll',
+    icon: Wallet,
+    built: false,
+    roles: ['admin', 'employee'],
+  },
+  {
+    key: 'compliance',
+    href: '/compliance',
+    icon: ShieldCheck,
+    built: false,
+    roles: ['admin'],
+  },
+  {
+    key: 'settings',
+    href: '/settings',
+    icon: Settings,
+    built: false,
+    roles: ['admin'],
+  },
 ];
+
+/** The menu for one role: Employees see only their own areas, Interviewers only recruitment */
+export function navItemsFor(role: Role): NavItem[] {
+  return NAV_ITEMS.filter((item) => item.roles.includes(role));
+}
 
 /** Modules that render the "coming in the next phase" page */
 export const SOON_MODULES = NAV_ITEMS.filter((item) => !item.built).map(
@@ -59,6 +124,8 @@ export const SOON_MODULES = NAV_ITEMS.filter((item) => !item.built).map(
 );
 
 export type SavedViewKey = 'nightShift' | 'probationEnding' | 'trainees';
+
+/** Saved views filter the employee list, so only Admins get them */
 
 export const SAVED_VIEWS: { key: SavedViewKey; href: string; count: number }[] =
   [

@@ -3,6 +3,7 @@
 import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAppState, type Role } from './app-state';
+import { useCurrentUser } from './current-user';
 
 const ROLES: Role[] = ['admin', 'employee', 'interviewer'];
 
@@ -10,7 +11,8 @@ const ROLES: Role[] = ['admin', 'employee', 'interviewer'];
 export default function RoleSwitcher() {
   const t = useTranslations('Shell');
   const tRoles = useTranslations('Roles');
-  const { role, setRole } = useAppState();
+  const { previewRole, setPreviewRole } = useAppState();
+  const user = useCurrentUser();
 
   // Only in `next dev`: production builds never show the switch
   if (process.env.NODE_ENV !== 'development') return null;
@@ -22,8 +24,12 @@ export default function RoleSwitcher() {
     >
       <span className="text-[11px] font-medium text-muted">{t('devRole')}</span>
       <select
-        value={role}
-        onChange={(event) => setRole(event.target.value as Role)}
+        value={previewRole ?? user.role}
+        onChange={(event) => {
+          const picked = event.target.value as Role;
+          // Picking your own role again turns the preview off
+          setPreviewRole(picked === user.role ? null : picked);
+        }}
         aria-label={t('devRoleHint')}
         className="cursor-pointer appearance-none bg-transparent pe-5 font-medium text-text outline-none"
       >

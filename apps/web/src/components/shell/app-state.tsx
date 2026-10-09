@@ -20,8 +20,9 @@ export type Overlay = 'palette' | 'invite' | 'lawRef' | 'help' | 'menu' | null;
 type AppState = {
   theme: Theme;
   toggleTheme: () => void;
-  role: Role;
-  setRole: (role: Role) => void;
+  /** Development only: preview another role's screens. null = show the real role */
+  previewRole: Role | null;
+  setPreviewRole: (role: Role | null) => void;
   overlay: Overlay;
   open: (overlay: Exclude<Overlay, null>) => void;
   close: () => void;
@@ -45,7 +46,7 @@ export const themeInitScript = `(function(){try{var t=localStorage.getItem('${TH
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light');
-  const [role, setRole] = useState<Role>('admin');
+  const [previewRole, setPreviewRole] = useState<Role | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [notifications, setNotifications] = useState(initialNotifications);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -87,8 +88,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     () => ({
       theme,
       toggleTheme,
-      role,
-      setRole,
+      previewRole,
+      setPreviewRole,
       overlay,
       open: (next) => setOverlay(next),
       close: () => setOverlay(null),
@@ -103,7 +104,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       notificationsOpen,
       setNotificationsOpen,
     }),
-    [theme, toggleTheme, role, overlay, notifications, notificationsOpen],
+    [
+      theme,
+      toggleTheme,
+      previewRole,
+      overlay,
+      notifications,
+      notificationsOpen,
+    ],
   );
 
   return (

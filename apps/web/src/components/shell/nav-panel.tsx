@@ -1,13 +1,14 @@
 'use client';
 
 import { Bookmark, ChevronRight, Scale, Search } from 'lucide-react';
-import { useFormatter, useLocale, useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
-import { NAV_ITEMS, SAVED_VIEWS, navItemForPath } from '@/lib/nav';
-import { company, payrollProgress } from '@/mock/shell';
+import { SAVED_VIEWS, navItemForPath, navItemsFor } from '@/lib/nav';
+import { payrollProgress } from '@/mock/shell';
 import { useExceptions } from '@/components/exceptions/exceptions-store';
 import { useAppState } from './app-state';
+import { useCurrentUser, useRole } from './current-user';
 
 /** True on Apple devices, so the search hint shows ⌘K instead of Ctrl K */
 function useIsMac() {
@@ -24,8 +25,10 @@ export default function NavPanel({ onNavigate }: { onNavigate?: () => void }) {
   const t = useTranslations('Shell');
   const tNav = useTranslations('Nav');
   const tViews = useTranslations('SavedViews');
+  const tRoles = useTranslations('Roles');
   const format = useFormatter();
-  const locale = useLocale() as 'ar' | 'en';
+  const user = useCurrentUser();
+  const role = useRole();
   const pathname = usePathname();
   const active = navItemForPath(pathname);
   const { open } = useAppState();
@@ -36,20 +39,14 @@ export default function NavPanel({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <div className="flex h-full w-60 shrink-0 flex-col border-e border-line bg-surface">
-      {/* Company identity at the top, like a workspace switcher */}
+      {/* The real company of the logged-in user (GET /auth/me), like a workspace switcher */}
       <div className="flex h-16 shrink-0 items-center gap-3 px-4">
         <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-canvas text-[13px] font-medium">
-          {company.initials[locale]}
+          {initialOf(user.company.name)}
         </span>
         <div className="min-w-0 leading-tight">
-          <p className="truncate text-sm font-medium">{t('companyName')}</p>
-          <p className="truncate text-xs text-muted">
-            {t('companyCity')} ·{' '}
-            {t('companyEmployees', {
-              count: format.number(company.employeeCount),
-              max: format.number(company.maxEmployees),
-            })}
-          </p>
+          <p className="truncate text-sm font-medium">{user.company.name}</p>
+          <p className="truncate text-xs text-muted">{tRoles(role)}</p>
         </div>
       </div>
 
@@ -75,7 +72,7 @@ export default function NavPanel({ onNavigate }: { onNavigate?: () => void }) {
 
         <nav aria-label={t('mainNav')}>
           <ul className="flex flex-col gap-0.5">
-            {NAV_ITEMS.map((item) => {
+            {navItemsFor(role).map((item) => {
               const isActive = active?.key === item.key;
               const Icon = item.icon;
               return (
@@ -114,65 +111,74 @@ export default function NavPanel({ onNavigate }: { onNavigate?: () => void }) {
           </ul>
         </nav>
 
-        <p className="mt-6 mb-2 px-3 text-xs text-muted">{t('savedViews')}</p>
-        <ul className="flex flex-col gap-0.5">
-          {SAVED_VIEWS.map((view) => (
-            <li key={view.key}>
-              <Link
-                href={view.href}
-                onClick={onNavigate}
-                className="flex h-8 items-center gap-3 rounded-[10px] px-3 text-[13px] text-muted transition-colors hover:bg-canvas hover:text-text"
-              >
-                <Bookmark
-                  className="size-4 shrink-0"
-                  strokeWidth={1.5}
-                  aria-hidden
-                />
-                <span className="flex-1 truncate">{tViews(view.key)}</span>
-                <span className="text-xs tabular-nums">
-                  {format.number(view.count)}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        {/* Saved views and the payroll card are Admin tools (requirements/permissions.md) */}
+        {role === 'admin' && (
+          <>
+            <p className="mt-6 mb-2 px-3 text-xs text-muted">
+              {t('savedViews')}
+            </p>
+            <ul className="flex flex-col gap-0.5">
+              {SAVED_VIEWS.map((view) => (
+                <li key={view.key}>
+                  <Link
+                    href={view.href}
+                    onClick={onNavigate}
+                    className="flex h-8 items-center gap-3 rounded-[10px] px-3 text-[13px] text-muted transition-colors hover:bg-canvas hover:text-text"
+                  >
+                    <Bookmark
+                      className="size-4 shrink-0"
+                      strokeWidth={1.5}
+                      aria-hidden
+                    />
+                    <span className="flex-1 truncate">{tViews(view.key)}</span>
+                    <span className="text-xs tabular-nums">
+                      {format.number(view.count)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
 
         <div className="mt-auto pt-6">
-          {/* Payroll progress: one of the four places the brand gradient is allowed */}
-          <Link
-            href="/payroll"
-            onClick={onNavigate}
-            className="block rounded-[14px] border border-line p-3 transition-colors hover:bg-canvas"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[13px] font-medium">{t('payrollTitle')}</p>
-              <span className="rounded-full bg-canvas px-2 text-[11px] leading-5 text-muted">
-                {t('payrollStatus')}
-              </span>
-            </div>
-            <div
-              className="mt-3 h-1.5 overflow-hidden rounded-full bg-canvas"
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={payrollProgress.stepsTotal}
-              aria-valuenow={payrollProgress.stepsDone}
-              aria-label={t('payrollTitle')}
+          {/* Payroll progress (prototype, mock data): one of the four places the brand gradient is allowed */}
+          {role === 'admin' && (
+            <Link
+              href="/payroll"
+              onClick={onNavigate}
+              className="block rounded-[14px] border border-line p-3 transition-colors hover:bg-canvas"
             >
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[13px] font-medium">{t('payrollTitle')}</p>
+                <span className="rounded-full bg-canvas px-2 text-[11px] leading-5 text-muted">
+                  {t('payrollStatus')}
+                </span>
+              </div>
               <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${progress}%`,
-                  background: 'var(--brand-gradient-inline)',
-                }}
-              />
-            </div>
-            <p className="mt-2 text-xs text-muted">
-              {t('payrollSteps', {
-                done: format.number(payrollProgress.stepsDone),
-                total: format.number(payrollProgress.stepsTotal),
-              })}
-            </p>
-          </Link>
+                className="mt-3 h-1.5 overflow-hidden rounded-full bg-canvas"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={payrollProgress.stepsTotal}
+                aria-valuenow={payrollProgress.stepsDone}
+                aria-label={t('payrollTitle')}
+              >
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${progress}%`,
+                    background: 'var(--brand-gradient-inline)',
+                  }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-muted">
+                {t('payrollSteps', {
+                  done: format.number(payrollProgress.stepsDone),
+                  total: format.number(payrollProgress.stepsTotal),
+                })}
+              </p>
+            </Link>
+          )}
 
           <button
             type="button"
@@ -195,4 +201,9 @@ export default function NavPanel({ onNavigate }: { onNavigate?: () => void }) {
       </div>
     </div>
   );
+}
+
+/** The first letter of the company name, for the square badge */
+function initialOf(name: string): string {
+  return name.trim().charAt(0).toUpperCase() || '·';
 }

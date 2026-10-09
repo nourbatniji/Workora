@@ -16,9 +16,6 @@
     "payrollOpen": "فتح الرواتب",
     "lawRef": "قانون العمل رقم 14 لسنة 2025",
     "lawRefHint": "مرجع فحوصات الامتثال",
-    "companyName": "شركة مخابز النيل",
-    "companyCity": "القاهرة",
-    "companyEmployees": "{count} من {max} موظفًا",
     "switchLanguage": "English",
     "switchLanguageLabel": "التبديل إلى الإنجليزية",
     "themeToDark": "التبديل إلى الوضع الداكن",
@@ -33,6 +30,9 @@
     "railHelp": "المساعدة",
     "devRole": "دور التطوير",
     "devRoleHint": "للتطوير فقط: معاينة بوابات الأدوار الأخرى",
+    "userMenu": "حسابك",
+    "logOut": "تسجيل الخروج",
+    "loggingOut": "جارٍ تسجيل الخروج…",
     "nextPhase": "المرحلة القادمة"
   },
   "Roles": {

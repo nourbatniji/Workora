@@ -1,4 +1,4 @@
-import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
+import { getFormatter, getTranslations } from 'next-intl/server';
 import AttendanceInsight from '@/components/dashboard/attendance-insight';
 import LateArrivals from '@/components/dashboard/late-arrivals';
 import TodayBoard from '@/components/dashboard/today-board';
@@ -9,7 +9,7 @@ import {
   LatestExceptions,
   PendingCard,
 } from '@/components/dashboard/cards';
-import { CURRENT_ADMIN } from '@/mock/exceptions';
+import { getSession } from '@/lib/session';
 import { today } from '@/mock/dashboard';
 import { dayDate } from '@/lib/dates';
 
@@ -17,13 +17,15 @@ import { dayDate } from '@/lib/dates';
 export default async function DashboardPage() {
   const t = await getTranslations('Dashboard');
   const format = await getFormatter();
-  const locale = (await getLocale()) as 'ar' | 'en';
+  // The real logged-in user (the layout already asked the API; getSession reuses that answer)
+  const { user } = await getSession();
+  const shownName = user?.name ?? user?.email ?? '';
 
   return (
     <div className="mx-auto max-w-[1280px]">
       <div className="mb-5">
         <p className="text-lg font-medium">
-          {t('greeting', { name: CURRENT_ADMIN[locale].split(' ')[0] })}
+          {t('greeting', { name: shownName.split(' ')[0] })}
         </p>
         <p className="text-[13px] text-muted">
           {t('subtitle', {

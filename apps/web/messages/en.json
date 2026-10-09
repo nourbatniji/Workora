@@ -16,9 +16,6 @@
     "payrollOpen": "Open payroll",
     "lawRef": "Labor Law No. 14 of 2025",
     "lawRefHint": "Reference for compliance checks",
-    "companyName": "Nile Bakeries Co.",
-    "companyCity": "Cairo",
-    "companyEmployees": "{count} of {max} employees",
     "switchLanguage": "العربية",
     "switchLanguageLabel": "Switch to Arabic",
     "themeToDark": "Switch to dark mode",
@@ -33,6 +30,9 @@
     "railHelp": "Help",
     "devRole": "Dev role",
     "devRoleHint": "Development only: preview other role portals",
+    "userMenu": "Your account",
+    "logOut": "Log out",
+    "loggingOut": "Logging out…",
     "nextPhase": "Next phase"
   },
   "Roles": {
