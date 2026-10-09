@@ -61,7 +61,7 @@ HR/
 
 ### Prerequisites
 
-- Node.js 22 (check with `node -v`)
+- Node.js 22, the exact version in `.nvmrc` (check with `node -v`)
 - pnpm, turned on once with `corepack enable`
 - Docker Desktop (needed from FND-02, the database)
 
@@ -97,6 +97,8 @@ The seed creates "MDARJ Demo Company" with one Admin. Log in with `SEED_ADMIN_EM
 | `pnpm test` | Runs the backend unit tests (no database needed) |
 | `pnpm test:e2e` | Runs the backend tests that use the database (start it first with `pnpm db:up`) |
 | `pnpm lint` | Checks both apps for code mistakes |
+| `pnpm typecheck` | Builds `packages/shared`, then checks the types of shared, api and web without building them |
+| `pnpm check:raw-sql` | Fails if `apps/api/src` uses raw SQL outside `src/prisma/` (api-conventions.md §8) |
 | `pnpm format` | Formats all code with Prettier |
 | `pnpm format:check` | Only reports formatting problems |
 
@@ -120,4 +122,5 @@ Restart the backend after changing `.env`.
 - Put the Jira key and the SRS requirement ID in the commit or pull request, for example `SCRUM-31, FR-UA-3`.
 - Company data (D-25): modules read and write through `TenantPrismaService` (`this.tenantPrisma.db`). Its guard adds the logged-in user's company to every query and blocks queries with no company. New rows carry `companyId: requireCompanyId()`. Code that uses company data runs inside `runInCompany(companyId, async () => ...)`. The plain `PrismaService` is only for system work: sign-up, login lookup, seed and scheduled jobs.
 - A new table with `company_id` must be added to `COMPANY_TABLES` in `apps/api/src/common/tenancy/tenancy.extension.ts`. A unit test fails until it is.
+- Every pull request and every merge into `main` runs CI (`.github/workflows/ci.yml`, SCRUM-168): Prisma schema check, format, lint, typecheck, raw-SQL check, all migrations on an empty database, unit and e2e tests, and both builds. Merge only when it is green. When a step is red, open it in the pull request's Checks tab, run the same `pnpm` command on your Mac, fix it and push again.
 - A task is done when it meets the definition of done in [`development-plan.md`](requirements/development-plan.md) section 6: Arabic and English, 360 px phones, server-side permission and company checks, audit log where needed, tests passing.
