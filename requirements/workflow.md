@@ -13,7 +13,7 @@ This file says **how** we build and **in what order**. `srs.md` says what, `deci
 | 3 | Architecture | Done | `development-plan.md` §2, D-21…D-36 | — |
 | 4 | ERD / Database design | Done for what is built | SRS §5 data model; `schema.prisma` has companies, settings versions, users, job titles, employees, salary history, status history, documents, contracts, sessions. Other tables are added by the task that first uses them (D-42) | Design each new module's tables at the start of its feature (you draft, then compare with SRS §5) |
 | 5 | Roles + Permissions + API design | Designed, guard not built | `permissions.md` (D-49…D-54), `api-conventions.md` (error filter, raw-SQL refusal), `api-endpoints.md` (127 endpoints, 6 jobs; each story's endpoints are in its Jira description) | Role guard (SCRUM-33) |
-| 6 | Project foundation | Mostly done | pnpm workspace, NestJS, Next.js, Prisma + PostgreSQL, tenancy guard + isolation test, next-intl RTL shell, 360 px layout | **CI** (lint, type-check, tests on every PR) and **audit log** (FND-07) are missing. Files (FND-06), email (FND-05) and jobs (FND-04) are built just before the first feature that needs them |
+| 6 | Project foundation | Done for the MVP start | pnpm workspace, NestJS, Next.js, Prisma + PostgreSQL, tenancy guard + isolation test, next-intl RTL shell, 360 px layout, CI on every PR with `main` protected (SCRUM-168), audit writer + append-only `audit_log` (SCRUM-26) | Files (FND-06), email (FND-05) and jobs (FND-04) are built just before the first feature that needs them |
 | 7 | Authentication | Backend done, web half done | Sign-up, login (email or phone), sessions, `/auth/me`, logout, e2e tests; login and sign-up pages call the API (SCRUM-149 branch) | Role guard (UA-05); the web app does not check the session yet (app pages open without login, no logout button); invites + set password (UA-01/02); password reset (UA-04) |
 | 8 | Application shell / shared UI | Done as views | App shell, nav, top bar, command palette, UI kit (SCRUM-146); dashboard and exceptions inbox with mock data (SCRUM-147/148) | Shell must read the real user and role from `/auth/me`. The mock dashboard and inbox stay as UI prototypes and get wired in their own features |
 | 9 | Feature-by-feature development | Not started | — | Order in §4 |
@@ -163,3 +163,15 @@ Changed in `requirements/`:
 - `api-conventions.md` §3: the `/me/...` own-data rule
 - `permissions.md` §9: "View leave types" (Admin all, Employee all, Interviewer no)
 - `decisions.md`: D-55, D-56, D-57 Agreed; `api-conventions.md` status Agreed
+
+### Oct 9, 2026
+
+Done in code:
+- SCRUM-168 FND-11 CI: `.github/workflows/ci.yml` (PR #16, green on the PR and on `main`); `main` protected by a ruleset (pull request + `checks` required, no force push, no deletion)
+- SCRUM-26 FND-07 audit log: `audit_log` table with an append-only trigger, `AuditService`, `AuditModule`, `test/audit/audit.e2e-spec.ts`; CI also checks that `schema.prisma` matches the migrations
+
+Decisions proposed: D-58, D-59, D-60
+
+To do in Jira (Trendow):
+- SCRUM-168 → Done
+- SCRUM-26 → Done after its PR is green and merged; comment: the `GET /audit-log` viewer is built after SCRUM-33 (it is Admin-only)

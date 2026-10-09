@@ -69,7 +69,7 @@ Request
 | Auth (sign-up, login, me, logout) | Built + e2e tests | sign-up, login on real API | Integrated |
 | Tenancy | Prisma extension + tests | — | Built |
 | Authorization (roles) | — | dev-only role switcher (fake) | Missing |
-| Audit log | — | — | Missing |
+| Audit log | `AuditService` + `audit_log` table (append-only trigger) + e2e tests; viewer endpoint after SCRUM-33 | — | Built (writer) |
 | Users & invites | — | set-password view | Not started |
 | Company settings | tables only | — | Not started |
 | People (employees, salary, status, documents) | tables only | mock people data | Not started |
@@ -86,6 +86,6 @@ Request
 2. ~~API conventions~~ — written in requirements/api-conventions.md (D-55…D-57); every error now leaves as { message, errors? } (ApiExceptionFilter); raw SQL refused on the company-scoped client
 3. Login required by default (today each route must opt in)
 4. ~~Child rows can point at another company's parent~~ — fixed by SCRUM-175: same-company foreign keys (D-48), proven by test/tenancy/related-rows.e2e-spec.ts
-5. Audit log — before settings and salaries
+5. ~~Audit log~~ — SCRUM-26: `AuditService.record(tx, userId, entry)` writes in the same transaction as the change; the database refuses UPDATE and DELETE (D-58…D-60). The `GET /audit-log` viewer waits for the role guard (SCRUM-33)
 6. Web app is not behind login; shell shows a mock user
-7. CI
+7. ~~CI~~ — SCRUM-168: every pull request runs format, lint, typecheck, raw-SQL check, migrations on an empty database, schema-vs-migrations check, unit and e2e tests and both builds; `main` is protected

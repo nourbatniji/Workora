@@ -48,6 +48,14 @@ export async function setupTwoCompanies(): Promise<TwoCompanies> {
     asB: (fn) => runInCompany(companyB, fn),
     async cleanup() {
       const both = { in: [companyA, companyB] };
+      // audit_log refuses DELETE (NFR-8). Only test cleanup may skip that rule: replica mode turns
+      // triggers off for this one transaction, in the test database. Never do this in app code.
+      await prisma.$transaction([
+        prisma.$executeRawUnsafe(
+          'SET LOCAL session_replication_role = replica',
+        ),
+        prisma.auditLog.deleteMany({ where: { companyId: both } }),
+      ]);
       // Children first: the database refuses to delete a row others still point at
       await prisma.document.deleteMany({ where: { companyId: both } });
       await prisma.contract.updateMany({
