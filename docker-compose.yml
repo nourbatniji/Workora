@@ -10,5 +10,12 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
 
+  # A fake inbox for development (D-36): the API sends to port 1025, you read the mail at http://localhost:8025
+  mail:
+    image: axllent/mailpit:v1.27
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
 volumes:
   db-data:

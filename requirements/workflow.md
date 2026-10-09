@@ -198,3 +198,8 @@ Noticed, not changed:
 - SCRUM-176 FND-13: all 20 checks proven in `requirements/foundation-check.md` against `main` at `14a8eb1` and its green CI run
 - Gaps fixed: `srs.md` v1.6 (documents and audit_log rows match the tables); "UI prototype · sample data" badge on the dashboard and exceptions inbox; dashboard subtitle uses the real company name
 - From here on, a user-facing story is Done only when it works end to end (screen → API → login → role → logic → database → screen, with tests)
+
+### Oct 9, 2026 (email)
+
+- SCRUM-24 FND-05: `MailService` (SMTP, nodemailer), invite and password-reset templates in Arabic and English, Mailpit in Docker Compose and CI, `test/mail/mail.e2e-spec.ts`; decision D-64
+- Jira SCRUM-24 "Done when" corrected: the invite and reset emails are checked in SCRUM-29 (UA-01) and SCRUM-32 (UA-04), where those features are built

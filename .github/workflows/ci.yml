@@ -23,8 +23,17 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      # A fake inbox for the email tests (FND-05)
+      mail:
+        image: axllent/mailpit:v1.27
+        ports:
+          - 1025:1025
+          - 8025:8025
     env:
       DATABASE_URL: postgresql://mdarj:mdarj@localhost:5432/mdarj?schema=public
+      SMTP_HOST: localhost
+      SMTP_PORT: 1025
+      MAILPIT_URL: http://localhost:8025
     steps:
       - name: Get the code
         uses: actions/checkout@v4

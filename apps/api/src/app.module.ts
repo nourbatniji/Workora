@@ -6,6 +6,7 @@ import { AppService } from './app.service.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { AuditModule } from './common/audit/audit.module.js';
+import { MailModule } from './common/mail/mail.module.js';
 import { RolesGuard } from './auth/roles.guard.js';
 import { SessionGuard } from './auth/session.guard.js';
 
@@ -14,6 +15,7 @@ import { SessionGuard } from './auth/session.guard.js';
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     AuditModule,
+    MailModule,
     AuthModule,
   ],
   controllers: [AppController],
