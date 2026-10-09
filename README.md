@@ -70,7 +70,7 @@ HR/
 ```bash
 pnpm install
 cp apps/api/.env.example apps/api/.env
-pnpm db:up        # start PostgreSQL in Docker
+pnpm db:up        # start PostgreSQL and Mailpit in Docker
 pnpm db:migrate   # create the tables
 pnpm db:generate  # build the Prisma client
 pnpm db:seed      # add the demo company and its Admin
@@ -84,18 +84,19 @@ The seed creates "MDARJ Demo Company" with one Admin. Log in with `SEED_ADMIN_EM
 | --- | --- | --- |
 | `pnpm dev:api` | NestJS backend | http://localhost:4000 |
 | `pnpm dev:web` | Next.js frontend | http://localhost:3000 |
+| `pnpm db:up` | Mailpit, the fake inbox: every email the API sends lands here, never with real people | http://localhost:8025 |
 
 ### Other commands
 
 | Command | What it does |
 | --- | --- |
 | `pnpm build:shared` | Builds `packages/shared` (validation rules and types used by both apps). `pnpm dev:api` runs it first; run it yourself after changing shared code while `pnpm dev:web` is running |
-| `pnpm db:up` | Starts PostgreSQL in Docker |
+| `pnpm db:up` | Starts PostgreSQL and Mailpit (the fake inbox) in Docker |
 | `pnpm db:migrate` | Applies new migrations to the local database |
 | `pnpm db:generate` | Rebuilds the Prisma client after a schema change (Prisma 7 no longer does this inside `db:migrate`) |
 | `pnpm db:seed` | Adds the demo company and its Admin |
 | `pnpm test` | Runs the backend unit tests (no database needed) |
-| `pnpm test:e2e` | Runs the backend tests that use the database (start it first with `pnpm db:up`) |
+| `pnpm test:e2e` | Runs the backend tests that use the database and Mailpit (start them first with `pnpm db:up`) |
 | `pnpm lint` | Checks both apps for code mistakes |
 | `pnpm typecheck` | Builds `packages/shared`, then checks the types of shared, api and web without building them |
 | `pnpm check:raw-sql` | Fails if `apps/api/src` uses raw SQL outside `src/prisma/` (api-conventions.md §8) |
@@ -110,6 +111,10 @@ The seed creates "MDARJ Demo Company" with one Admin. Log in with `SEED_ADMIN_EM
 | api | `apps/api/.env` | `DATABASE_URL` | `postgresql://mdarj:mdarj@localhost:5432/mdarj?schema=public` | PostgreSQL connection |
 | api | `apps/api/.env` | `SEED_ADMIN_EMAIL` | `admin@demo.mdarj.test` | Email of the demo Admin |
 | api | `apps/api/.env` | `SEED_ADMIN_PASSWORD` | `ChangeMe123!` | Password of the demo Admin |
+| api | `apps/api/.env` | `SMTP_HOST`, `SMTP_PORT` | `localhost`, `1025` | The mail server: Mailpit locally, the email provider in production |
+| api | `apps/api/.env` | `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` | `false`, empty, empty | Only for a real provider |
+| api | `apps/api/.env` | `MAIL_FROM` | `MDARJ <no-reply@mdarj.local>` | The sender shown in the email |
+| api | `apps/api/.env` | `MAILPIT_URL` | `http://localhost:8025` | Used by the email tests to read the fake inbox |
 | web | `apps/web/.env.local` | `API_URL` | `http://localhost:4000` | Where the web app forwards `/api/*` requests |
 
 Restart the backend after changing `.env`.
