@@ -7,7 +7,6 @@ import {
   Post,
   Req,
   Res,
-  UseGuards,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import {
@@ -18,7 +17,8 @@ import {
 } from '@mdarj/shared';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
 import { AuthService } from './auth.service.js';
-import { SessionGuard } from './session.guard.js';
+import { Public } from './public.decorator.js';
+import { ALL_ROLES, Roles } from './roles.decorator.js';
 import { SESSION_COOKIE } from './session-token.js';
 
 @Controller('auth')
@@ -27,6 +27,7 @@ export class AuthController {
 
   // POST /auth/sign-up (CS-01, FR-CS-1)
   @Post('sign-up')
+  @Public()
   @HttpCode(HttpStatus.CREATED)
   signUp(@Body(new ZodValidationPipe(signUpSchema)) body: SignUpInput) {
     return this.authService.signUp(body);
@@ -34,6 +35,7 @@ export class AuthController {
 
   // POST /auth/login (UA-03, FR-UA-3)
   @Post('login')
+  @Public()
   @HttpCode(HttpStatus.OK)
   async login(
     @Body(new ZodValidationPipe(loginSchema)) body: LoginInput,
@@ -59,7 +61,7 @@ export class AuthController {
 
   // GET /auth/me: who is logged in
   @Get('me')
-  @UseGuards(SessionGuard)
+  @Roles(...ALL_ROLES)
   me(@Req() req: Request) {
     return this.authService.me(req.auth!.userId);
   }
@@ -67,7 +69,7 @@ export class AuthController {
   // POST /auth/logout: end this session and remove the cookie
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(SessionGuard)
+  @Roles(...ALL_ROLES)
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     await this.authService.logout(req.auth!.sessionId);
     res.clearCookie(SESSION_COOKIE, { path: '/' });

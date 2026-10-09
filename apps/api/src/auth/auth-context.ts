@@ -6,6 +6,8 @@ export interface AuthContext {
   userId: string;
   companyId: string;
   role: UserRole;
+  /** The employee record linked to this login; null for an Admin or Interviewer without one */
+  employeeId: string | null;
 }
 
 // Teach TypeScript that Express requests can carry req.auth

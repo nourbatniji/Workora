@@ -22,10 +22,10 @@ NestJS 12 (apps/api, port 4000)
   ├── 1. cookieParser            read the Cookie header
   ├── 2. sessionMiddleware       AUTHENTICATION + TENANCY
   │        token → SHA-256 → sessions row → live? user active?
-  │        → req.auth = { sessionId, userId, companyId, role }
+  │        → req.auth = { sessionId, userId, companyId, role, employeeId }
   │        → runInCompany(companyId)   (AsyncLocalStorage "badge")
-  ├── 3. SessionGuard            enforces "must be logged in" (opt-in per route)
-  ├── 4. (no RolesGuard yet)     AUTHORIZATION — MISSING
+  ├── 3. SessionGuard            global: "must be logged in" unless @Public() → 401
+  ├── 4. RolesGuard              global AUTHORIZATION: @Roles(...) on the route, deny by default → 403
   ├── 5. ZodValidationPipe       VALIDATION with schemas from packages/shared
   ├── 6. AuthController          the only business controller
   ├── 7. AuthService             sign-up, login, me, logout
@@ -82,9 +82,9 @@ Request
 
 ## 5. Known gaps (from the Oct 7 review)
 
-1. Authorization — permission matrix agreed (requirements/permissions.md, D-49…D-54); RolesGuard still missing (SCRUM-33) — before any Admin-only endpoint
+1. ~~Authorization~~ — SCRUM-33: global SessionGuard + RolesGuard, deny by default (D-61); "own" checks with assertOwnEmployee (D-62); proven by test/auth/permissions.e2e-spec.ts
 2. ~~API conventions~~ — written in requirements/api-conventions.md (D-55…D-57); every error now leaves as { message, errors? } (ApiExceptionFilter); raw SQL refused on the company-scoped client
-3. Login required by default (today each route must opt in)
+3. ~~Login required by default~~ — SCRUM-33: only @Public() routes skip the session check
 4. ~~Child rows can point at another company's parent~~ — fixed by SCRUM-175: same-company foreign keys (D-48), proven by test/tenancy/related-rows.e2e-spec.ts
 5. ~~Audit log~~ — SCRUM-26: `AuditService.record(tx, userId, entry)` writes in the same transaction as the change; the database refuses UPDATE and DELETE (D-58…D-60). The `GET /audit-log` viewer waits for the role guard (SCRUM-33)
 6. Web app is not behind login; shell shows a mock user
