@@ -1,8 +1,8 @@
 'use client';
 
 import { createContext, useContext, useMemo, useState } from 'react';
+import { useCurrentUser } from '@/components/shell/current-user';
 import {
-  CURRENT_ADMIN,
   INITIAL_EXCEPTIONS,
   recalculateCheckout,
   type AttendanceException,
@@ -33,6 +33,9 @@ export function ExceptionsProvider({
   children: React.ReactNode;
 }) {
   const [exceptions, setExceptions] = useState(INITIAL_EXCEPTIONS);
+  // Decisions are signed by the real logged-in Admin, not a mock name (SCRUM-169)
+  const user = useCurrentUser();
+  const deciderName = user.name ?? user.email ?? '';
 
   const value = useMemo<ExceptionsStore>(() => {
     // Only pending exceptions can be decided; change() returns null to skip one
@@ -49,7 +52,7 @@ export function ExceptionsProvider({
             ? {
                 ...e,
                 ...patch,
-                decidedBy: CURRENT_ADMIN,
+                decidedBy: { ar: deciderName, en: deciderName },
                 decidedAt: new Date().toISOString(),
               }
             : e;
@@ -85,7 +88,7 @@ export function ExceptionsProvider({
           list.map((e) => snapshot.find((s) => s.id === e.id) ?? e),
         ),
     };
-  }, [exceptions]);
+  }, [exceptions, deciderName]);
 
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

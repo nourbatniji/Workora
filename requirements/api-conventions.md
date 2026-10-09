@@ -128,7 +128,7 @@ The query is validated by a zod schema like any body. A sort or filter field the
 | Where the code runs | How it calls the API | The session cookie |
 | --- | --- | --- |
 | **Browser** (client components, forms) | `fetch('/api/...')` through the helpers in `apps/web/src/lib/api.ts` | Sent automatically by the browser (same address, httpOnly cookie) |
-| **Next.js server** (layouts, server components, the login gate in SCRUM-169) | Directly to `API_URL` (`http://localhost:4000` locally) | Forwarded on purpose: read the incoming `cookie` header and pass it on. A server helper is added in SCRUM-169 |
+| **Next.js server** (layouts, server components, the login gate in SCRUM-169) | Directly to `API_URL` (`http://localhost:4000` locally) | Forwarded on purpose: `getSession()` in `apps/web/src/lib/session.ts` reads the incoming cookie and passes it on (SCRUM-169) |
 
 - JavaScript never reads or stores the session token (httpOnly, D-24).
 - Every call handles the error body of §6 the same way: show the translated `message`, and each `errors` key next to its field.

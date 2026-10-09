@@ -14,9 +14,10 @@ import {
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from '@/i18n/navigation';
-import { NAV_ITEMS, SAVED_VIEWS } from '@/lib/nav';
+import { SAVED_VIEWS, navItemsFor } from '@/lib/nav';
 import Modal from '@/components/ui/modal';
 import { useAppState } from './app-state';
+import { useRole } from './current-user';
 
 type Command = {
   id: string;
@@ -56,6 +57,7 @@ function PaletteBody() {
   const router = useRouter();
   const pathname = usePathname();
   const { close, open, theme, toggleTheme } = useAppState();
+  const role = useRole();
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const listRef = useRef<HTMLUListElement>(null);
@@ -66,7 +68,8 @@ function PaletteBody() {
       router.push(href);
     };
     return [
-      ...NAV_ITEMS.map((item) => ({
+      // Only the pages and tools this role may use (requirements/permissions.md)
+      ...navItemsFor(role).map((item) => ({
         id: `page-${item.key}`,
         group: 'pages' as const,
         label: tNav(item.key),
@@ -74,20 +77,24 @@ function PaletteBody() {
         soon: !item.built,
         run: go(item.href),
       })),
-      ...SAVED_VIEWS.map((view) => ({
+      ...(role === 'admin' ? SAVED_VIEWS : []).map((view) => ({
         id: `view-${view.key}`,
         group: 'savedViews' as const,
         label: tViews(view.key),
         icon: Bookmark,
         run: go(view.href),
       })),
-      {
-        id: 'invite',
-        group: 'actions',
-        label: t('actionInvite'),
-        icon: UserPlus,
-        run: () => open('invite'),
-      },
+      ...(role === 'admin'
+        ? [
+            {
+              id: 'invite',
+              group: 'actions' as const,
+              label: t('actionInvite'),
+              icon: UserPlus,
+              run: () => open('invite'),
+            },
+          ]
+        : []),
       {
         id: 'theme',
         group: 'actions',
@@ -117,6 +124,7 @@ function PaletteBody() {
       },
     ];
   }, [
+    role,
     t,
     tNav,
     tViews,

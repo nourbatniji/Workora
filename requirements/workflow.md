@@ -14,7 +14,7 @@ This file says **how** we build and **in what order**. `srs.md` says what, `deci
 | 4 | ERD / Database design | Done for what is built | SRS §5 data model; `schema.prisma` has companies, settings versions, users, job titles, employees, salary history, status history, documents, contracts, sessions. Other tables are added by the task that first uses them (D-42) | Design each new module's tables at the start of its feature (you draft, then compare with SRS §5) |
 | 5 | Roles + Permissions + API design | Done | `permissions.md` (D-49…D-54), `api-conventions.md` (error filter, raw-SQL refusal), `api-endpoints.md` (127 endpoints, 6 jobs; each story's endpoints are in its Jira description) | Each feature adds its `@Roles` and own-data checks |
 | 6 | Project foundation | Done for the MVP start | pnpm workspace, NestJS, Next.js, Prisma + PostgreSQL, tenancy guard + isolation test, next-intl RTL shell, 360 px layout, CI on every PR with `main` protected (SCRUM-168), audit writer + append-only `audit_log` (SCRUM-26) | Files (FND-06), email (FND-05) and jobs (FND-04) are built just before the first feature that needs them |
-| 7 | Authentication | Backend done, web half done | Sign-up, login (email or phone), sessions, `/auth/me`, logout, e2e tests; login and sign-up pages call the API (SCRUM-149 branch) | Role guard done (UA-05, SCRUM-33). The web app does not check the session yet (app pages open without login, no logout button); invites + set password (UA-01/02); password reset (UA-04) |
+| 7 | Authentication | Login, roles and the web login gate done | Sign-up, login (email or phone), sessions, `/auth/me`, logout, e2e tests; login and sign-up pages call the API (SCRUM-149 branch) | Role guard done (UA-05, SCRUM-33); web login gate, real user and logout done (UA-12, SCRUM-169). Still to do: invites + set password (UA-01/02); password reset (UA-04) |
 | 8 | Application shell / shared UI | Done as views | App shell, nav, top bar, command palette, UI kit (SCRUM-146); dashboard and exceptions inbox with mock data (SCRUM-147/148) | Shell must read the real user and role from `/auth/me`. The mock dashboard and inbox stay as UI prototypes and get wired in their own features |
 | 9 | Feature-by-feature development | Not started | — | Order in §4 |
 | 10 | Integration testing | Per feature from now | Tenancy and auth e2e tests | Every feature ends with its own integration test; QA-01/QA-02 become final sweeps |
@@ -176,3 +176,19 @@ To do in Jira (Trendow):
 - SCRUM-168 → Done
 - SCRUM-26 → Done after its PR is green and merged; comment: the `GET /audit-log` viewer is built after SCRUM-33 (it is Admin-only)
 - SCRUM-33 UA-05 role guard: global `SessionGuard` (private by default, `@Public()`), global `RolesGuard` (`@Roles`, deny by default), `assertOwnEmployee`, `test/auth/role-browsers.ts` helper, `test/auth/permissions.e2e-spec.ts`; decisions proposed D-61, D-62
+
+### Oct 9, 2026 (backlog re-order)
+
+Why: the rank inside Sprint 2 did not follow the build order in §4 (for example UA-04 reset was first, before the email and invites it needs), and Sprint 2 held 36 open issues for one week.
+
+Changed in Jira:
+- Sprint 2 ranked by dependency: SCRUM-169 → 176 → 24 → 29 → 30 → 150 → 32 → 35 → 144 → 46 → 40 → 41 → 45 → 42 → 43 → 44 → 152 → 39 → 151 → 163 (done SCRUM-33 and SCRUM-47 stay at the top)
+- Moved from Sprint 2 to the top of Sprint 3, in this order: SCRUM-48, 49, 50, 54, 34, 25, 53, 55, 56, 51, 52, 57, 153, 154, 58, 155
+- Links added ("is blocked by", blocked ← blocker): SCRUM-32 ← 29, and:
+- SCRUM-150 ← 29, 30 · SCRUM-35 ← 29 · SCRUM-144 ← 35
+- SCRUM-41 ← 33 · SCRUM-43 ← 33 · SCRUM-44 ← 45 · SCRUM-152 ← 40, 41, 42, 43, 44 · SCRUM-151 ← 39
+- SCRUM-49, 50, 51, 52, 53, 54, 56 ← 48 · SCRUM-55 ← 49, 50, 51, 53 · SCRUM-57 ← 55 · SCRUM-153 ← 48, 56 · SCRUM-154 ← 55 · SCRUM-155 ← 58
+
+Noticed, not changed:
+- An empty active sprint "SCRUM Sprint 0" (id 2) is still open next to Sprint 2
+- SCRUM-169 UA-12 web login gate: `(app)/layout.tsx` checks the session on the server with `getSession()`; login returns to `?next=`; "session expired" notice; shell shows the real user, company and role; Log out; menu, command palette, saved views and Invite follow the role; mock company removed; decision proposed D-63

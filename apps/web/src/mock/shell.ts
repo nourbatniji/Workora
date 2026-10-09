@@ -1,12 +1,6 @@
-// Mock data for the app shell. No backend: everything here is static and typed,
-// so the screens can be clicked through before the API exists.
-
-export const company = {
-  /** Text comes from the dictionaries (Shell.companyName / Shell.companyCity) */
-  initials: { ar: 'م', en: 'NB' },
-  employeeCount: 42,
-  maxEmployees: 50,
-};
+// Mock data for the app shell (UI prototype — awaiting backend integration).
+// The user and company now come from the API (SCRUM-169); payroll progress and
+// notifications stay mock until their own features are built.
 
 export const payrollProgress = {
   month: '2026-10-01',

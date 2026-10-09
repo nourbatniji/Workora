@@ -12,8 +12,11 @@ import { errorsByField } from '@/lib/form-errors';
 // Answers from the API that get their own message; anything else is "something went wrong"
 const KNOWN_ERRORS = ['invalidCredentials', 'accountDeactivated'];
 
-/** Log in with email or phone (UA-03). Checks in the browser first, then asks the API. */
-export default function LoginForm() {
+/**
+ * Log in with email or phone (UA-03). Checks in the browser first, then asks the API.
+ * next: the page to open after login, already checked by safeNext() (SCRUM-169).
+ */
+export default function LoginForm({ next = '/' }: { next?: string }) {
   const t = useTranslations('Auth');
   const tErr = useTranslations('Errors');
   const router = useRouter();
@@ -43,7 +46,9 @@ export default function LoginForm() {
     setSending(false);
 
     if (status === 200) {
-      router.push('/');
+      // Back to the page that sent us to login; refresh so the (app) layout sees the new session
+      router.replace(next);
+      router.refresh();
       return;
     }
     const key = data?.message ?? '';

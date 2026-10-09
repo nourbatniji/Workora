@@ -8,7 +8,9 @@ import { employeeById, type Locale } from '@/mock/people';
 import IconButton from '@/components/ui/icon-button';
 import Popover from '@/components/ui/popover';
 import { useAppState } from './app-state';
+import { useRole } from './current-user';
 import RoleSwitcher from './role-switcher';
+import UserMenu from './user-menu';
 
 export default function TopBar() {
   const t = useTranslations('Shell');
@@ -24,6 +26,7 @@ export default function TopBar() {
     notificationsOpen,
     setNotificationsOpen,
   } = useAppState();
+  const role = useRole();
   const title = tNav(navItemForPath(pathname)?.key ?? 'dashboard');
   const otherLocale = locale === 'ar' ? 'en' : 'ar';
 
@@ -97,15 +100,20 @@ export default function TopBar() {
         </Popover>
       </div>
 
-      <button
-        type="button"
-        onClick={() => open('invite')}
-        className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-accent px-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 lg:px-3.5"
-        aria-label={t('invite')}
-      >
-        <UserPlus className="size-[18px]" strokeWidth={1.5} aria-hidden />
-        <span className="hidden lg:inline">{t('invite')}</span>
-      </button>
+      {/* Inviting people is an Admin action (requirements/permissions.md §3) */}
+      {role === 'admin' && (
+        <button
+          type="button"
+          onClick={() => open('invite')}
+          className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-accent px-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 lg:px-3.5"
+          aria-label={t('invite')}
+        >
+          <UserPlus className="size-[18px]" strokeWidth={1.5} aria-hidden />
+          <span className="hidden lg:inline">{t('invite')}</span>
+        </button>
+      )}
+
+      <UserMenu />
     </header>
   );
 }
