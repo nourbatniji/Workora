@@ -4,6 +4,8 @@
   "private": true,
   "description": "",
   "scripts": {
+    "check:raw-sql": "bash scripts/check-raw-sql.sh",
+    "typecheck": "pnpm build:shared && pnpm -r typecheck",
     "build:shared": "pnpm --filter @mdarj/shared build",
     "dev:api": "pnpm build:shared && pnpm --filter api start:dev",
     "dev:web": "pnpm --filter web dev",
