@@ -9,6 +9,7 @@ import {
   LatestExceptions,
   PendingCard,
 } from '@/components/dashboard/cards';
+import PrototypeBadge from '@/components/ui/prototype-badge';
 import { getSession } from '@/lib/session';
 import { today } from '@/mock/dashboard';
 import { dayDate } from '@/lib/dates';
@@ -23,12 +24,15 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-[1280px]">
+      {/* The cards below still use sample data (UI prototype, SCRUM-147) */}
+      <PrototypeBadge />
       <div className="mb-5">
         <p className="text-lg font-medium">
           {t('greeting', { name: shownName.split(' ')[0] })}
         </p>
         <p className="text-[13px] text-muted">
           {t('subtitle', {
+            company: user?.company.name ?? '',
             date: format.dateTime(dayDate(today.date), {
               weekday: 'long',
               day: 'numeric',

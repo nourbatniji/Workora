@@ -6,7 +6,7 @@ The interface is bilingual (Arabic right-to-left and English) and works on deskt
 
 ## Status
 
-Requirements are signed off. Done: project skeleton (SCRUM-20, FND-01), database (SCRUM-21, FND-02), company data isolation (SCRUM-22, FND-03), Arabic/English shell (SCRUM-27, FND-08), phone layout (SCRUM-28, FND-09), and the app shell, admin dashboard and exceptions inbox views with mock data (SCRUM-146 to SCRUM-148). In progress: company sign-up (SCRUM-38, CS-01).
+Requirements are signed off. The foundation is verified (SCRUM-176, see [`requirements/foundation-check.md`](requirements/foundation-check.md)): project skeleton, database, company data isolation (direct and linked rows), Arabic/English shell and phone layout, company sign-up, login with sessions, role permissions on every API route, the web app behind login, the audit log, API conventions and CI on every pull request. The dashboard and exceptions inbox are UI prototypes with sample data. Next: email, invites and company settings (Sprint 2).
 
 | Release | Target date | Contents |
 | --- | --- | --- |
@@ -21,7 +21,7 @@ All product and technical decisions live in [`requirements/`](requirements/):
 
 | File | What it holds |
 | --- | --- |
-| [`srs.md`](requirements/srs.md) | What the system must do: functional requirements (FR-…), business rules (BR-…), non-functional requirements (NFR-…). Current version: v1.5. |
+| [`srs.md`](requirements/srs.md) | What the system must do: functional requirements (FR-…), business rules (BR-…), non-functional requirements (NFR-…). Current version: v1.6. |
 | [`decisions.md`](requirements/decisions.md) | Why and how: every decision that shapes the build (D-01 …), with its status. |
 | [`assumptions.md`](requirements/assumptions.md) | Points not yet confirmed (A-01 …) and what changes if they are wrong. |
 | [`development-plan.md`](requirements/development-plan.md) | Architecture, modules, scheduled jobs and test plan. The dates in Jira replace its sprint calendar. |

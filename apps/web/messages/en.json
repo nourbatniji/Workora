@@ -130,6 +130,10 @@
     "eg13Value": "Day +35%, night +70%, rest day double pay",
     "guidance": "Guidance, not legal advice."
   },
+  "Prototype": {
+    "badge": "UI prototype · sample data",
+    "hint": "The real numbers arrive with their features"
+  },
   "Soon": {
     "badge": "Next phase",
     "title": "{module} is coming in the next phase",
@@ -160,7 +164,7 @@
   },
   "Dashboard": {
     "greeting": "Good afternoon, {name}",
-    "subtitle": "Here's how Nile Bakeries is doing today, {date}.",
+    "subtitle": "Here's how {company} is doing today, {date}.",
     "insightTitle": "Attendance today",
     "insightCaption": "of the {due} people due so far came in",
     "insightSentence": "<b>{late} late</b> and <b>{absent} absent</b> today, mostly from the <b>night shift</b>.",
