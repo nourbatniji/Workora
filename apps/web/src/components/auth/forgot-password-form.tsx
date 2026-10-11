@@ -1,36 +1,53 @@
 'use client';
 
 import { MailCheck } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { signUpSchema } from '@mdarj/shared';
 import { Field, inputClass } from '@/components/ui/field';
 import { Link } from '@/i18n/navigation';
+import { postJson } from '@/lib/api';
 
 // Same email rules as sign-up: trimmed, lowercased, valid
 const emailSchema = signUpSchema.shape.email;
 
 /**
- * Forgot password (UA-04, FR-UA-4). View only for now: the reset email arrives with UA-04.
- * The "check your email" screen never says whether the account exists.
+ * Forgot password (UA-04, FR-UA-4): the API emails a 1-hour link when the email has an
+ * Active account. The "check your email" screen never says whether the account exists.
  */
 export default function ForgotPasswordForm() {
   const t = useTranslations('Auth');
   const tErr = useTranslations('Errors');
+  const locale = useLocale();
 
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string>();
   const [sentTo, setSentTo] = useState<string>();
+  const [sending, setSending] = useState(false);
 
-  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const check = emailSchema.safeParse(email);
     if (!check.success) {
       setError(check.error.issues[0].message);
       return;
     }
-    // UA-04 will call POST /api/auth/forgot-password here
-    setSentTo(check.data);
+
+    setError(undefined);
+    setSending(true);
+    // The email and its link come back in the language of this page
+    const { status } = await postJson('/auth/password-reset', {
+      email: check.data,
+      language: locale === 'ar' ? 'ar' : 'en',
+    });
+    setSending(false);
+
+    // 204 whether or not the account exists; anything else is a real failure
+    if (status === 204) {
+      setSentTo(check.data);
+      return;
+    }
+    setError(status === 400 ? 'emailInvalid' : 'somethingWrong');
   }
 
   if (sentTo) {
@@ -71,9 +88,10 @@ export default function ForgotPasswordForm() {
 
       <button
         type="submit"
-        className="h-10 w-full rounded-[10px] bg-accent text-sm font-medium text-white transition-opacity hover:opacity-90"
+        disabled={sending}
+        className="h-10 w-full rounded-[10px] bg-accent text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
       >
-        {t('forgot.submit')}
+        {sending ? t('sending') : t('forgot.submit')}
       </button>
 
       <p className="text-center text-[13px] text-muted">

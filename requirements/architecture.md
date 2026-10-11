@@ -72,9 +72,9 @@ Request
 | --- | --- | --- | --- |
 | Auth (sign-up, login, me, logout) | Built + e2e tests | sign-up, login, server-side gate, real user in the shell, logout | Integrated |
 | Tenancy | Prisma extension + tests | — | Built |
-| Authorization (roles) | — | dev-only role switcher (fake) | Missing |
+| Authorization (roles) | SessionGuard + RolesGuard, deny by default (SCRUM-33) | menu follows the real role (SCRUM-169) | Built |
 | Audit log | `AuditService` + `audit_log` table (append-only trigger) + e2e tests; viewer endpoint after SCRUM-33 | — | Built (writer) |
-| Users & invites | — | set-password view | Not started |
+| Users & invites | `modules/users` (`POST`/`GET /users`, `POST /users/:id/invite`, `PATCH /users/:id`, `POST /users/:id/deactivate` and `/activate`, Admin; last Active Admin rule) + public `GET /auth/invites/:token`, `POST /auth/invites/:token/accept`; hashed invite token (D-65); invite email after the save; e2e tests | `/users` page (Admin): list with role, account status and link expiry, "New link" and "Manage" (role, login off/on) per person; Invite dialog (top bar, command palette, Users page) calls `POST /users` and shows the link with Copy; set-password page checks the link and calls the API | In progress on `feat/scrum-29-invites` (SCRUM-29, 30, 150, 32, 35, 144) |
 | Company settings | tables only | — | Not started |
 | People (employees, salary, status, documents) | tables only | mock people data | Not started |
 | Contracts | table only | mock dashboard card | Not started |

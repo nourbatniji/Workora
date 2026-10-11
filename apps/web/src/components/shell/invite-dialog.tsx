@@ -1,13 +1,17 @@
 'use client';
 
-import { Check, Copy, Link2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { createUserSchema, USER_ROLES } from '@mdarj/shared';
+import InviteLinkBox from '@/components/users/invite-link-box';
 import { Field, inputClass } from '@/components/ui/field';
 import Modal from '@/components/ui/modal';
+import { useRouter } from '@/i18n/navigation';
+import { postJson } from '@/lib/api';
+import { errorsByField } from '@/lib/form-errors';
 import { useAppState } from './app-state';
 
-/** FR-UA-1 / FR-UA-2 preview: create an invite link, valid 7 days, copy it to share by WhatsApp or SMS */
+/** Invite a person (UA-01, UA-02): the Admin creates the user, MDARJ makes a 7-day link to copy, and emails it when there is an email */
 export default function InviteDialog() {
   const t = useTranslations('Invite');
   const tShell = useTranslations('Shell');
@@ -26,86 +30,93 @@ export default function InviteDialog() {
   );
 }
 
-type Errors = Partial<Record<'name' | 'contact' | 'phone' | 'email', string>>;
+type Role = (typeof USER_ROLES)[number];
+
+/** The answer of POST /users, or an error ({ message, errors? }) */
+type CreateAnswer = {
+  user?: { name: string | null; email: string | null };
+  inviteLink?: string;
+  emailSent?: boolean;
+  message?: string;
+  errors?: Record<string, string>;
+};
+
+// Answers from the API that get their own message; anything else is "something went wrong"
+const KNOWN_ERRORS = ['forbidden', 'notLoggedIn', 'sessionExpired', 'conflict'];
 
 function InviteForm({ onDone }: { onDone: () => void }) {
   const t = useTranslations('Invite');
+  const tErr = useTranslations('Errors');
+  const tRoles = useTranslations('Users.roles');
+  const locale = useLocale();
+  const router = useRouter();
+
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [errors, setErrors] = useState<Errors>({});
-  const [link, setLink] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [role, setRole] = useState<Role>('employee');
+  // The invite opens in this language; it starts as the page's language (D-66)
+  const [language, setLanguage] = useState(locale === 'ar' ? 'ar' : 'en');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [sending, setSending] = useState(false);
+  const [created, setCreated] = useState<{
+    name: string;
+    link: string;
+    emailedTo: string | null;
+  } | null>(null);
 
-  function submit(event: React.FormEvent) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
-    const next: Errors = {};
-    if (!name.trim()) next.name = t('nameRequired');
-    if (!phone.trim() && !email.trim()) next.contact = t('contactRequired');
-    if (phone.trim() && !/^01[0125]\d{8}$/.test(phone.trim()))
-      next.phone = t('phoneInvalid');
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-      next.email = t('emailInvalid');
-    setErrors(next);
-    if (Object.keys(next).length > 0) return;
-    // Mock token: the real one comes from the API (users.invite_token)
-    const token = Math.random().toString(36).slice(2, 10);
-    setLink(`https://mdarj.example/invite/${token}`);
-  }
+    const body = { name, phone, email, role, language };
 
-  async function copy() {
-    if (!link) return;
-    try {
-      await navigator.clipboard.writeText(link);
-    } catch {
-      // Clipboard blocked: the link is still selectable in the box
+    // 1. Same rules as the server (shared schema), so mistakes show without a round trip
+    const check = createUserSchema.safeParse(body);
+    if (!check.success) {
+      setErrors(errorsByField(check.error.issues));
+      return;
     }
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
+
+    // 2. Ask the API: it creates the user, the link, and sends the email
+    setErrors({});
+    setSending(true);
+    const { status, data } = await postJson<CreateAnswer>('/users', body);
+    setSending(false);
+
+    if (status === 201 && data?.inviteLink) {
+      setCreated({
+        name: data.user?.name ?? name.trim(),
+        link: data.inviteLink,
+        emailedTo: data.emailSent ? (data.user?.email ?? null) : null,
+      });
+      router.refresh(); // the Users page shows the new person
+      return;
+    }
+    if (data?.errors) {
+      setErrors(data.errors); // e.g. { email: 'emailTaken' }
+      return;
+    }
+    const key = data?.message ?? '';
+    setErrors({ form: KNOWN_ERRORS.includes(key) ? key : 'somethingWrong' });
   }
 
   function reset() {
     setName('');
     setPhone('');
     setEmail('');
+    setRole('employee');
     setErrors({});
-    setLink(null);
+    setCreated(null);
   }
 
-  if (link) {
+  const message = (key?: string) => (key ? tErr(key) : undefined);
+
+  if (created) {
     return (
       <div>
-        <p className="text-sm font-medium">
-          {t('readyTitle', { name: name.trim() })}
+        <p className="mb-3 text-sm font-medium">
+          {t('readyTitle', { name: created.name })}
         </p>
-        <div className="mt-3 flex items-center gap-2 rounded-[10px] border border-line bg-canvas p-2 ps-3">
-          <Link2
-            className="size-4 shrink-0 text-muted"
-            strokeWidth={1.5}
-            aria-hidden
-          />
-          <input
-            readOnly
-            value={link}
-            dir="ltr"
-            onFocus={(event) => event.currentTarget.select()}
-            className="min-w-0 flex-1 bg-transparent text-[13px] outline-none"
-            aria-label={t('copy')}
-          />
-          <button
-            type="button"
-            onClick={copy}
-            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-accent px-3 text-[13px] font-medium text-white"
-          >
-            {copied ? (
-              <Check className="size-4" strokeWidth={1.5} aria-hidden />
-            ) : (
-              <Copy className="size-4" strokeWidth={1.5} aria-hidden />
-            )}
-            {copied ? t('copied') : t('copy')}
-          </button>
-        </div>
-        <p className="mt-2 text-xs text-muted">{t('readyHint')}</p>
+        <InviteLinkBox link={created.link} emailedTo={created.emailedTo} />
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
@@ -128,7 +139,7 @@ function InviteForm({ onDone }: { onDone: () => void }) {
 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-      <Field label={t('name')} error={errors.name}>
+      <Field label={t('name')} error={message(errors.name)}>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -137,20 +148,20 @@ function InviteForm({ onDone }: { onDone: () => void }) {
           autoFocus
         />
       </Field>
-      <Field label={t('phone')} error={errors.phone}>
+      <Field label={t('phone')} error={message(errors.phone)}>
         <input
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder={t('phonePlaceholder')}
           inputMode="tel"
           dir="ltr"
-          className={`${inputClass(!!errors.phone || !!errors.contact)} rtl:text-end`}
+          className={`${inputClass(!!errors.phone)} rtl:text-end`}
         />
       </Field>
       <Field
         label={t('email')}
         hint={t('optional')}
-        error={errors.email ?? errors.contact}
+        error={message(errors.email)}
       >
         <input
           value={email}
@@ -158,9 +169,44 @@ function InviteForm({ onDone }: { onDone: () => void }) {
           placeholder={t('emailPlaceholder')}
           type="email"
           dir="ltr"
-          className={`${inputClass(!!errors.email || !!errors.contact)} rtl:text-end`}
+          className={`${inputClass(!!errors.email)} rtl:text-end`}
         />
       </Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label={t('role')} error={message(errors.role)}>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as Role)}
+            className={inputClass(!!errors.role)}
+          >
+            {USER_ROLES.map((r) => (
+              <option key={r} value={r}>
+                {tRoles(r)}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label={t('language')} error={message(errors.language)}>
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className={inputClass(!!errors.language)}
+          >
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+          </select>
+        </Field>
+      </div>
+
+      {errors.form && (
+        <p
+          role="alert"
+          className="rounded-[10px] border border-danger/30 bg-danger/5 px-3 py-2 text-sm text-danger"
+        >
+          {message(errors.form)}
+        </p>
+      )}
+
       <div className="mt-1 flex justify-end gap-2">
         <button
           type="button"
@@ -171,9 +217,10 @@ function InviteForm({ onDone }: { onDone: () => void }) {
         </button>
         <button
           type="submit"
-          className="h-9 rounded-[10px] bg-accent px-3.5 text-sm font-medium text-white"
+          disabled={sending}
+          className="h-9 rounded-[10px] bg-accent px-3.5 text-sm font-medium text-white disabled:opacity-60"
         >
-          {t('submit')}
+          {sending ? t('sending') : t('submit')}
         </button>
       </div>
     </form>

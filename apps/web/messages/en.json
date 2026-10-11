@@ -22,7 +22,7 @@
     "themeToLight": "Switch to light mode",
     "notifications": "Notifications",
     "messages": "Messages",
-    "invite": "Invite employee",
+    "invite": "Invite",
     "railHome": "MDARJ home",
     "railWorkspace": "HR workspace",
     "railCompliance": "Compliance",
@@ -51,6 +51,7 @@
     "contracts": "Contracts",
     "payroll": "Payroll",
     "compliance": "Compliance",
+    "users": "Users",
     "settings": "Settings"
   },
   "SavedViews": {
@@ -80,7 +81,7 @@
     "pages": "Pages",
     "savedViews": "Saved views",
     "actions": "Actions",
-    "actionInvite": "Invite an employee",
+    "actionInvite": "Invite a person",
     "actionThemeDark": "Switch to dark mode",
     "actionThemeLight": "Switch to light mode",
     "actionLanguage": "Switch language to Arabic",
@@ -91,8 +92,8 @@
     "hintClose": "to close"
   },
   "Invite": {
-    "title": "Invite employee",
-    "description": "The employee sets their own password from the invite link.",
+    "title": "Invite a person",
+    "description": "They set their own password from the invite link.",
     "name": "Full name",
     "namePlaceholder": "e.g. Ahmed Hassan",
     "phone": "Phone number",
@@ -100,18 +101,61 @@
     "email": "Email",
     "optional": "optional",
     "emailPlaceholder": "name@example.com",
+    "role": "Role",
+    "language": "Language of the invite",
     "submit": "Create invite link",
+    "sending": "Creating…",
     "cancel": "Cancel",
-    "nameRequired": "Enter the employee's name.",
-    "contactRequired": "Add a phone number or an email.",
-    "phoneInvalid": "Use an 11-digit Egyptian mobile number starting with 01.",
-    "emailInvalid": "This email doesn't look right.",
     "readyTitle": "Invite link for {name}",
-    "readyHint": "Valid for 7 days. Share it by WhatsApp or SMS. This preview sends no email.",
+    "readyHint": "Valid for 7 days and works once. You can share it by WhatsApp or SMS.",
+    "emailSent": "We also emailed it to {email}.",
+    "noEmail": "It was not emailed: share the link yourself.",
     "copy": "Copy link",
     "copied": "Copied",
     "another": "Invite another",
     "done": "Done"
+  },
+  "Users": {
+    "title": "Users",
+    "hint": "Everyone who can log in to {company}, with their role and account status.",
+    "invite": "Invite",
+    "empty": "No users yet.",
+    "columns": {
+      "name": "Name",
+      "role": "Role",
+      "status": "Account",
+      "link": "Invite link",
+      "actions": "Actions"
+    },
+    "roles": {
+      "admin": "Admin",
+      "employee": "Employee",
+      "interviewer": "Interviewer"
+    },
+    "status": {
+      "invited": "Invited",
+      "active": "Active",
+      "deactivated": "Switched off"
+    },
+    "linkValidUntil": "Valid until {date}",
+    "linkExpired": "Expired",
+    "newLink": "New link",
+    "sending": "Sending…",
+    "newLinkTitle": "New link for {name}",
+    "newLinkInvited": "The old link no longer works.",
+    "newLinkActive": "The old link no longer works. They can use this one to set a new password; their other logins end.",
+    "pagination": "Pages",
+    "pageOf": "Page {page} of {pages}",
+    "previous": "Previous",
+    "next": "Next",
+    "manage": "Manage",
+    "manageTitle": "Manage {name}",
+    "saveRole": "Save role",
+    "loginTitle": "Login",
+    "switchOff": "Switch off login",
+    "switchOffHint": "They are logged out everywhere at once and can't log in. Their employee record stays exactly as it is.",
+    "switchOn": "Switch login back on",
+    "switchOnHint": "They can log in again. Someone who never set a password goes back to Invited and needs a new link."
   },
   "LawRef": {
     "title": "Labor Law No. 14 of 2025",
@@ -141,6 +185,11 @@
     "savedView": "Saved view: {name}",
     "back": "Back to dashboard",
     "exceptions": "Open the Exceptions inbox"
+  },
+  "NotFound": {
+    "title": "We couldn't find this page",
+    "body": "The link may be wrong, the page may have moved, or it isn't available to your account.",
+    "home": "Back to dashboard"
   },
   "Portal": {
     "badge": "Future work",
@@ -366,19 +415,24 @@
       "email": "Email",
       "submit": "Send link",
       "sentTitle": "Check your email",
-      "sentBody": "If {email} has an account, you'll get an email with a link to set a new password.",
+      "sentBody": "If {email} has an active account, you'll get an email with a link to set a new password. The link works for 1 hour.",
       "noEmail": "No email? Ask your company's Admin for a new invite link.",
       "backToLogin": "Back to log in"
     },
     "setPassword": {
       "title": "Set your password",
       "subtitle": "Choose a password for your MDARJ account.",
+      "resetTitle": "Choose a new password",
+      "resetSubtitle": "Your old password stops working, and you are logged out on other devices.",
       "password": "New password",
       "confirm": "Confirm password",
       "submit": "Save password",
       "expiredTitle": "This link has expired",
-      "expiredBody": "Links last 7 days. Ask your company's Admin for a new one.",
-      "backToLogin": "Back to log in"
+      "expiredBody": "Invite links last 7 days and reset links 1 hour. Ask your company's Admin for a new invite, or use \"Forgot password?\" again.",
+      "backToLogin": "Back to log in",
+      "invitedTo": "{name}, you've been invited to {company}.",
+      "invalidTitle": "This link doesn't work",
+      "invalidBody": "It may have been used already or copied incompletely. Ask your company's Admin for a new link."
     },
     "showPassword": "Show password",
     "hidePassword": "Hide password",
@@ -406,6 +460,12 @@
     "invalidReference": "One of the selected items doesn't exist",
     "payloadTooLarge": "This file is too large",
     "tooManyRequests": "Too many attempts. Please wait a moment.",
-    "internalError": "Something went wrong on our side. Please try again."
+    "internalError": "Something went wrong on our side. Please try again.",
+    "emailOrPhoneRequired": "Enter an email or a phone number",
+    "phoneTaken": "This phone number is already used",
+    "roleInvalid": "Choose a role",
+    "inviteInvalid": "This link doesn't work. Ask your company's Admin for a new one.",
+    "inviteExpired": "This link has expired. Ask your company's Admin for a new one.",
+    "lastActiveAdmin": "The company must keep at least one Active Admin. Make someone else an Admin first."
   }
 }

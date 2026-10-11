@@ -203,3 +203,21 @@ Noticed, not changed:
 
 - SCRUM-24 FND-05: `MailService` (SMTP, nodemailer), invite and password-reset templates in Arabic and English, Mailpit in Docker Compose and CI, `test/mail/mail.e2e-spec.ts`; decision D-64
 - Jira SCRUM-24 "Done when" corrected: the invite and reset emails are checked in SCRUM-29 (UA-01) and SCRUM-32 (UA-04), where those features are built
+
+### Oct 11, 2026 (invites)
+
+- SCRUM-29 UA-01, code ready on `feat/scrum-29-invites` (not committed yet):
+  - API: `POST /users` and `GET /users` (Admin, `modules/users/`), `GET /auth/invites/:token` and `POST /auth/invites/:token/accept` (Public); invite token hashed in `users.invite_token` (`auth/invite-token.ts`); user create and invite accept write audit rows; the invite email goes through `MailService` after the save
+  - Shared: `createUserSchema`, `acceptInviteSchema`, `listUsersQuerySchema` (`packages/shared/src/users/invite.ts`)
+  - Web: the set-password page checks the link on the server and the form calls the API; the `?expired=1` stub is gone
+  - Tests: `test/users/invites.e2e-spec.ts`; `role-browsers.ts` cleanup now removes audit rows
+  - No migration: `invite_token` and `invite_expires_at` were already in the schema
+  - Decisions proposed: D-65, D-66
+- Not in this task: the Admin's invite screen and the Copy-link button (SCRUM-150, with SCRUM-30 UA-02); new link for an existing user, `POST /users/:id/invite` (UA-02/UA-04)
+- SCRUM-30 UA-02 on the same branch: `POST /users/:id/invite` (Admin) issues a new 7-day link, emails it when there is an email, and the old link stops working; Deactivated users are refused; accepting a link ends the user's older sessions; tests added to `test/users/invites.e2e-spec.ts`; decision proposed D-67. The Copy-link button is the screen part (SCRUM-150)
+- Git workflow agreed: one branch per feature (here "Users & access": SCRUM-29, 30, 150, 32, 35, 144), one commit per tested checkpoint with its Jira keys, merge to `main` only after the whole feature is tested and approved
+- SCRUM-150 UI users and invites on the same branch: `/users` page (Admin only, new "Users" menu item) reads `GET /users` on the Next.js server (`lib/server-api.ts`); table with role, account status, link expiry and a "New link" button (`POST /users/:id/invite`) that shows the link with Copy; the Invite dialog (top bar, command palette, Users page) now calls `POST /users` with role and invite language, shows the link with Copy and whether it was emailed; the mock invite link is gone
+- 404 page: `not-found.tsx` inside the app shell and outside it, and `[module]/[...rest]` so deeper unknown addresses show it too, instead of Next.js's plain default page
+- SCRUM-32 UA-04 on the same branch: "Forgot password?" calls `POST /auth/password-reset`, which emails a 1-hour link to Active users (always 204, one email a minute); the link opens the same set-password page, worded "Choose a new password"; tests in `test/auth/password-reset.e2e-spec.ts`; decision proposed D-68
+- SCRUM-35 UA-07 and SCRUM-144 UA-10 on the same branch: `PATCH /users/:id` (role), `POST /users/:id/deactivate` and `/activate`, never leaving the company without an Active Admin (409 `lastActiveAdmin`, Serializable transaction); switching a login off ends its sessions and open link and never touches the employee record; "Manage" window on the Users page; tests in `test/users/manage-users.e2e-spec.ts`; decision proposed D-69
+

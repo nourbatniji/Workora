@@ -7,6 +7,7 @@ import {
   LayoutGrid,
   Settings,
   ShieldCheck,
+  UserCog,
   UserRoundSearch,
   Users,
   Wallet,
@@ -25,6 +26,7 @@ export type NavKey =
   | 'contracts'
   | 'payroll'
   | 'compliance'
+  | 'users'
   | 'settings';
 
 export type NavItem = {
@@ -102,6 +104,13 @@ export const NAV_ITEMS: NavItem[] = [
     href: '/compliance',
     icon: ShieldCheck,
     built: false,
+    roles: ['admin'],
+  },
+  {
+    key: 'users',
+    href: '/users',
+    icon: UserCog,
+    built: true,
     roles: ['admin'],
   },
   {

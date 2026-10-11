@@ -95,6 +95,14 @@ export async function setupRoleBrowsers(
     ownEmployeeId,
     otherEmployeeId,
     async cleanup() {
+      // audit_log refuses DELETE (NFR-8). Only test cleanup may skip that rule: replica mode turns
+      // triggers off for this one transaction, in the test database. Never do this in app code.
+      await prisma.$transaction([
+        prisma.$executeRawUnsafe(
+          'SET LOCAL session_replication_role = replica',
+        ),
+        prisma.auditLog.deleteMany({ where: { companyId } }),
+      ]);
       await prisma.session.deleteMany({ where: { companyId } });
       await prisma.user.deleteMany({ where: { companyId } });
       await prisma.employee.deleteMany({ where: { companyId } });
