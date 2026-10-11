@@ -221,3 +221,8 @@ Noticed, not changed:
 - SCRUM-32 UA-04 on the same branch: "Forgot password?" calls `POST /auth/password-reset`, which emails a 1-hour link to Active users (always 204, one email a minute); the link opens the same set-password page, worded "Choose a new password"; tests in `test/auth/password-reset.e2e-spec.ts`; decision proposed D-68
 - SCRUM-35 UA-07 and SCRUM-144 UA-10 on the same branch: `PATCH /users/:id` (role), `POST /users/:id/deactivate` and `/activate`, never leaving the company without an Active Admin (409 `lastActiveAdmin`, Serializable transaction); switching a login off ends its sessions and open link and never touches the employee record; "Manage" window on the Users page; tests in `test/users/manage-users.e2e-spec.ts`; decision proposed D-69
 
+### Oct 11, 2026 (company settings)
+
+- Branch `feat/company-settings`, scope "Company settings": SCRUM-46 CS-09, SCRUM-40 CS-03, SCRUM-41 CS-04, SCRUM-45 CS-08, SCRUM-42 CS-05, SCRUM-43 CS-06, SCRUM-44 CS-07, SCRUM-152 UI settings, SCRUM-39 CS-02 wizard
+- SCRUM-46 CS-09: `GET`/`POST`/`PATCH`/`DELETE /job-titles` (Admin), names in Arabic and English, no duplicate names in a company, removal refused while employees use the title (D-48, also enforced by the foreign key); `/settings` page is now real (Admin only) with the Job titles section; tests in `test/settings/job-titles.e2e-spec.ts`. No migration: `job_titles` already existed. No audit row: `AuditEntity` has no job-title value and FR-DB-4 does not list job titles
+

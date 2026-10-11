@@ -89,7 +89,7 @@ Responses never contain password hashes, token hashes, invite tokens or another 
 
 **D-57 — another company's record vs. not allowed:** a record of another company is answered with **404**, as if it did not exist (tenancy hides it, and we never reveal that an id exists elsewhere). A record of the same company that this user may not touch (an Employee asking for a colleague's payslip) is answered with **403 `forbidden`**.
 
-Specific keys used so far: `validationFailed`, `required`, `tooLong`, `emailInvalid`, `phoneInvalid`, `passwordTooShort`, `languageInvalid`, `emailTaken`, `invalidCredentials`, `accountDeactivated`, `notLoggedIn`, `sessionExpired`, `emailOrPhoneRequired`, `phoneTaken`, `roleInvalid`, `inviteInvalid`, `inviteExpired`, `lastActiveAdmin`. A new key is added to `apps/web/messages/en.json` and `ar.json` in the same pull request.
+Specific keys used so far: `validationFailed`, `required`, `tooLong`, `emailInvalid`, `phoneInvalid`, `passwordTooShort`, `languageInvalid`, `emailTaken`, `invalidCredentials`, `accountDeactivated`, `notLoggedIn`, `sessionExpired`, `emailOrPhoneRequired`, `phoneTaken`, `roleInvalid`, `inviteInvalid`, `inviteExpired`, `lastActiveAdmin`, `jobTitleExists`, `jobTitleInUse`. A new key is added to `apps/web/messages/en.json` and `ar.json` in the same pull request.
 
 ## 7. Lists: pagination, filters, sorting, search
 
@@ -154,6 +154,10 @@ No Swagger / OpenAPI in the MVP. The contract is the shared zod schemas in `pack
 | PATCH | `/users/:id` | Admin | 200 the user, with the new role | 400 `roleInvalid`, 401, 403, 404, 409 `lastActiveAdmin` / `conflict` | Yes (SCRUM-35, SCRUM-144) |
 | POST | `/users/:id/deactivate` | Admin | 200 the user, `deactivated`; every session ends, any open link dies | 401, 403, 404, 409 `lastActiveAdmin` / `conflict` | Yes (SCRUM-35, SCRUM-144) |
 | POST | `/users/:id/activate` | Admin | 200 the user: `active` if they have a password, else `invited` | 401, 403, 404 | Yes (SCRUM-35) |
+| GET | `/job-titles` | Admin | 200 `{ items: [{ id, nameAr, nameEn, employeeCount }] }`, A→Z by English name (a short list, no paging) | 401, 403 | Yes (SCRUM-46) |
+| POST | `/job-titles` | Admin | 201 the title | 400 `validationFailed`, 401, 403, 409 `jobTitleExists` | Yes (SCRUM-46) |
+| PATCH | `/job-titles/:id` | Admin | 200 the renamed title | 400, 401, 403, 404, 409 `jobTitleExists` | Yes (SCRUM-46) |
+| DELETE | `/job-titles/:id` | Admin | 204 | 401, 403, 404, 409 `jobTitleInUse` (D-48) | Yes (SCRUM-46) |
 | POST | `/users` | Admin | 201 `{ user, inviteLink, emailSent }` — the link is shown only here (D-65) | 400 `validationFailed` (`emailOrPhoneRequired`…), 401, 403, 409 `emailTaken` / `phoneTaken` | Yes (SCRUM-29) |
 | GET | `/` | Public | "Hello World!" | — | Starter route from the Nest template; to be removed in SCRUM-33 when routes become private by default |
 

@@ -157,6 +157,25 @@
     "switchOn": "Switch login back on",
     "switchOnHint": "They can log in again. Someone who never set a password goes back to Invited and needs a new link."
   },
+  "Settings": {
+    "title": "Settings",
+    "hint": "How {company} works in MDARJ. More sections arrive with the company settings feature.",
+    "jobTitles": {
+      "title": "Job titles",
+      "hint": "The list you pick from on each employee.",
+      "empty": "No job titles yet. Add the first one below.",
+      "employees": "{count, plural, =0 {no employees} one {# employee} other {# employees}}",
+      "addTitle": "Add a job title",
+      "renameTitle": "Rename job title",
+      "nameEn": "Name in English",
+      "nameAr": "Name in Arabic",
+      "add": "Add",
+      "save": "Save",
+      "cancel": "Cancel",
+      "rename": "Rename {name}",
+      "remove": "Remove {name}"
+    }
+  },
   "LawRef": {
     "title": "Labor Law No. 14 of 2025",
     "description": "Reference values the compliance check will use (EG-LABOR v1). A labor lawyer must confirm them before launch.",
@@ -466,6 +485,8 @@
     "roleInvalid": "Choose a role",
     "inviteInvalid": "This link doesn't work. Ask your company's Admin for a new one.",
     "inviteExpired": "This link has expired. Ask your company's Admin for a new one.",
-    "lastActiveAdmin": "The company must keep at least one Active Admin. Make someone else an Admin first."
+    "lastActiveAdmin": "The company must keep at least one Active Admin. Make someone else an Admin first.",
+    "jobTitleExists": "The company already has a job title with this name.",
+    "jobTitleInUse": "Employees still have this job title, so it can't be removed. Rename it instead."
   }
 }
