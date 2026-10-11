@@ -22,7 +22,7 @@
     "themeToLight": "التبديل إلى الوضع الفاتح",
     "notifications": "الإشعارات",
     "messages": "الرسائل",
-    "invite": "دعوة موظف",
+    "invite": "دعوة",
     "railHome": "الصفحة الرئيسية لمدارج",
     "railWorkspace": "مساحة الموارد البشرية",
     "railCompliance": "الامتثال",
@@ -51,6 +51,7 @@
     "contracts": "العقود",
     "payroll": "الرواتب",
     "compliance": "الامتثال",
+    "users": "المستخدمون",
     "settings": "الإعدادات"
   },
   "SavedViews": {
@@ -80,7 +81,7 @@
     "pages": "الصفحات",
     "savedViews": "العروض المحفوظة",
     "actions": "إجراءات",
-    "actionInvite": "دعوة موظف",
+    "actionInvite": "دعوة شخص",
     "actionThemeDark": "التبديل إلى الوضع الداكن",
     "actionThemeLight": "التبديل إلى الوضع الفاتح",
     "actionLanguage": "تغيير اللغة إلى الإنجليزية",
@@ -91,8 +92,8 @@
     "hintClose": "للإغلاق"
   },
   "Invite": {
-    "title": "دعوة موظف",
-    "description": "يضع الموظف كلمة المرور بنفسه من رابط الدعوة.",
+    "title": "دعوة شخص",
+    "description": "يضع كلمة المرور بنفسه من رابط الدعوة.",
     "name": "الاسم الكامل",
     "namePlaceholder": "مثال: أحمد حسن",
     "phone": "رقم الهاتف",
@@ -100,18 +101,53 @@
     "email": "البريد الإلكتروني",
     "optional": "اختياري",
     "emailPlaceholder": "name@example.com",
+    "role": "الدور",
+    "language": "لغة الدعوة",
     "submit": "إنشاء رابط الدعوة",
+    "sending": "جارٍ الإنشاء…",
     "cancel": "إلغاء",
-    "nameRequired": "أدخل اسم الموظف.",
-    "contactRequired": "أضف رقم هاتف أو بريدًا إلكترونيًا.",
-    "phoneInvalid": "استخدم رقم موبايل مصريًا من 11 رقمًا يبدأ بـ 01.",
-    "emailInvalid": "البريد الإلكتروني غير صحيح.",
     "readyTitle": "رابط دعوة {name}",
-    "readyHint": "صالح لمدة 7 أيام. شاركه عبر واتساب أو رسالة نصية. هذه المعاينة لا ترسل بريدًا.",
+    "readyHint": "صالح لمدة 7 أيام ويعمل مرة واحدة. يمكنك مشاركته عبر واتساب أو رسالة نصية.",
+    "emailSent": "أرسلناه أيضًا إلى {email}.",
+    "noEmail": "لم يُرسل بالبريد: شارك الرابط بنفسك.",
     "copy": "نسخ الرابط",
     "copied": "تم النسخ",
-    "another": "دعوة موظف آخر",
+    "another": "دعوة شخص آخر",
     "done": "تم"
+  },
+  "Users": {
+    "title": "المستخدمون",
+    "hint": "كل من يمكنه تسجيل الدخول إلى {company}، مع الدور وحالة الحساب.",
+    "invite": "دعوة",
+    "empty": "لا يوجد مستخدمون بعد.",
+    "columns": {
+      "name": "الاسم",
+      "role": "الدور",
+      "status": "الحساب",
+      "link": "رابط الدعوة",
+      "actions": "الإجراءات"
+    },
+    "roles": {
+      "admin": "مسؤول",
+      "employee": "موظف",
+      "interviewer": "مُقابِل"
+    },
+    "status": {
+      "invited": "مدعو",
+      "active": "نشط",
+      "deactivated": "موقوف"
+    },
+    "linkValidUntil": "صالح حتى {date}",
+    "linkExpired": "منتهي الصلاحية",
+    "newLink": "رابط جديد",
+    "sending": "جارٍ الإرسال…",
+    "newLinkTitle": "رابط جديد لـ {name}",
+    "newLinkInvited": "الرابط القديم لم يعد يعمل.",
+    "newLinkActive": "الرابط القديم لم يعد يعمل. يمكنه استخدام هذا الرابط لتعيين كلمة مرور جديدة، وتنتهي جلساته الأخرى.",
+    "pagination": "الصفحات",
+    "pageOf": "صفحة {page} من {pages}",
+    "previous": "السابق",
+    "next": "التالي"
   },
   "LawRef": {
     "title": "قانون العمل رقم 14 لسنة 2025",

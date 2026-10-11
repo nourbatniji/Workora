@@ -22,7 +22,7 @@
     "themeToLight": "Switch to light mode",
     "notifications": "Notifications",
     "messages": "Messages",
-    "invite": "Invite employee",
+    "invite": "Invite",
     "railHome": "MDARJ home",
     "railWorkspace": "HR workspace",
     "railCompliance": "Compliance",
@@ -51,6 +51,7 @@
     "contracts": "Contracts",
     "payroll": "Payroll",
     "compliance": "Compliance",
+    "users": "Users",
     "settings": "Settings"
   },
   "SavedViews": {
@@ -80,7 +81,7 @@
     "pages": "Pages",
     "savedViews": "Saved views",
     "actions": "Actions",
-    "actionInvite": "Invite an employee",
+    "actionInvite": "Invite a person",
     "actionThemeDark": "Switch to dark mode",
     "actionThemeLight": "Switch to light mode",
     "actionLanguage": "Switch language to Arabic",
@@ -91,8 +92,8 @@
     "hintClose": "to close"
   },
   "Invite": {
-    "title": "Invite employee",
-    "description": "The employee sets their own password from the invite link.",
+    "title": "Invite a person",
+    "description": "They set their own password from the invite link.",
     "name": "Full name",
     "namePlaceholder": "e.g. Ahmed Hassan",
     "phone": "Phone number",
@@ -100,18 +101,53 @@
     "email": "Email",
     "optional": "optional",
     "emailPlaceholder": "name@example.com",
+    "role": "Role",
+    "language": "Language of the invite",
     "submit": "Create invite link",
+    "sending": "Creating…",
     "cancel": "Cancel",
-    "nameRequired": "Enter the employee's name.",
-    "contactRequired": "Add a phone number or an email.",
-    "phoneInvalid": "Use an 11-digit Egyptian mobile number starting with 01.",
-    "emailInvalid": "This email doesn't look right.",
     "readyTitle": "Invite link for {name}",
-    "readyHint": "Valid for 7 days. Share it by WhatsApp or SMS. This preview sends no email.",
+    "readyHint": "Valid for 7 days and works once. You can share it by WhatsApp or SMS.",
+    "emailSent": "We also emailed it to {email}.",
+    "noEmail": "It was not emailed: share the link yourself.",
     "copy": "Copy link",
     "copied": "Copied",
     "another": "Invite another",
     "done": "Done"
+  },
+  "Users": {
+    "title": "Users",
+    "hint": "Everyone who can log in to {company}, with their role and account status.",
+    "invite": "Invite",
+    "empty": "No users yet.",
+    "columns": {
+      "name": "Name",
+      "role": "Role",
+      "status": "Account",
+      "link": "Invite link",
+      "actions": "Actions"
+    },
+    "roles": {
+      "admin": "Admin",
+      "employee": "Employee",
+      "interviewer": "Interviewer"
+    },
+    "status": {
+      "invited": "Invited",
+      "active": "Active",
+      "deactivated": "Switched off"
+    },
+    "linkValidUntil": "Valid until {date}",
+    "linkExpired": "Expired",
+    "newLink": "New link",
+    "sending": "Sending…",
+    "newLinkTitle": "New link for {name}",
+    "newLinkInvited": "The old link no longer works.",
+    "newLinkActive": "The old link no longer works. They can use this one to set a new password; their other logins end.",
+    "pagination": "Pages",
+    "pageOf": "Page {page} of {pages}",
+    "previous": "Previous",
+    "next": "Next"
   },
   "LawRef": {
     "title": "Labor Law No. 14 of 2025",
