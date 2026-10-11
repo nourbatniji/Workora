@@ -178,6 +178,11 @@
     "back": "Back to dashboard",
     "exceptions": "Open the Exceptions inbox"
   },
+  "NotFound": {
+    "title": "We couldn't find this page",
+    "body": "The link may be wrong, the page may have moved, or it isn't available to your account.",
+    "home": "Back to dashboard"
+  },
   "Portal": {
     "badge": "Future work",
     "employeeTitle": "Employee portal",
@@ -402,18 +407,20 @@
       "email": "Email",
       "submit": "Send link",
       "sentTitle": "Check your email",
-      "sentBody": "If {email} has an account, you'll get an email with a link to set a new password.",
+      "sentBody": "If {email} has an active account, you'll get an email with a link to set a new password. The link works for 1 hour.",
       "noEmail": "No email? Ask your company's Admin for a new invite link.",
       "backToLogin": "Back to log in"
     },
     "setPassword": {
       "title": "Set your password",
       "subtitle": "Choose a password for your MDARJ account.",
+      "resetTitle": "Choose a new password",
+      "resetSubtitle": "Your old password stops working, and you are logged out on other devices.",
       "password": "New password",
       "confirm": "Confirm password",
       "submit": "Save password",
       "expiredTitle": "This link has expired",
-      "expiredBody": "Links last 7 days. Ask your company's Admin for a new one.",
+      "expiredBody": "Invite links last 7 days and reset links 1 hour. Ask your company's Admin for a new invite, or use \"Forgot password?\" again.",
       "backToLogin": "Back to log in",
       "invitedTo": "{name}, you've been invited to {company}.",
       "invalidTitle": "This link doesn't work",
