@@ -46,17 +46,17 @@ Legend: ✅ built · ⬜ planned
 
 | | Method | Path | Purpose | Access | SRS | Story |
 | --- | --- | --- | --- | --- | --- | --- |
-| ⬜ | GET | `/company` | Company profile, law mode and rules text | Admin | FR-CS-3, FR-CS-6 | CS-03 |
-| ⬜ | PATCH | `/company` | Edit profile, law mode, company rules text | Admin | FR-CS-3, FR-CS-6 | CS-03, CS-06 |
-| ⬜ | GET | `/company/settings?date=` | The settings version in force on a date (default today) | Admin | FR-CS-8 | CS-08 |
-| ⬜ | GET | `/company/settings/versions` | Settings history | Admin | FR-CS-8 | CS-08 |
-| ⬜ | POST | `/company/settings/versions` | Save new settings from an effective date (work week, payroll, check-in); returns compliance warnings from MVP-2 | Admin | FR-CS-4, FR-CS-5, FR-CS-7, FR-CS-8 | CS-04, CS-05, CS-07, CS-08 |
-| ⬜ | GET | `/company/setup` | Which setup-wizard steps are done or skipped | Admin | FR-CS-2 | CS-02 |
-| ⬜ | PATCH | `/company/setup` | Mark a wizard step done or skipped | Admin | FR-CS-2 | CS-02 |
-| ⬜ | GET | `/job-titles` | List job titles | Admin | FR-CS-9 | CS-09 |
-| ⬜ | POST | `/job-titles` | Add a job title | Admin | FR-CS-9 | CS-09 |
-| ⬜ | PATCH | `/job-titles/:id` | Rename a job title | Admin | FR-CS-9 | CS-09 |
-| ⬜ | DELETE | `/job-titles/:id` | Remove a job title (refused while employees use it, D-48) | Admin | FR-CS-9 | CS-09 |
+| ✅ | GET | `/company` | Company profile, law mode and rules text | Admin | FR-CS-3, FR-CS-6 | CS-03 |
+| ✅ | PATCH | `/company` | Edit profile, law mode, company rules text (send only what changes) | Admin | FR-CS-3, FR-CS-6 | CS-03, CS-06 |
+| ✅ | GET | `/company/settings?date=` | The settings version in force on a date (default today) | Admin | FR-CS-8 | CS-08 |
+| ✅ | GET | `/company/settings/versions` | Settings history, today, and `earliestEffectiveFrom` (the first date a change may start, D-70) | Admin | FR-CS-8 | CS-08 |
+| ✅ | POST | `/company/settings/versions` | Save new settings from an effective date, not before `earliestEffectiveFrom`, under the company settings lock (D-70) (work week, payroll rules and check-in); returns compliance warnings from MVP-2 | Admin | FR-CS-4, FR-CS-5, FR-CS-7, FR-CS-8 | CS-04, CS-05, CS-07, CS-08 |
+| ✅ | GET | `/company/setup` | Which setup-wizard steps are done or skipped | Admin | FR-CS-2 | CS-02 |
+| ✅ | PATCH | `/company/setup` | Mark a wizard step done or skipped | Admin | FR-CS-2 | CS-02 |
+| ✅ | GET | `/job-titles` | List job titles | Admin | FR-CS-9 | CS-09 |
+| ✅ | POST | `/job-titles` | Add a job title | Admin | FR-CS-9 | CS-09 |
+| ✅ | PATCH | `/job-titles/:id` | Rename a job title | Admin | FR-CS-9 | CS-09 |
+| ✅ | DELETE | `/job-titles/:id` | Remove a job title (refused while employees use it, D-48) | Admin | FR-CS-9 | CS-09 |
 
 ## 4. Employees
 

@@ -153,6 +153,21 @@ describe('Log in and sessions (UA-03, UA-08, UA-09)', () => {
       ).toBe(1);
     });
 
+    it('ignores a faked X-Forwarded-For header when no proxy is trusted (D-73)', async () => {
+      expect(process.env.TRUSTED_PROXY ?? '').toBe(''); // the local default
+      const res = await newBrowser()
+        .post('/auth/login')
+        .set('X-Forwarded-For', '203.0.113.9') // anyone can send this header
+        .send({ identifier: email, password })
+        .expect(200);
+      const session = await prisma.session.findFirstOrThrow({
+        where: { tokenHash: hashSessionToken(tokenFrom(res)) },
+      });
+      // The session keeps the real caller's address, not the made-up one
+      expect(session.ipAddress).toBeTruthy();
+      expect(session.ipAddress).not.toBe('203.0.113.9');
+    });
+
     it('ends a session after 12 hours with no requests', async () => {
       const browser = newBrowser();
       const res = await browser

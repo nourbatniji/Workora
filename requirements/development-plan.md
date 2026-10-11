@@ -90,7 +90,7 @@ All jobs run per company in the company time zone and are safe to re-run (NFR-5,
 | Job | When | What it does | Duplicate guard |
 | --- | --- | --- | --- |
 | roster-generate | Nightly 00:30, and on assignment, leave or holiday change | Builds roster entries for the next 14 days (FR-SH-4, FR-SH-5) | Unique (employee_id, shift_date) |
-| attendance-label | Every 15 minutes | Labels shifts whose end + 2 h has passed and creates exceptions (FR-AT-4, FR-EX-1) | Unique (employee_id, shift_date); unique (attendance_record_id, type) |
+| attendance-label | Every 15 minutes | Labels shifts whose check-out window (shift end + check-out window, default 6 h, D-38) has closed and creates exceptions (FR-AT-4, FR-EX-1) | Unique (employee_id, shift_date); unique (attendance_record_id, type) |
 | leave-entitlement | Daily 00:15 | Grants yearly entitlement on 1 January or the eligibility date; carry-over on 1 January (FR-LV-4) | Unique (employee_id, leave_type_id, year) |
 | compliance-nightly | Daily 02:00 | Builds fact sheets, calls the AI in batches of 20, validates findings (FR-AI-2 to FR-AI-5) | Unique open finding (employee_id, rule_ref) |
 | invite-expiry | Hourly | Expires invite links older than 7 days (FR-UA-1) | Status check |

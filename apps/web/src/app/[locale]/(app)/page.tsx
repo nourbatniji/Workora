@@ -9,7 +9,10 @@ import {
   LatestExceptions,
   PendingCard,
 } from '@/components/dashboard/cards';
+import SetupBanner from '@/components/setup/setup-banner';
+import type { SetupProgress } from '@/components/setup/setup-progress';
 import PrototypeBadge from '@/components/ui/prototype-badge';
+import { serverGet } from '@/lib/server-api';
 import { getSession } from '@/lib/session';
 import { today } from '@/mock/dashboard';
 import { dayDate } from '@/lib/dates';
@@ -21,9 +24,15 @@ export default async function DashboardPage() {
   // The real logged-in user (the layout already asked the API; getSession reuses that answer)
   const { user } = await getSession();
   const shownName = user?.name ?? user?.email ?? '';
+  // Admins see "Finish setting up" until every setup step is done or skipped (CS-02)
+  const setup =
+    user?.role === 'admin'
+      ? await serverGet<SetupProgress>('/company/setup')
+      : null;
 
   return (
     <div className="mx-auto max-w-[1280px]">
+      {setup && <SetupBanner progress={setup} />}
       {/* The cards below still use sample data (UI prototype, SCRUM-147) */}
       <PrototypeBadge />
       <div className="mb-5">

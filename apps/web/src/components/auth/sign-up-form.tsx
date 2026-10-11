@@ -58,7 +58,8 @@ export default function SignUpForm() {
       password: values.password,
     });
     setSending(false);
-    router.push(login.status === 200 ? '/' : '/login');
+    // A new company starts with the setup wizard (CS-02)
+    router.push(login.status === 200 ? '/setup' : '/login');
   }
 
   const message = (key?: string) =>

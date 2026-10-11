@@ -1,12 +1,18 @@
 // Settings every running app needs. main.ts and the e2e tests both call this, so tests run the real setup.
 // Call it before app.init() / app.listen(), so these run before Nest's routes.
 import type { INestApplication } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import { sessionMiddleware } from './auth/session.middleware.js';
 import { ApiExceptionFilter } from './common/api-exception.filter.js';
+import { trustedProxySetting } from './common/trusted-proxy.js';
 import { PrismaService } from './prisma/prisma.service.js';
 
 export function setupApp(app: INestApplication) {
+  // 0. Which proxies may tell us the visitor's IP (req.ip); none unless TRUSTED_PROXY is set
+  //    (D-73). Read at start-up: a wrong value stops the API instead of trusting a fake header.
+  const trust = trustedProxySetting(process.env.TRUSTED_PROXY);
+  (app as NestExpressApplication).set('trust proxy', trust ?? false);
   // 1. Read the Cookie header into req.cookies
   app.use(cookieParser());
   // 2. Find the session and put the company badge on (D-24, D-25)

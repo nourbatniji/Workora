@@ -95,6 +95,8 @@ model Company {
   currency         String   @default("EGP")
   lawMode          Boolean  @default(false) @map("law_mode")
   companyRulesText String?  @map("company_rules_text")
+  // Setup wizard (CS-02, D-74): which steps are done or skipped, e.g. { "profile": "done" }
+  setupSteps       Json     @default("{}") @map("setup_steps")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
