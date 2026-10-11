@@ -147,7 +147,15 @@
     "pagination": "Pages",
     "pageOf": "Page {page} of {pages}",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "manage": "Manage",
+    "manageTitle": "Manage {name}",
+    "saveRole": "Save role",
+    "loginTitle": "Login",
+    "switchOff": "Switch off login",
+    "switchOffHint": "They are logged out everywhere at once and can't log in. Their employee record stays exactly as it is.",
+    "switchOn": "Switch login back on",
+    "switchOnHint": "They can log in again. Someone who never set a password goes back to Invited and needs a new link."
   },
   "LawRef": {
     "title": "Labor Law No. 14 of 2025",
@@ -457,6 +465,7 @@
     "phoneTaken": "This phone number is already used",
     "roleInvalid": "Choose a role",
     "inviteInvalid": "This link doesn't work. Ask your company's Admin for a new one.",
-    "inviteExpired": "This link has expired. Ask your company's Admin for a new one."
+    "inviteExpired": "This link has expired. Ask your company's Admin for a new one.",
+    "lastActiveAdmin": "The company must keep at least one Active Admin. Make someone else an Admin first."
   }
 }

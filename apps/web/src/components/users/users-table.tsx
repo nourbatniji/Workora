@@ -6,6 +6,7 @@ import Modal from '@/components/ui/modal';
 import { Link, useRouter } from '@/i18n/navigation';
 import { postJson } from '@/lib/api';
 import InviteLinkBox from './invite-link-box';
+import ManageUserButton from './manage-user-button';
 
 /** One row of GET /users */
 export type UserRow = {
@@ -113,10 +114,13 @@ export default function UsersTable({
                       </span>
                     )}
                   </td>
-                  <td className="px-5 py-3 text-end md:px-6">
-                    {user.status !== 'deactivated' && (
-                      <NewLinkButton user={user} />
-                    )}
+                  <td className="px-5 py-3 md:px-6">
+                    <div className="flex justify-end gap-2">
+                      {user.status !== 'deactivated' && (
+                        <NewLinkButton user={user} />
+                      )}
+                      <ManageUserButton user={user} />
+                    </div>
                   </td>
                 </tr>
               );

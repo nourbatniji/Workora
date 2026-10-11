@@ -7,8 +7,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { CreateUserInput, ListUsersQuery } from '@mdarj/shared';
-import { Prisma } from '../../generated/prisma/client.js';
+import type {
+  CreateUserInput,
+  ListUsersQuery,
+  UpdateUserInput,
+} from '@mdarj/shared';
+import { Prisma, type UserStatus } from '../../generated/prisma/client.js';
 import type { AuthContext } from '../../auth/auth-context.js';
 import {
   hashInviteToken,
@@ -22,6 +26,11 @@ import type { MailLanguage } from '../../common/mail/templates.js';
 import { requireCompanyId } from '../../common/tenancy/tenant-context.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { TenantPrismaService } from '../../prisma/tenant-prisma.service.js';
+
+/** The client inside tenantPrisma.db.$transaction(async (tx) => …) */
+type UsersTx = Parameters<
+  Parameters<TenantPrismaService['db']['$transaction']>[0]
+>[0];
 
 /** The fields of a user the API may show. Never the password hash or the invite token. */
 const PUBLIC_USER = {
@@ -199,6 +208,144 @@ export class UsersService {
       : false;
 
     return { inviteLink: link, inviteExpiresAt: expiresAt, emailSent };
+  }
+
+  /**
+   * PATCH /users/:id (UA-07, FR-UA-7): change the role. Taking the Admin role from the last
+   * Active Admin is refused (FR-UA-9).
+   */
+  async changeRole(auth: AuthContext, userId: string, input: UpdateUserInput) {
+    return this.lastAdminSafe(async (tx) => {
+      const user = await this.findOrThrow(tx, userId);
+      if (user.role === input.role) return user;
+
+      if (user.role === 'admin' && user.status === 'active') {
+        await this.assertAnotherActiveAdmin(tx, user.id);
+      }
+      const updated = await tx.user.update({
+        where: { id: user.id },
+        data: { role: input.role },
+        select: PUBLIC_USER,
+      });
+      await this.audit.record(tx, auth.userId, {
+        entityType: 'user',
+        entityId: user.id,
+        action: 'update',
+        before: { role: user.role },
+        after: { role: updated.role },
+      });
+      return updated;
+    });
+  }
+
+  /**
+   * POST /users/:id/deactivate (FR-UA-8, FR-UA-9): the login stops working at once and every
+   * session ends. The employee record is never touched. Never the last Active Admin.
+   */
+  async deactivate(auth: AuthContext, userId: string) {
+    return this.lastAdminSafe(async (tx) => {
+      const user = await this.findOrThrow(tx, userId);
+      if (user.status === 'deactivated') return user;
+
+      if (user.role === 'admin' && user.status === 'active') {
+        await this.assertAnotherActiveAdmin(tx, user.id);
+      }
+      const updated = await tx.user.update({
+        where: { id: user.id },
+        // An open link must not bring the account back
+        data: {
+          status: 'deactivated',
+          inviteToken: null,
+          inviteExpiresAt: null,
+        },
+        select: PUBLIC_USER,
+      });
+      await tx.session.updateMany({
+        where: { userId: user.id, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      await this.audit.record(tx, auth.userId, {
+        entityType: 'user',
+        entityId: user.id,
+        action: 'update',
+        before: { status: user.status },
+        after: { status: 'deactivated' },
+      });
+      return updated;
+    });
+  }
+
+  /**
+   * POST /users/:id/activate (FR-UA-8): switch a login back on. Someone who never set a
+   * password goes back to Invited and needs a new link.
+   */
+  async activate(auth: AuthContext, userId: string) {
+    return this.tenantPrisma.db.$transaction(async (tx) => {
+      const user = await this.findOrThrow(tx, userId);
+      if (user.status !== 'deactivated') return user;
+
+      const row = await tx.user.findUniqueOrThrow({
+        where: { id: user.id },
+        select: { passwordHash: true },
+      });
+      const status: UserStatus = row.passwordHash ? 'active' : 'invited';
+      const updated = await tx.user.update({
+        where: { id: user.id },
+        data: { status },
+        select: PUBLIC_USER,
+      });
+      await this.audit.record(tx, auth.userId, {
+        entityType: 'user',
+        entityId: user.id,
+        action: 'update',
+        before: { status: 'deactivated' },
+        after: { status },
+      });
+      return updated;
+    });
+  }
+
+  /** This company's user, or 404 (another company's user is "not found", D-57) */
+  private async findOrThrow(tx: UsersTx, userId: string) {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: PUBLIC_USER,
+    });
+    if (!user) throw new NotFoundException({ message: 'notFound' });
+    return user;
+  }
+
+  /** FR-UA-9: 409 lastActiveAdmin unless another Active Admin stays */
+  private async assertAnotherActiveAdmin(tx: UsersTx, leavingUserId: string) {
+    const others = await tx.user.count({
+      where: { role: 'admin', status: 'active', id: { not: leavingUserId } },
+    });
+    if (others === 0) {
+      throw new ConflictException({ message: 'lastActiveAdmin' });
+    }
+  }
+
+  /**
+   * Runs a change that may remove an Active Admin. Serializable: if two Admins demote each
+   * other at the same moment, the database lets only one win, so one Admin always stays.
+   */
+  private async lastAdminSafe<T>(
+    work: (tx: UsersTx) => Promise<T>,
+  ): Promise<T> {
+    try {
+      return await this.tenantPrisma.db.$transaction(work, {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      });
+    } catch (error) {
+      // P2034: the database stopped one of two clashing changes; the person can try again
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2034'
+      ) {
+        throw new ConflictException({ message: 'conflict' });
+      }
+      throw error;
+    }
   }
 
   /** 409 when the email or phone already belongs to any user, in any company */

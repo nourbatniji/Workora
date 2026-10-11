@@ -89,7 +89,7 @@ Responses never contain password hashes, token hashes, invite tokens or another 
 
 **D-57 — another company's record vs. not allowed:** a record of another company is answered with **404**, as if it did not exist (tenancy hides it, and we never reveal that an id exists elsewhere). A record of the same company that this user may not touch (an Employee asking for a colleague's payslip) is answered with **403 `forbidden`**.
 
-Specific keys used so far: `validationFailed`, `required`, `tooLong`, `emailInvalid`, `phoneInvalid`, `passwordTooShort`, `languageInvalid`, `emailTaken`, `invalidCredentials`, `accountDeactivated`, `notLoggedIn`, `sessionExpired`, `emailOrPhoneRequired`, `phoneTaken`, `roleInvalid`, `inviteInvalid`, `inviteExpired`. A new key is added to `apps/web/messages/en.json` and `ar.json` in the same pull request.
+Specific keys used so far: `validationFailed`, `required`, `tooLong`, `emailInvalid`, `phoneInvalid`, `passwordTooShort`, `languageInvalid`, `emailTaken`, `invalidCredentials`, `accountDeactivated`, `notLoggedIn`, `sessionExpired`, `emailOrPhoneRequired`, `phoneTaken`, `roleInvalid`, `inviteInvalid`, `inviteExpired`, `lastActiveAdmin`. A new key is added to `apps/web/messages/en.json` and `ar.json` in the same pull request.
 
 ## 7. Lists: pagination, filters, sorting, search
 
@@ -151,6 +151,9 @@ No Swagger / OpenAPI in the MVP. The contract is the shared zod schemas in `pack
 | POST | `/auth/invites/:token/accept` | Public | 200 `{ user }` + httpOnly cookie; account Active, link used up | 400 `validationFailed`, 404 `inviteInvalid` / `inviteExpired` | Yes (SCRUM-29) |
 | GET | `/users?page=&pageSize=` | Admin | 200 `{ items, total, page, pageSize }`, newest first | 400, 401, 403 | Yes (SCRUM-29) |
 | POST | `/users/:id/invite` | Admin | 200 `{ inviteLink, inviteExpiresAt, emailSent }`; the old link stops working | 400 bad id, 401, 403, 404 (not in this company), 409 `accountDeactivated` | Yes (SCRUM-30) |
+| PATCH | `/users/:id` | Admin | 200 the user, with the new role | 400 `roleInvalid`, 401, 403, 404, 409 `lastActiveAdmin` / `conflict` | Yes (SCRUM-35, SCRUM-144) |
+| POST | `/users/:id/deactivate` | Admin | 200 the user, `deactivated`; every session ends, any open link dies | 401, 403, 404, 409 `lastActiveAdmin` / `conflict` | Yes (SCRUM-35, SCRUM-144) |
+| POST | `/users/:id/activate` | Admin | 200 the user: `active` if they have a password, else `invited` | 401, 403, 404 | Yes (SCRUM-35) |
 | POST | `/users` | Admin | 201 `{ user, inviteLink, emailSent }` — the link is shown only here (D-65) | 400 `validationFailed` (`emailOrPhoneRequired`…), 401, 403, 409 `emailTaken` / `phoneTaken` | Yes (SCRUM-29) |
 | GET | `/` | Public | "Hello World!" | — | Starter route from the Nest template; to be removed in SCRUM-33 when routes become private by default |
 

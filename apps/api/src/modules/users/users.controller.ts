@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -16,8 +17,10 @@ import type { Request } from 'express';
 import {
   createUserSchema,
   listUsersQuerySchema,
+  updateUserSchema,
   type CreateUserInput,
   type ListUsersQuery,
+  type UpdateUserInput,
 } from '@mdarj/shared';
 import { Roles } from '../../auth/roles.decorator.js';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe.js';
@@ -53,5 +56,35 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   newInvite(@Req() req: Request, @Param('id', new ParseUUIDPipe()) id: string) {
     return this.users.newInvite(req.auth!, id);
+  }
+
+  // PATCH /users/:id: change the role; never the last Active Admin (UA-07, FR-UA-7, FR-UA-9)
+  @Patch(':id')
+  @Roles('admin')
+  changeRole(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(updateUserSchema)) body: UpdateUserInput,
+  ) {
+    return this.users.changeRole(req.auth!, id, body);
+  }
+
+  // POST /users/:id/deactivate: switch the login off; never the last Active Admin (FR-UA-8, FR-UA-9)
+  @Post(':id/deactivate')
+  @Roles('admin')
+  @HttpCode(HttpStatus.OK)
+  deactivate(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ) {
+    return this.users.deactivate(req.auth!, id);
+  }
+
+  // POST /users/:id/activate: switch the login back on (FR-UA-8)
+  @Post(':id/activate')
+  @Roles('admin')
+  @HttpCode(HttpStatus.OK)
+  activate(@Req() req: Request, @Param('id', new ParseUUIDPipe()) id: string) {
+    return this.users.activate(req.auth!, id);
   }
 }
