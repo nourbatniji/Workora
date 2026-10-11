@@ -13,6 +13,22 @@ export type SettingsVersion = {
   id: string;
   effectiveFrom: string;
   restDays: number[];
+  dailyRateDivisor: 'days_30' | 'days_26' | 'working_days';
+  latenessPolicy:
+    | { mode: 'exact' }
+    | {
+        mode: 'tiered';
+        bands: {
+          fromMinutes: number;
+          toMinutes: number | null;
+          dayFraction: number;
+        }[];
+      };
+  overtimeDayRate: string;
+  overtimeNightRate: string;
+  overtimeRestDayRate: string;
+  overtimeHolidayRate: string;
+  overtimeMinMinutes: number;
   createdBy: string | null;
   state: 'inForce' | 'scheduled' | 'past';
 };

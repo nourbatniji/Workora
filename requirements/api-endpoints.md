@@ -50,7 +50,7 @@ Legend: ✅ built · ⬜ planned
 | ✅ | PATCH | `/company` | Edit profile (law mode and company rules text come with CS-06) | Admin | FR-CS-3, FR-CS-6 | CS-03, CS-06 |
 | ✅ | GET | `/company/settings?date=` | The settings version in force on a date (default today) | Admin | FR-CS-8 | CS-08 |
 | ✅ | GET | `/company/settings/versions` | Settings history | Admin | FR-CS-8 | CS-08 |
-| ✅ | POST | `/company/settings/versions` | Save new settings from an effective date (work week now; payroll and check-in fields come with CS-05, CS-07); returns compliance warnings from MVP-2 | Admin | FR-CS-4, FR-CS-5, FR-CS-7, FR-CS-8 | CS-04, CS-05, CS-07, CS-08 |
+| ✅ | POST | `/company/settings/versions` | Save new settings from an effective date (work week and payroll rules now; check-in fields come with CS-07); returns compliance warnings from MVP-2 | Admin | FR-CS-4, FR-CS-5, FR-CS-7, FR-CS-8 | CS-04, CS-05, CS-07, CS-08 |
 | ⬜ | GET | `/company/setup` | Which setup-wizard steps are done or skipped | Admin | FR-CS-2 | CS-02 |
 | ⬜ | PATCH | `/company/setup` | Mark a wizard step done or skipped | Admin | FR-CS-2 | CS-02 |
 | ✅ | GET | `/job-titles` | List job titles | Admin | FR-CS-9 | CS-09 |

@@ -192,6 +192,49 @@
         "past": "Past"
       }
     },
+    "payroll": {
+      "title": "Payroll rules",
+      "hint": "How pay, deductions and overtime are worked out. Changes start on the date you choose.",
+      "divisorTitle": "Daily rate",
+      "divisor": {
+        "days_30": "Salary ÷ 30",
+        "days_26": "Salary ÷ 26",
+        "working_days": "Salary ÷ working days of the month"
+      },
+      "divisorHint": "Hourly rate = daily rate ÷ the shift hours (without unpaid break).",
+      "latenessTitle": "Lateness and early leave",
+      "lateness": {
+        "exact": "Exact",
+        "exactHint": "Every minute is deducted at the hourly rate.",
+        "tiered": "Bands",
+        "tieredHint": "A part of the day is deducted by how late the person was."
+      },
+      "bandFrom": "From minute",
+      "bandTo": "To minute",
+      "bandOpen": "and more",
+      "minutesLate": "min late",
+      "bandFraction": "Deduction",
+      "fraction": {
+        "0_25": "¼ day",
+        "0_5": "½ day",
+        "0_75": "¾ day",
+        "1": "1 day"
+      },
+      "addBand": "Add band",
+      "removeBand": "Remove band",
+      "capHint": "Either way, one day's lateness and early-leave deduction never exceeds one day's pay.",
+      "overtimeTitle": "Overtime",
+      "overtimeDayRate": "Normal day ×",
+      "overtimeNightRate": "Night ×",
+      "overtimeRestDayRate": "Rest day ×",
+      "overtimeHolidayRate": "Public holiday ×",
+      "overtimeMinMinutes": "Counts after (min)",
+      "overtimeHint": "Overtime pay = hours × hourly rate × the multiplier. Arriving early is not overtime.",
+      "effectiveFrom": "Starts on",
+      "effectiveHint": "today or later",
+      "save": "Save payroll rules",
+      "saved": "Saved. Applies from {date}."
+    },
     "jobTitles": {
       "title": "Job titles",
       "hint": "The list you pick from on each employee.",
@@ -525,6 +568,17 @@
     "effectiveDateInPast": "Choose today or a later date",
     "needWorkingDay": "Keep at least one working day",
     "dayRepeated": "Each day can be picked once",
-    "nothingToChange": "Nothing to save"
+    "nothingToChange": "Nothing to save",
+    "divisorInvalid": "Choose how the daily rate is worked out",
+    "policyInvalid": "Choose a lateness policy",
+    "bandsRequired": "Add at least one band",
+    "tooManyBands": "Use 10 bands at most",
+    "bandRangeInvalid": "The band ends before it starts",
+    "openBandNotLast": "Only the last band can be open-ended",
+    "bandsOverlap": "This band overlaps the one above it",
+    "minutesInvalid": "Enter whole minutes in range",
+    "fractionInvalid": "Choose a part of the day",
+    "rateInvalid": "Use a number like 1.35",
+    "rateOutOfRange": "Use a number from 1.00 to 5.00"
   }
 }

@@ -123,8 +123,20 @@ export class CompanySettingsService {
         throw new Error('Company has no settings version');
       }
 
-      const changes = { restDays: input.restDays ?? base.restDays };
-      const sameDay = toDay(base.effectiveFrom) === input.effectiveFrom;
+      // Only the settings this change carries; the rest stay as they are in force that day
+      const { effectiveFrom, ...sent } = input;
+      const changes = Object.fromEntries(
+        Object.entries(sent).filter(([, value]) => value !== undefined),
+      ) as Partial<Omit<SettingsChangeInput, 'effectiveFrom'>>;
+      const before = toApi(base);
+      const changedBefore = Object.fromEntries(
+        Object.keys(changes).map((key) => [
+          key,
+          before[key as keyof typeof before],
+        ]),
+      );
+
+      const sameDay = toDay(base.effectiveFrom) === effectiveFrom;
 
       const saved = sameDay
         ? await tx.companySettingsVersion.update({
@@ -135,8 +147,9 @@ export class CompanySettingsService {
         : await tx.companySettingsVersion.create({
             data: {
               companyId: requireCompanyId(),
-              effectiveFrom: toDate(input.effectiveFrom),
+              effectiveFrom: toDate(effectiveFrom),
               // Everything else is copied from the version in force that day
+              restDays: base.restDays,
               dailyRateDivisor: base.dailyRateDivisor,
               latenessPolicy: base.latenessPolicy ?? { mode: 'exact' },
               overtimeDayRate: base.overtimeDayRate,
@@ -154,15 +167,13 @@ export class CompanySettingsService {
             include: { createdBy: { select: { name: true } } },
           });
 
+      // Before = those settings in the version that applied that day; after = the new values
       await this.audit.record(tx, auth.userId, {
         entityType: 'company_settings',
         entityId: saved.id,
         action: sameDay ? 'update' : 'create',
-        before: {
-          effectiveFrom: toDay(base.effectiveFrom),
-          restDays: base.restDays,
-        },
-        after: { effectiveFrom: input.effectiveFrom, ...changes },
+        before: { effectiveFrom: before.effectiveFrom, ...changedBefore },
+        after: { effectiveFrom, ...changes },
       });
 
       return toApi(saved);

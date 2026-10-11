@@ -104,9 +104,10 @@ export async function setupRoleBrowsers(
         prisma.auditLog.deleteMany({ where: { companyId } }),
       ]);
       await prisma.session.deleteMany({ where: { companyId } });
+      // Settings versions point at the user who saved them: delete them before the users
+      await prisma.companySettingsVersion.deleteMany({ where: { companyId } });
       await prisma.user.deleteMany({ where: { companyId } });
       await prisma.employee.deleteMany({ where: { companyId } });
-      await prisma.companySettingsVersion.deleteMany({ where: { companyId } });
       await prisma.company.delete({ where: { id: companyId } });
     },
   };
