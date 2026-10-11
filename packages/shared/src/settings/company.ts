@@ -1,4 +1,4 @@
-// Company profile (CS-03, FR-CS-3): name, address, phone and time zone.
+// Company profile (CS-03, FR-CS-3): name, address, phone and time zone; compliance mode (CS-06).
 // The logo waits for file storage (FND-06); the currency is EGP for the MVP.
 import { z } from 'zod';
 import { normalizePhone } from '../phone.js';
@@ -45,3 +45,28 @@ export const companyProfileSchema = z.object({
 });
 
 export type CompanyProfileInput = z.output<typeof companyProfileSchema>;
+
+/**
+ * Compliance mode (CS-06, FR-CS-6): "Follow the Egyptian Labor Law" yes/no, and the company's
+ * own rules as free text, sent to the AI check as written (FR-AI-3).
+ */
+export const companyComplianceSchema = z.object({
+  lawMode: z.boolean('lawModeInvalid'),
+  companyRulesText: z.preprocess(
+    emptyToNull,
+    z.string('tooLong').trim().max(10_000, 'tooLong').nullable(),
+  ),
+});
+
+export type CompanyComplianceInput = z.output<typeof companyComplianceSchema>;
+
+/** PATCH /company: the profile, the compliance part, or both; anything not sent stays as it is */
+export const companyUpdateSchema = companyProfileSchema
+  .partial()
+  .extend(companyComplianceSchema.partial().shape)
+  .refine(
+    (change) => Object.values(change).some((value) => value !== undefined),
+    { message: 'nothingToChange', path: ['body'] },
+  );
+
+export type CompanyUpdateInput = z.output<typeof companyUpdateSchema>;

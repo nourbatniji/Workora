@@ -174,6 +174,19 @@
       "save": "Save profile",
       "saved": "Saved"
     },
+    "compliance": {
+      "title": "Compliance",
+      "hint": "Which rules MDARJ checks your company against.",
+      "lawMode": "Follow the Egyptian Labor Law",
+      "lawModeOn": "On: overtime uses the law's multipliers, the leave types the law requires are created, the optional disability field appears on employees, and the compliance check reads the law.",
+      "lawModeOff": "Off: only your own company rules below are checked.",
+      "rules": "Company rules",
+      "optional": "optional",
+      "rulesPlaceholder": "e.g. Friday prayer break is 30 minutes. Uniform is required on every shift.",
+      "rulesHint": "Written in your own words. The compliance check reads them exactly as written.",
+      "save": "Save compliance",
+      "saved": "Saved"
+    },
     "workWeek": {
       "title": "Work week",
       "hint": "Pick the weekly rest days. A change starts on the date you choose and never changes earlier days or approved payrolls.",
@@ -579,6 +592,7 @@
     "minutesInvalid": "Enter whole minutes in range",
     "fractionInvalid": "Choose a part of the day",
     "rateInvalid": "Use a number like 1.35",
-    "rateOutOfRange": "Use a number from 1.00 to 5.00"
+    "rateOutOfRange": "Use a number from 1.00 to 5.00",
+    "lawModeInvalid": "Choose on or off"
   }
 }

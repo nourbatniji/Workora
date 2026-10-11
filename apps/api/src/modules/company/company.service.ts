@@ -1,7 +1,7 @@
 // Company profile (CS-03, FR-CS-3). Each Admin sees and edits only their own company:
 // the guarded client limits the companies table to the company on the badge (D-25).
 import { Injectable } from '@nestjs/common';
-import type { CompanyProfileInput } from '@mdarj/shared';
+import type { CompanyUpdateInput } from '@mdarj/shared';
 import type { AuthContext } from '../../auth/auth-context.js';
 import { AuditService } from '../../common/audit/audit.service.js';
 import { requireCompanyId } from '../../common/tenancy/tenant-context.js';
@@ -16,6 +16,8 @@ const PROFILE = {
   phone: true,
   timeZone: true,
   currency: true,
+  lawMode: true,
+  companyRulesText: true,
 } as const;
 
 @Injectable()
@@ -33,8 +35,8 @@ export class CompanyService {
     });
   }
 
-  /** PATCH /company: saves the profile and records what changed (FR-DB-4) */
-  async updateProfile(auth: AuthContext, input: CompanyProfileInput) {
+  /** PATCH /company: saves the profile and/or compliance mode, and records what changed (FR-DB-4) */
+  async update(auth: AuthContext, input: CompanyUpdateInput) {
     const id = requireCompanyId();
     return this.tenantPrisma.db.$transaction(async (tx) => {
       const before = await tx.company.findUniqueOrThrow({
@@ -52,7 +54,10 @@ export class CompanyService {
         action: 'update',
         before,
         after,
-        reason: 'Company profile',
+        reason:
+          input.lawMode !== undefined || input.companyRulesText !== undefined
+            ? 'Compliance mode'
+            : 'Company profile',
       });
       return after;
     });

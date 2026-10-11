@@ -1,4 +1,5 @@
-// CS-03 (SCRUM-40): the Admin reads and edits the company profile; every change is audited;
+// CS-03 (SCRUM-40) and CS-06 (SCRUM-43): the Admin reads and edits the company profile and the
+// compliance mode (Labor Law yes/no and the company rules text); every change is audited;
 // a company only ever sees its own profile. Needs the local database: pnpm db:up
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -103,6 +104,52 @@ describe('Company profile (CS-03, SCRUM-40)', () => {
     const ours = await r.admin.get('/company').expect(200);
     expect(ours.body.id).toBe(r.companyId);
     expect(ours.body.name).not.toBe('Other Co');
+  });
+
+  it('starts with law mode off and no company rules', async () => {
+    const res = await r.admin.get('/company').expect(200);
+    expect(res.body).toMatchObject({ lawMode: false, companyRulesText: null });
+  });
+
+  it('turns law mode on and saves the company rules, leaving the profile alone (CS-06)', async () => {
+    const before = await r.admin.get('/company').expect(200);
+    const rules =
+      'Friday prayer break: 30 minutes.\nUniform required on shift.';
+    const res = await r.admin
+      .patch('/company')
+      .send({ lawMode: true, companyRulesText: `  ${rules}  ` })
+      .expect(200);
+    expect(res.body).toMatchObject({
+      lawMode: true,
+      companyRulesText: rules, // trimmed, line breaks kept
+      name: before.body.name,
+      timeZone: before.body.timeZone,
+    });
+
+    const audit = await prisma.auditLog.findFirstOrThrow({
+      where: { companyId: r.companyId, entityType: 'company_settings' },
+      orderBy: { createdAt: 'desc' },
+    });
+    expect(audit.reason).toBe('Compliance mode');
+    expect((audit.before as { lawMode: boolean }).lawMode).toBe(false);
+    expect((audit.after as { lawMode: boolean }).lawMode).toBe(true);
+  });
+
+  it('clears the company rules when the box is emptied, and checks the switch', async () => {
+    const cleared = await r.admin
+      .patch('/company')
+      .send({ companyRulesText: '' })
+      .expect(200);
+    expect(cleared.body.companyRulesText).toBeNull();
+
+    const bad = await r.admin
+      .patch('/company')
+      .send({ lawMode: 'yes' })
+      .expect(400);
+    expect(bad.body.errors).toEqual({ lawMode: 'lawModeInvalid' });
+
+    const empty = await r.admin.patch('/company').send({}).expect(400);
+    expect(empty.body.errors).toEqual({ body: 'nothingToChange' });
   });
 
   it('is for Admins only', async () => {

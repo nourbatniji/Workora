@@ -17,6 +17,8 @@ export type CompanyProfile = {
   phone: string | null;
   timeZone: string;
   currency: string;
+  lawMode: boolean;
+  companyRulesText: string | null;
 };
 
 // Error keys that get their own message; anything else is "something went wrong"

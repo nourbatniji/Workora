@@ -6,6 +6,7 @@ import CompanyProfileCard, {
 import WorkWeekCard, {
   type SettingsVersion,
 } from '@/components/settings/work-week-card';
+import ComplianceCard from '@/components/settings/compliance-card';
 import PayrollRulesCard from '@/components/settings/payroll-rules-card';
 import JobTitlesCard, {
   type JobTitle,
@@ -15,7 +16,7 @@ import { getSession } from '@/lib/session';
 
 /**
  * Settings (SRS 3.1, SCRUM-152). Admin only. Built section by section with the Company
- * settings feature: profile (CS-03), work week and payroll rules from a date (CS-04, CS-05, CS-08) and job titles (CS-09) so far; check-in follows.
+ * settings feature: profile (CS-03), work week and payroll rules from a date (CS-04, CS-05, CS-08), compliance mode (CS-06) and job titles (CS-09) so far; check-in follows.
  */
 export default async function SettingsPage() {
   const session = await getSession();
@@ -42,6 +43,7 @@ export default async function SettingsPage() {
         </p>
       </div>
       <CompanyProfileCard company={company} />
+      <ComplianceCard company={company} />
       <WorkWeekCard today={settings.today} versions={settings.items} />
       {current && <PayrollRulesCard today={settings.today} current={current} />}
       <JobTitlesCard items={jobTitles.items} />
