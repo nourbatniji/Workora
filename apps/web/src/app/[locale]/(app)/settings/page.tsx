@@ -9,6 +9,7 @@ import JobTitlesCard, {
   type JobTitle,
 } from '@/components/settings/job-titles-card';
 import PayrollRulesCard from '@/components/settings/payroll-rules-card';
+import SettingsNav from '@/components/settings/settings-nav';
 import WorkWeekCard, {
   type SettingsVersion,
 } from '@/components/settings/work-week-card';
@@ -43,6 +44,7 @@ export default async function SettingsPage() {
           {t('hint', { company: session.user.company.name })}
         </p>
       </div>
+      <SettingsNav />
       <CompanyProfileCard
         company={company}
         timeZones={Intl.supportedValuesOf('timeZone')}

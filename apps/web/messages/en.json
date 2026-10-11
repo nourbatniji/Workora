@@ -160,6 +160,7 @@
   "Settings": {
     "title": "Settings",
     "hint": "How {company} works in MDARJ. More sections arrive with the company settings feature.",
+    "sections": "Settings sections",
     "profile": {
       "title": "Company profile",
       "hint": "Shown in the app and on payslips.",

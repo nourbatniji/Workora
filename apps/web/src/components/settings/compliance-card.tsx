@@ -72,7 +72,7 @@ export default function ComplianceCard({
   }
 
   return (
-    <Card>
+    <Card id="compliance" className="scroll-mt-32">
       <CardHeader title={t('title')} hint={t('hint')} />
       <form onSubmit={save} noValidate className="flex flex-col gap-4">
         {/* The switch */}

@@ -101,7 +101,7 @@ export default function CompanyProfileCard({
   }
 
   return (
-    <Card>
+    <Card id="profile" className="scroll-mt-32">
       <CardHeader title={t('title')} hint={t('hint')} />
       <form onSubmit={save} noValidate className="flex flex-col gap-4">
         <Field label={t('name')} error={message(errors.name)}>

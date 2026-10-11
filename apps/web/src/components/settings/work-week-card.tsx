@@ -144,7 +144,7 @@ export default function WorkWeekCard({
   }
 
   return (
-    <Card>
+    <Card id="work-week" className="scroll-mt-32">
       <CardHeader title={t('title')} hint={t('hint')} />
 
       <form onSubmit={save} noValidate className="flex flex-col gap-4">

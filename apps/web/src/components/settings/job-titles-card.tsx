@@ -121,7 +121,7 @@ export default function JobTitlesCard({ items }: { items: JobTitle[] }) {
   );
 
   return (
-    <Card>
+    <Card id="job-titles" className="scroll-mt-32">
       <CardHeader title={t('title')} hint={t('hint')} />
 
       {sorted.length === 0 ? (

@@ -105,7 +105,7 @@ export default function CheckInCard({
   );
 
   return (
-    <Card>
+    <Card id="check-in" className="scroll-mt-32">
       <CardHeader title={t('title')} hint={t('hint')} />
       <form onSubmit={save} noValidate className="flex flex-col gap-5">
         <div className="grid gap-4 sm:grid-cols-2">
