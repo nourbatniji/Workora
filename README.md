@@ -115,6 +115,7 @@ The seed creates "MDARJ Demo Company" with one Admin. Log in with `SEED_ADMIN_EM
 | api | `apps/api/.env` | `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` | `false`, empty, empty | Only for a real provider |
 | api | `apps/api/.env` | `MAIL_FROM` | `MDARJ <no-reply@mdarj.local>` | The sender shown in the email |
 | api | `apps/api/.env` | `MAILPIT_URL` | `http://localhost:8025` | Used by the email tests to read the fake inbox |
+| api | `apps/api/.env` | `WEB_URL` | `http://localhost:3000` | The web app's address, used to build invite links |
 | web | `apps/web/.env.local` | `API_URL` | `http://localhost:4000` | Where the web app forwards `/api/*` requests |
 
 Restart the backend after changing `.env`.

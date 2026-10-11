@@ -24,8 +24,8 @@ Legend: ✅ built · ⬜ planned
 | ✅ | POST | `/auth/login` | Log in with email or phone; sets the session cookie | Public | FR-UA-3 | UA-03 |
 | ✅ | GET | `/auth/me` | Who is logged in (user, role, company) | Any user | FR-UA-3 | UA-03 |
 | ✅ | POST | `/auth/logout` | End this session | Any user | D-24 | UA-03 |
-| ⬜ | GET | `/auth/invites/:token` | Check an invite link is valid (show the set-password page) | Public | FR-UA-1 | UA-01 |
-| ⬜ | POST | `/auth/invites/:token/accept` | Set the password; the account becomes Active | Public | FR-UA-1 | UA-01 |
+| ✅ | GET | `/auth/invites/:token` | Check an invite link is valid (show the set-password page) | Public | FR-UA-1 | UA-01 |
+| ✅ | POST | `/auth/invites/:token/accept` | Set the password; the account becomes Active | Public | FR-UA-1 | UA-01 |
 | ⬜ | POST | `/auth/password-reset` | Ask for a reset email | Public | FR-UA-4 | UA-04 |
 | ⬜ | POST | `/auth/password-reset/:token` | Set a new password from the email link | Public | FR-UA-4 | UA-04 |
 | ⬜ | PATCH | `/auth/me` | Change own language | Any user | NFR-6 | UA-04 |
@@ -35,8 +35,8 @@ Legend: ✅ built · ⬜ planned
 
 | | Method | Path | Purpose | Access | SRS | Story |
 | --- | --- | --- | --- | --- | --- | --- |
-| ⬜ | GET | `/users` | List users with role and account status | Admin | FR-UA-8 | UA-01 |
-| ⬜ | POST | `/users` | Create a user (Employee, Interviewer or Admin) and return the 7-day invite link; emails it when an email exists | Admin | FR-UA-1, FR-UA-2, FR-UA-7 | UA-01, UA-02, UA-07 |
+| ✅ | GET | `/users` | List users with role and account status | Admin | FR-UA-8 | UA-01 |
+| ✅ | POST | `/users` | Create a user (Employee, Interviewer or Admin) and return the 7-day invite link; emails it when an email exists | Admin | FR-UA-1, FR-UA-2, FR-UA-7 | UA-01, UA-02, UA-07 |
 | ⬜ | POST | `/users/:id/invite` | Issue a new invite link (resend, or reset without email) | Admin | FR-UA-2, FR-UA-4 | UA-02, UA-04 |
 | ⬜ | PATCH | `/users/:id` | Change role (never the last Active Admin) | Admin | FR-UA-7, FR-UA-9 | UA-07, UA-10 |
 | ⬜ | POST | `/users/:id/deactivate` | Switch a login off (never the last Active Admin) | Admin | FR-UA-8, FR-UA-9 | UA-07, UA-10 |

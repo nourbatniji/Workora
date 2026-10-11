@@ -72,9 +72,9 @@ Request
 | --- | --- | --- | --- |
 | Auth (sign-up, login, me, logout) | Built + e2e tests | sign-up, login, server-side gate, real user in the shell, logout | Integrated |
 | Tenancy | Prisma extension + tests | — | Built |
-| Authorization (roles) | — | dev-only role switcher (fake) | Missing |
+| Authorization (roles) | SessionGuard + RolesGuard, deny by default (SCRUM-33) | menu follows the real role (SCRUM-169) | Built |
 | Audit log | `AuditService` + `audit_log` table (append-only trigger) + e2e tests; viewer endpoint after SCRUM-33 | — | Built (writer) |
-| Users & invites | — | set-password view | Not started |
+| Users & invites | `modules/users` (`POST`/`GET /users`, Admin) + public `GET /auth/invites/:token`, `POST /auth/invites/:token/accept`; hashed invite token (D-65); invite email after the save; e2e tests | set-password page checks the link and calls the API; Admin invite screen waits for SCRUM-150 | In progress (SCRUM-29, not merged) |
 | Company settings | tables only | — | Not started |
 | People (employees, salary, status, documents) | tables only | mock people data | Not started |
 | Contracts | table only | mock dashboard card | Not started |

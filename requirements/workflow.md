@@ -203,3 +203,15 @@ Noticed, not changed:
 
 - SCRUM-24 FND-05: `MailService` (SMTP, nodemailer), invite and password-reset templates in Arabic and English, Mailpit in Docker Compose and CI, `test/mail/mail.e2e-spec.ts`; decision D-64
 - Jira SCRUM-24 "Done when" corrected: the invite and reset emails are checked in SCRUM-29 (UA-01) and SCRUM-32 (UA-04), where those features are built
+
+### Oct 11, 2026 (invites)
+
+- SCRUM-29 UA-01, code ready on `feat/scrum-29-invites` (not committed yet):
+  - API: `POST /users` and `GET /users` (Admin, `modules/users/`), `GET /auth/invites/:token` and `POST /auth/invites/:token/accept` (Public); invite token hashed in `users.invite_token` (`auth/invite-token.ts`); user create and invite accept write audit rows; the invite email goes through `MailService` after the save
+  - Shared: `createUserSchema`, `acceptInviteSchema`, `listUsersQuerySchema` (`packages/shared/src/users/invite.ts`)
+  - Web: the set-password page checks the link on the server and the form calls the API; the `?expired=1` stub is gone
+  - Tests: `test/users/invites.e2e-spec.ts`; `role-browsers.ts` cleanup now removes audit rows
+  - No migration: `invite_token` and `invite_expires_at` were already in the schema
+  - Decisions proposed: D-65, D-66
+- Not in this task: the Admin's invite screen and the Copy-link button (SCRUM-150, with SCRUM-30 UA-02); new link for an existing user, `POST /users/:id/invite` (UA-02/UA-04)
+

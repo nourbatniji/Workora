@@ -378,7 +378,10 @@
       "submit": "Save password",
       "expiredTitle": "This link has expired",
       "expiredBody": "Links last 7 days. Ask your company's Admin for a new one.",
-      "backToLogin": "Back to log in"
+      "backToLogin": "Back to log in",
+      "invitedTo": "{name}, you've been invited to {company}.",
+      "invalidTitle": "This link doesn't work",
+      "invalidBody": "It may have been used already or copied incompletely. Ask your company's Admin for a new link."
     },
     "showPassword": "Show password",
     "hidePassword": "Hide password",
@@ -406,6 +409,11 @@
     "invalidReference": "One of the selected items doesn't exist",
     "payloadTooLarge": "This file is too large",
     "tooManyRequests": "Too many attempts. Please wait a moment.",
-    "internalError": "Something went wrong on our side. Please try again."
+    "internalError": "Something went wrong on our side. Please try again.",
+    "emailOrPhoneRequired": "Enter an email or a phone number",
+    "phoneTaken": "This phone number is already used",
+    "roleInvalid": "Choose a role",
+    "inviteInvalid": "This link doesn't work. Ask your company's Admin for a new one.",
+    "inviteExpired": "This link has expired. Ask your company's Admin for a new one."
   }
 }

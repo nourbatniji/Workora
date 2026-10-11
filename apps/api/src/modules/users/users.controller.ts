@@ -1,0 +1,47 @@
+// Users and invites (UA-01). Admin only (permissions.md: "Invite an Employee or Interviewer",
+// "Invite another Admin").
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
+import type { Request } from 'express';
+import {
+  createUserSchema,
+  listUsersQuerySchema,
+  type CreateUserInput,
+  type ListUsersQuery,
+} from '@mdarj/shared';
+import { Roles } from '../../auth/roles.decorator.js';
+import { ZodValidationPipe } from '../../common/zod-validation.pipe.js';
+import { UsersService } from './users.service.js';
+
+@Controller('users')
+export class UsersController {
+  constructor(private readonly users: UsersService) {}
+
+  // GET /users: list with role and account status (FR-UA-8)
+  @Get()
+  @Roles('admin')
+  list(
+    @Query(new ZodValidationPipe(listUsersQuerySchema)) query: ListUsersQuery,
+  ) {
+    return this.users.list(query);
+  }
+
+  // POST /users: create a user and get the 7-day invite link (FR-UA-1, FR-UA-2, FR-UA-7)
+  @Post()
+  @Roles('admin')
+  @HttpCode(HttpStatus.CREATED)
+  create(
+    @Req() req: Request,
+    @Body(new ZodValidationPipe(createUserSchema)) body: CreateUserInput,
+  ) {
+    return this.users.create(req.auth!, body);
+  }
+}

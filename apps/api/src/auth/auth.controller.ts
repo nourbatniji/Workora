@@ -4,14 +4,17 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Req,
   Res,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import {
+  acceptInviteSchema,
   loginSchema,
   signUpSchema,
+  type AcceptInviteInput,
   type LoginInput,
   type SignUpInput,
 } from '@mdarj/shared';
@@ -48,14 +51,33 @@ export class AuthController {
       userAgent: req.get('user-agent'),
     });
 
-    // D-24: httpOnly (page scripts can't read it), SameSite, Secure in production (HTTPS only)
-    res.cookie(SESSION_COOKIE, token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      path: '/',
-    });
+    setSessionCookie(res, token);
+    return { user };
+  }
 
+  // GET /auth/invites/:token: is the invite link still good? (UA-01, FR-UA-1)
+  @Get('invites/:token')
+  @Public()
+  checkInvite(@Param('token') token: string) {
+    return this.authService.checkInvite(token);
+  }
+
+  // POST /auth/invites/:token/accept: set the password; the account becomes Active and logs in (UA-01)
+  @Post('invites/:token/accept')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  async acceptInvite(
+    @Param('token') token: string,
+    @Body(new ZodValidationPipe(acceptInviteSchema)) body: AcceptInviteInput,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { token: sessionToken, user } = await this.authService.acceptInvite(
+      token,
+      body,
+      { ip: req.ip, userAgent: req.get('user-agent') },
+    );
+    setSessionCookie(res, sessionToken);
     return { user };
   }
 
@@ -74,4 +96,14 @@ export class AuthController {
     await this.authService.logout(req.auth!.sessionId);
     res.clearCookie(SESSION_COOKIE, { path: '/' });
   }
+}
+
+/** D-24: httpOnly (page scripts can't read it), SameSite, Secure in production (HTTPS only) */
+function setSessionCookie(res: Response, token: string) {
+  res.cookie(SESSION_COOKIE, token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+  });
 }

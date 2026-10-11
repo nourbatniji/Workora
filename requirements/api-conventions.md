@@ -89,7 +89,7 @@ Responses never contain password hashes, token hashes, invite tokens or another 
 
 **D-57 — another company's record vs. not allowed:** a record of another company is answered with **404**, as if it did not exist (tenancy hides it, and we never reveal that an id exists elsewhere). A record of the same company that this user may not touch (an Employee asking for a colleague's payslip) is answered with **403 `forbidden`**.
 
-Specific keys used so far: `validationFailed`, `required`, `tooLong`, `emailInvalid`, `phoneInvalid`, `passwordTooShort`, `languageInvalid`, `emailTaken`, `invalidCredentials`, `accountDeactivated`, `notLoggedIn`, `sessionExpired`. A new key is added to `apps/web/messages/en.json` and `ar.json` in the same pull request.
+Specific keys used so far: `validationFailed`, `required`, `tooLong`, `emailInvalid`, `phoneInvalid`, `passwordTooShort`, `languageInvalid`, `emailTaken`, `invalidCredentials`, `accountDeactivated`, `notLoggedIn`, `sessionExpired`, `emailOrPhoneRequired`, `phoneTaken`, `roleInvalid`, `inviteInvalid`, `inviteExpired`. A new key is added to `apps/web/messages/en.json` and `ar.json` in the same pull request.
 
 ## 7. Lists: pagination, filters, sorting, search
 
@@ -146,6 +146,10 @@ No Swagger / OpenAPI in the MVP. The contract is the shared zod schemas in `pack
 | POST | `/auth/login` | Public | 200 `{ user }` + httpOnly cookie | 400 `validationFailed`, 401 `invalidCredentials`, 403 `accountDeactivated` | Yes |
 | GET | `/auth/me` | Logged in, any role | 200 `{ user }` | 401 `notLoggedIn` / `sessionExpired` | Yes |
 | POST | `/auth/logout` | Logged in, any role | 204 | 401 | Yes |
+| GET | `/auth/invites/:token` | Public | 200 `{ user: { name, email, phone, language }, company: { name } }` | 404 `inviteInvalid` / `inviteExpired` | Yes (SCRUM-29) |
+| POST | `/auth/invites/:token/accept` | Public | 200 `{ user }` + httpOnly cookie; account Active, link used up | 400 `validationFailed`, 404 `inviteInvalid` / `inviteExpired` | Yes (SCRUM-29) |
+| GET | `/users?page=&pageSize=` | Admin | 200 `{ items, total, page, pageSize }`, newest first | 400, 401, 403 | Yes (SCRUM-29) |
+| POST | `/users` | Admin | 201 `{ user, inviteLink, emailSent }` — the link is shown only here (D-65) | 400 `validationFailed` (`emailOrPhoneRequired`…), 401, 403, 409 `emailTaken` / `phoneTaken` | Yes (SCRUM-29) |
 | GET | `/` | Public | "Hello World!" | — | Starter route from the Nest template; to be removed in SCRUM-33 when routes become private by default |
 
 Before Oct 7 the 404 for an unknown route and crashes used Nest's own body (`{ statusCode, message: "Cannot GET …" }`). `ApiExceptionFilter` fixed this (`test/api/errors.e2e-spec.ts`).
