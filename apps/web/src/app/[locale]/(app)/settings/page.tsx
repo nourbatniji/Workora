@@ -3,6 +3,9 @@ import { getTranslations } from 'next-intl/server';
 import CompanyProfileCard, {
   type CompanyProfile,
 } from '@/components/settings/company-profile-card';
+import WorkWeekCard, {
+  type SettingsVersion,
+} from '@/components/settings/work-week-card';
 import JobTitlesCard, {
   type JobTitle,
 } from '@/components/settings/job-titles-card';
@@ -11,15 +14,18 @@ import { getSession } from '@/lib/session';
 
 /**
  * Settings (SRS 3.1, SCRUM-152). Admin only. Built section by section with the Company
- * settings feature: profile (CS-03) and job titles (CS-09) so far; work week, payroll and check-in follow.
+ * settings feature: profile (CS-03), work week from a date (CS-04, CS-08) and job titles (CS-09) so far; payroll and check-in follow.
  */
 export default async function SettingsPage() {
   const session = await getSession();
   if (!session.user || session.user.role !== 'admin') notFound();
 
   const t = await getTranslations('Settings');
-  const [company, jobTitles] = await Promise.all([
+  const [company, settings, jobTitles] = await Promise.all([
     serverGet<CompanyProfile>('/company'),
+    serverGet<{ today: string; items: SettingsVersion[] }>(
+      '/company/settings/versions',
+    ),
     serverGet<{ items: JobTitle[] }>('/job-titles'),
   ]);
 
@@ -32,6 +38,7 @@ export default async function SettingsPage() {
         </p>
       </div>
       <CompanyProfileCard company={company} />
+      <WorkWeekCard today={settings.today} versions={settings.items} />
       <JobTitlesCard items={jobTitles.items} />
     </div>
   );

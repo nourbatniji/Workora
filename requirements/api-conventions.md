@@ -89,7 +89,7 @@ Responses never contain password hashes, token hashes, invite tokens or another 
 
 **D-57 — another company's record vs. not allowed:** a record of another company is answered with **404**, as if it did not exist (tenancy hides it, and we never reveal that an id exists elsewhere). A record of the same company that this user may not touch (an Employee asking for a colleague's payslip) is answered with **403 `forbidden`**.
 
-Specific keys used so far: `validationFailed`, `required`, `tooLong`, `emailInvalid`, `phoneInvalid`, `passwordTooShort`, `languageInvalid`, `emailTaken`, `invalidCredentials`, `accountDeactivated`, `notLoggedIn`, `sessionExpired`, `emailOrPhoneRequired`, `phoneTaken`, `roleInvalid`, `inviteInvalid`, `inviteExpired`, `lastActiveAdmin`, `jobTitleExists`, `jobTitleInUse`, `timeZoneInvalid`. A new key is added to `apps/web/messages/en.json` and `ar.json` in the same pull request.
+Specific keys used so far: `validationFailed`, `required`, `tooLong`, `emailInvalid`, `phoneInvalid`, `passwordTooShort`, `languageInvalid`, `emailTaken`, `invalidCredentials`, `accountDeactivated`, `notLoggedIn`, `sessionExpired`, `emailOrPhoneRequired`, `phoneTaken`, `roleInvalid`, `inviteInvalid`, `inviteExpired`, `lastActiveAdmin`, `jobTitleExists`, `jobTitleInUse`, `timeZoneInvalid`, `dateInvalid`, `effectiveDateInPast`, `needWorkingDay`, `dayRepeated`, `nothingToChange`. A new key is added to `apps/web/messages/en.json` and `ar.json` in the same pull request.
 
 ## 7. Lists: pagination, filters, sorting, search
 
@@ -156,6 +156,9 @@ No Swagger / OpenAPI in the MVP. The contract is the shared zod schemas in `pack
 | POST | `/users/:id/activate` | Admin | 200 the user: `active` if they have a password, else `invited` | 401, 403, 404 | Yes (SCRUM-35) |
 | GET | `/company` | Admin | 200 `{ id, name, logo, address, phone, timeZone, currency }` | 401, 403 | Yes (SCRUM-40) |
 | PATCH | `/company` | Admin | 200 the profile; empty address or phone clears it; audited as `company_settings` | 400 `validationFailed` (`phoneInvalid`, `timeZoneInvalid`…), 401, 403 | Yes (SCRUM-40) |
+| GET | `/company/settings?date=` | Admin | 200 `{ date, version }`: the version in force that day (default today in the company time zone); multipliers as strings | 400 `dateInvalid`, 401, 403 | Yes (SCRUM-45) |
+| GET | `/company/settings/versions` | Admin | 200 `{ today, items }`, newest first, each with `state`: `inForce`, `scheduled` or `past` | 401, 403 | Yes (SCRUM-45) |
+| POST | `/company/settings/versions` | Admin | 201 the version: the one in force on `effectiveFrom` plus the changes; a version on the same day is replaced; audited | 400 `effectiveDateInPast`, `needWorkingDay`, `nothingToChange`…, 401, 403 | Yes (SCRUM-41, SCRUM-45) |
 | GET | `/job-titles` | Admin | 200 `{ items: [{ id, nameAr, nameEn, employeeCount }] }`, A→Z by English name (a short list, no paging) | 401, 403 | Yes (SCRUM-46) |
 | POST | `/job-titles` | Admin | 201 the title | 400 `validationFailed`, 401, 403, 409 `jobTitleExists` | Yes (SCRUM-46) |
 | PATCH | `/job-titles/:id` | Admin | 200 the renamed title | 400, 401, 403, 404, 409 `jobTitleExists` | Yes (SCRUM-46) |
