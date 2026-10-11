@@ -115,6 +115,21 @@ describe('Forgot password (UA-04, SCRUM-32)', { timeout: 15_000 }, () => {
       .expect(200);
   });
 
+  it('writes the email and the link in the language of the page that asked', async () => {
+    const { email, id } = await activeUser();
+    // The account itself is saved in Arabic
+    await prisma.user.update({ where: { id }, data: { language: 'ar' } });
+
+    await server()
+      .post('/auth/password-reset')
+      .send({ email, language: 'en' })
+      .expect(204);
+
+    const message = await resetEmail(email);
+    expect(message.Subject).toBe(RESET_SUBJECT); // the English subject
+    expect(message.Text).toMatch(/\/en\/set-password\?token=/);
+  });
+
   it('answers the same for an email with no account, and sends nothing', async () => {
     const email = `nobody-${randomUUID()}@reset.test`;
     const res = await server()

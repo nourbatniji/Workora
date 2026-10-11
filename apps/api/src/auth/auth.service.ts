@@ -254,15 +254,17 @@ export class AuthService {
       }),
     );
 
-    // Email after the save (D-64). A failure is logged; the answer stays the same
+    // Email after the save (D-64). A failure is logged; the answer stays the same.
+    // The page's language wins: the person just asked in it (D-68)
+    const language = input.language ?? (user.language as MailLanguage);
     await this.mail.send(
       user.email,
       {
         kind: 'passwordReset',
-        link: inviteLink(this.webUrl, user.language, token),
+        link: inviteLink(this.webUrl, language, token),
         validHours: RESET_VALID_HOURS,
       },
-      user.language as MailLanguage,
+      language,
     );
   }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { MailCheck } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { signUpSchema } from '@mdarj/shared';
 import { Field, inputClass } from '@/components/ui/field';
@@ -18,6 +18,7 @@ const emailSchema = signUpSchema.shape.email;
 export default function ForgotPasswordForm() {
   const t = useTranslations('Auth');
   const tErr = useTranslations('Errors');
+  const locale = useLocale();
 
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string>();
@@ -34,8 +35,10 @@ export default function ForgotPasswordForm() {
 
     setError(undefined);
     setSending(true);
+    // The email and its link come back in the language of this page
     const { status } = await postJson('/auth/password-reset', {
       email: check.data,
+      language: locale === 'ar' ? 'ar' : 'en',
     });
     setSending(false);
 

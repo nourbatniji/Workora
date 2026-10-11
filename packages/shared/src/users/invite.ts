@@ -84,6 +84,15 @@ export type ListUsersQuery = z.output<typeof listUsersQuerySchema>;
 /** Forgot password (UA-04, FR-UA-4): the email to send a reset link to */
 export const passwordResetRequestSchema = z.object({
   email: signUpSchema.shape.email,
+  // The language of the page the request came from: the email and the link use it (D-68)
+  language: z.enum(['en', 'ar'], 'languageInvalid').optional(),
 });
 
 export type PasswordResetRequest = z.output<typeof passwordResetRequestSchema>;
+
+/** PATCH /users/:id (UA-07, FR-UA-7): change a user's role */
+export const updateUserSchema = z.object({
+  role: z.enum(USER_ROLES, 'roleInvalid'),
+});
+
+export type UpdateUserInput = z.output<typeof updateUserSchema>;
