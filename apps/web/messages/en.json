@@ -159,6 +159,7 @@
   },
   "Settings": {
     "title": "Settings",
+    "laterVersion": "Settings starting {date} are already scheduled. This change applies only until then; from {date} the scheduled settings stay as they are.",
     "hint": "How {company} works in MDARJ. More sections arrive with the company settings feature.",
     "sections": "Settings sections",
     "profile": {
@@ -223,9 +224,9 @@
         "exact": "Exact",
         "exactHint": "Every late minute is deducted at the hourly rate. Simplest choice.",
         "tiered": "Bands",
-        "tieredHint": "Fixed amounts by how late: e.g. 16–60 min late = ¼ day."
+        "tieredHint": "Fixed amounts by how late or how early: e.g. 16–60 min = ¼ day. Less than the first band costs nothing."
       },
-      "bandFrom": "Late from (min)",
+      "bandFrom": "From (min)",
       "bandTo": "To (min)",
       "bandOpen": "no limit",
       "bandFraction": "Deduct",
@@ -249,8 +250,8 @@
       "effectiveHint": "today or later",
       "save": "Save payroll rules",
       "saved": "Saved. Applies from {date}.",
-      "bandSentence": "{from}–{to} minutes late → lose {fraction} of pay",
-      "bandSentenceOpen": "{from}+ minutes late → lose {fraction} of pay"
+      "bandSentence": "{from}–{to} minutes late or left early → lose {fraction} of pay",
+      "bandSentenceOpen": "{from}+ minutes late or left early → lose {fraction} of pay"
     },
     "checkIn": {
       "title": "Check-in",
@@ -301,6 +302,10 @@
     "allDoneBody": "Your company is ready. You can change any of this at any time in Settings.",
     "openSettings": "Open Settings",
     "toDashboard": "Go to the dashboard",
+    "skipped": {
+      "body": "{count, plural, one {# setup step was skipped. Its default settings apply until you finish it.} other {# setup steps were skipped. Their default settings apply until you finish them.}}",
+      "action": "Finish skipped steps"
+    },
     "banner": {
       "title": "Finish setting up your company",
       "body": "{done} of {total} steps done. Pay and attendance use these settings.",
@@ -638,6 +643,8 @@
     "bandRangeInvalid": "The band ends before it starts",
     "openBandNotLast": "Only the last band can be open-ended",
     "bandsOverlap": "This band overlaps the one above it",
+    "bandsGap": "Start this band 1 minute after the one above ends",
+    "lastBandNotOpen": "Leave \"To\" empty on the last band so it covers every longer time",
     "minutesInvalid": "Enter whole minutes in range",
     "fractionInvalid": "Choose a part of the day",
     "rateInvalid": "Use a number like 1.35",

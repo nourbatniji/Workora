@@ -33,9 +33,11 @@ export default async function SetupPage({
   const [progress, company, settings, jobTitles] = await Promise.all([
     serverGet<SetupProgress>('/company/setup'),
     serverGet<CompanyProfile>('/company'),
-    serverGet<{ today: string; items: SettingsVersion[] }>(
-      '/company/settings/versions',
-    ),
+    serverGet<{
+      today: string;
+      earliestEffectiveFrom: string;
+      items: SettingsVersion[];
+    }>('/company/settings/versions'),
     serverGet<{ items: JobTitle[] }>('/job-titles'),
   ]);
 
@@ -97,7 +99,7 @@ export default async function SetupPage({
             next={SETUP_STEPS[index + 1] ?? null}
             company={company}
             timeZones={Intl.supportedValuesOf('timeZone')}
-            today={settings.today}
+            earliestDate={settings.earliestEffectiveFrom}
             versions={settings.items}
             jobTitles={jobTitles.items}
           />

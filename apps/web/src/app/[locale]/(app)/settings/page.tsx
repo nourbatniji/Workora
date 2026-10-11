@@ -13,6 +13,8 @@ import SettingsNav from '@/components/settings/settings-nav';
 import WorkWeekCard, {
   type SettingsVersion,
 } from '@/components/settings/work-week-card';
+import SkippedStepsNote from '@/components/setup/skipped-steps-note';
+import type { SetupProgress } from '@/components/setup/setup-progress';
 import { serverGet } from '@/lib/server-api';
 import { getSession } from '@/lib/session';
 
@@ -25,12 +27,15 @@ export default async function SettingsPage() {
   if (!session.user || session.user.role !== 'admin') notFound();
 
   const t = await getTranslations('Settings');
-  const [company, settings, jobTitles] = await Promise.all([
+  const [company, settings, jobTitles, setup] = await Promise.all([
     serverGet<CompanyProfile>('/company'),
-    serverGet<{ today: string; items: SettingsVersion[] }>(
-      '/company/settings/versions',
-    ),
+    serverGet<{
+      today: string;
+      earliestEffectiveFrom: string;
+      items: SettingsVersion[];
+    }>('/company/settings/versions'),
     serverGet<{ items: JobTitle[] }>('/job-titles'),
+    serverGet<SetupProgress>('/company/setup'),
   ]);
 
   // The rules in force today fill the payroll and check-in forms
@@ -45,16 +50,28 @@ export default async function SettingsPage() {
         </p>
       </div>
       <SettingsNav />
+      <SkippedStepsNote progress={setup} />
       <CompanyProfileCard
         company={company}
         timeZones={Intl.supportedValuesOf('timeZone')}
       />
       <ComplianceCard company={company} />
-      <WorkWeekCard today={settings.today} versions={settings.items} />
+      <WorkWeekCard
+        earliestDate={settings.earliestEffectiveFrom}
+        versions={settings.items}
+      />
       {current && (
         <>
-          <PayrollRulesCard today={settings.today} current={current} />
-          <CheckInCard today={settings.today} current={current} />
+          <PayrollRulesCard
+            earliestDate={settings.earliestEffectiveFrom}
+            versions={settings.items}
+            current={current}
+          />
+          <CheckInCard
+            earliestDate={settings.earliestEffectiveFrom}
+            versions={settings.items}
+            current={current}
+          />
         </>
       )}
       <JobTitlesCard items={jobTitles.items} />

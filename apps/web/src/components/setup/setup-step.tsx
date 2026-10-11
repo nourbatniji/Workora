@@ -29,7 +29,7 @@ export default function SetupStepView({
   next,
   company,
   timeZones,
-  today,
+  earliestDate,
   versions,
   jobTitles,
 }: {
@@ -39,7 +39,7 @@ export default function SetupStepView({
   next: SetupStep | null;
   company: CompanyProfile;
   timeZones: string[];
-  today: string;
+  earliestDate: string;
   versions: SettingsVersion[];
   jobTitles: JobTitle[];
 }) {
@@ -96,7 +96,7 @@ export default function SetupStepView({
       )}
       {step === 'workWeek' && (
         <WorkWeekCard
-          today={today}
+          earliestDate={earliestDate}
           versions={versions}
           onSaved={done}
           submitLabel={saveAndContinue}
@@ -104,7 +104,8 @@ export default function SetupStepView({
       )}
       {step === 'payroll' && current && (
         <PayrollRulesCard
-          today={today}
+          earliestDate={earliestDate}
+          versions={versions}
           current={current}
           onSaved={done}
           submitLabel={saveAndContinue}
@@ -112,7 +113,8 @@ export default function SetupStepView({
       )}
       {step === 'checkIn' && current && (
         <CheckInCard
-          today={today}
+          earliestDate={earliestDate}
+          versions={versions}
           current={current}
           onSaved={done}
           submitLabel={saveAndContinue}

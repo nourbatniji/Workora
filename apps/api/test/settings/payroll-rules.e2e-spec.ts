@@ -124,6 +124,36 @@ describe('Payroll rules (CS-05, SCRUM-42)', () => {
     });
   });
 
+  it('refuses a gap between bands and a closed last band (D-72)', async () => {
+    const res = await r.admin
+      .post('/company/settings/versions')
+      .send({
+        effectiveFrom: nextMonth,
+        latenessPolicy: {
+          mode: 'tiered',
+          bands: [
+            { fromMinutes: 16, toMinutes: 60, dayFraction: 0.25 },
+            // 61–89 missing: would cost nothing
+            { fromMinutes: 90, toMinutes: 120, dayFraction: 0.5 },
+            // closed: 200 minutes late would cost nothing
+            { fromMinutes: 121, toMinutes: 180, dayFraction: 1 },
+          ],
+        },
+      })
+      .expect(400);
+    expect(res.body.errors).toEqual({
+      'latenessPolicy.bands.1': 'bandsGap',
+      'latenessPolicy.bands.2': 'lastBandNotOpen',
+    });
+  });
+
+  it('accepts touching bands with both ends included (60 then 61)', async () => {
+    await r.admin
+      .post('/company/settings/versions')
+      .send({ effectiveFrom: nextMonth, latenessPolicy: TIERED })
+      .expect(201);
+  });
+
   it('checks the multipliers and the minimum', async () => {
     const res = await r.admin
       .post('/company/settings/versions')

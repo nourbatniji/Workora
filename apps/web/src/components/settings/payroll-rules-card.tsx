@@ -8,6 +8,7 @@ import { Card, CardHeader } from '@/components/ui/card';
 import { Field, inputClass } from '@/components/ui/field';
 import { useRouter } from '@/i18n/navigation';
 import { errorsByField } from '@/lib/form-errors';
+import LaterVersionNote from './later-version-note';
 import type { SettingsVersion } from './work-week-card';
 
 type Band = { from: string; to: string; fraction: string };
@@ -33,6 +34,8 @@ const KNOWN_ERRORS = [
   'bandRangeInvalid',
   'openBandNotLast',
   'bandsOverlap',
+  'bandsGap',
+  'lastBandNotOpen',
   'minutesInvalid',
   'fractionInvalid',
   'rateInvalid',
@@ -47,14 +50,18 @@ const KNOWN_ERRORS = [
 export default function PayrollRulesCard({
   onSaved,
   submitLabel,
-  today,
+  earliestDate,
+  versions,
   current,
 }: {
   /** In the setup wizard: called after a successful save (marks the step done, opens the next) */
   onSaved?: () => Promise<void> | void;
   /** In the setup wizard: "Save & continue" instead of "Save" */
   submitLabel?: string;
-  today: string;
+  /** The first date a change may start (D-70): the date picker's minimum and default */
+  earliestDate: string;
+  /** Every version, to warn about one already scheduled later (D-70) */
+  versions: SettingsVersion[];
   current: SettingsVersion;
 }) {
   const t = useTranslations('Settings.payroll');
@@ -86,7 +93,7 @@ export default function PayrollRulesCard({
   const [minMinutes, setMinMinutes] = useState(
     String(current.overtimeMinMinutes),
   );
-  const [effectiveFrom, setEffectiveFrom] = useState(today);
+  const [effectiveFrom, setEffectiveFrom] = useState(earliestDate);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -317,10 +324,15 @@ export default function PayrollRulesCard({
                 <button
                   type="button"
                   onClick={() =>
-                    setBands((all) => [
-                      ...all,
-                      { from: '', to: '', fraction: '0.25' },
-                    ])
+                    setBands((all) => {
+                      // No gaps (D-72): a new band starts 1 minute after the last one ends
+                      const lastTo = Number(all.at(-1)?.to);
+                      const from =
+                        Number.isInteger(lastTo) && lastTo > 0
+                          ? String(lastTo + 1)
+                          : '';
+                      return [...all, { from, to: '', fraction: '0.25' }];
+                    })
                   }
                   className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-[13px] text-accent-fg hover:bg-canvas"
                 >
@@ -372,7 +384,7 @@ export default function PayrollRulesCard({
           <p className="mt-2 text-xs text-muted">{t('overtimeHint')}</p>
         </fieldset>
 
-        {/* In the setup wizard the settings simply apply from today: no date to pick */}
+        {/* In the setup wizard the settings apply from the first free date: no date to pick */}
         {!onSaved && (
           <div className="max-w-xs">
             <Field
@@ -383,7 +395,7 @@ export default function PayrollRulesCard({
               <input
                 type="date"
                 value={effectiveFrom}
-                min={today}
+                min={earliestDate}
                 onChange={(e) => {
                   setSaved(false);
                   setEffectiveFrom(e.target.value);
@@ -393,6 +405,8 @@ export default function PayrollRulesCard({
             </Field>
           </div>
         )}
+
+        <LaterVersionNote versions={versions} effectiveFrom={effectiveFrom} />
 
         {errors.form && (
           <p

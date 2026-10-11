@@ -85,6 +85,19 @@ describe('Setup wizard progress (CS-02, SCRUM-39)', () => {
     expect(theirs.body.complete).toBe(false);
   });
 
+  it('a save on the Settings page never changes setup progress (D-74)', async () => {
+    const before = await r.admin.get('/company/setup').expect(200);
+    const { body } = await r.admin
+      .get('/company/settings/versions')
+      .expect(200);
+    await r.admin
+      .post('/company/settings/versions')
+      .send({ effectiveFrom: body.earliestEffectiveFrom, restDays: [5] })
+      .expect(201);
+    const after = await r.admin.get('/company/setup').expect(200);
+    expect(after.body).toEqual(before.body);
+  });
+
   it('checks the step and the status', async () => {
     const res = await r.admin
       .patch('/company/setup')

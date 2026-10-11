@@ -7,6 +7,7 @@ import { Card, CardHeader } from '@/components/ui/card';
 import { Field, inputClass } from '@/components/ui/field';
 import { useRouter } from '@/i18n/navigation';
 import { errorsByField } from '@/lib/form-errors';
+import LaterVersionNote from './later-version-note';
 
 /** One settings version, as GET /company/settings/versions gives it */
 export type SettingsVersion = {
@@ -63,14 +64,15 @@ const STATE_STYLE: Record<SettingsVersion['state'], string> = {
 export default function WorkWeekCard({
   onSaved,
   submitLabel,
-  today,
+  earliestDate,
   versions,
 }: {
   /** In the setup wizard: called after a successful save (marks the step done, opens the next) */
   onSaved?: () => Promise<void> | void;
   /** In the setup wizard: "Save & continue" instead of "Save" */
   submitLabel?: string;
-  today: string;
+  /** The first date a change may start (D-70): the date picker's minimum and default */
+  earliestDate: string;
   versions: SettingsVersion[];
 }) {
   const t = useTranslations('Settings.workWeek');
@@ -81,7 +83,7 @@ export default function WorkWeekCard({
 
   const current = versions.find((v) => v.state === 'inForce');
   const [restDays, setRestDays] = useState<number[]>(current?.restDays ?? []);
-  const [effectiveFrom, setEffectiveFrom] = useState(today);
+  const [effectiveFrom, setEffectiveFrom] = useState(earliestDate);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -198,7 +200,7 @@ export default function WorkWeekCard({
           )}
         </fieldset>
 
-        {/* In the setup wizard the settings simply apply from today: no date to pick */}
+        {/* In the setup wizard the settings apply from the first free date: no date to pick */}
         {!onSaved && (
           <div className="max-w-xs">
             <Field
@@ -209,7 +211,7 @@ export default function WorkWeekCard({
               <input
                 type="date"
                 value={effectiveFrom}
-                min={today}
+                min={earliestDate}
                 onChange={(e) => {
                   setSaved(false);
                   setEffectiveFrom(e.target.value);
@@ -219,6 +221,8 @@ export default function WorkWeekCard({
             </Field>
           </div>
         )}
+
+        <LaterVersionNote versions={versions} effectiveFrom={effectiveFrom} />
 
         {errors.form && (
           <p

@@ -7,7 +7,10 @@ import type { AuthContext } from '../../auth/auth-context.js';
 import { AuditService } from '../../common/audit/audit.service.js';
 import { requireCompanyId } from '../../common/tenancy/tenant-context.js';
 import type { CompanySettingsVersion } from '../../generated/prisma/client.js';
-import { TenantPrismaService } from '../../prisma/tenant-prisma.service.js';
+import {
+  lockCompanySettings,
+  TenantPrismaService,
+} from '../../prisma/tenant-prisma.service.js';
 
 /** "2026-11-01" ↔ the Date Prisma uses for a DATE column (midnight UTC, D-29) */
 const toDate = (day: string) => new Date(`${day}T00:00:00.000Z`);
@@ -66,6 +69,18 @@ export class CompanySettingsService {
     });
   }
 
+  /**
+   * The first date a change may start (D-70): today or later, and after every shift date that
+   * already has an attendance record, an exception or a payroll item, because a version in use
+   * is never changed. Attendance, exceptions and payroll are not built yet, so for now this is
+   * today. Each of those features adds its check here (latest shift date + 1 day).
+   * Call it inside the transaction that holds the settings lock, so the answer stays true until
+   * the save is done.
+   */
+  async earliestEffectiveFrom(): Promise<string> {
+    return this.today();
+  }
+
   /** GET /company/settings?date= (default today) */
   async settingsOn(day?: string) {
     const date = day ?? (await this.today());
@@ -76,8 +91,9 @@ export class CompanySettingsService {
 
   /** GET /company/settings/versions: newest first, with which one is in force today */
   async versions() {
-    const [today, rows] = await Promise.all([
+    const [today, earliestEffectiveFrom, rows] = await Promise.all([
       this.today(),
+      this.earliestEffectiveFrom(),
       this.tenantPrisma.db.companySettingsVersion.findMany({
         orderBy: { effectiveFrom: 'desc' },
         include: { createdBy: { select: { name: true } } },
@@ -86,6 +102,7 @@ export class CompanySettingsService {
     const inForce = rows.find((row) => toDay(row.effectiveFrom) <= today);
     return {
       today,
+      earliestEffectiveFrom,
       items: rows.map((row) => ({
         ...toApi(row),
         state:
@@ -100,20 +117,24 @@ export class CompanySettingsService {
 
   /**
    * POST /company/settings/versions: the settings in force on `effectiveFrom`, with these
-   * changes, become a version starting that day. Never in the past (D-70). A version already
-   * starting on that same day is replaced (it is today's or a future one, so nothing used it
-   * for payroll yet).
+   * changes, become a version starting that day. Never before earliestEffectiveFrom (D-70). A
+   * version already starting on that same day is replaced: no day it covers is in use yet.
    */
   async change(auth: AuthContext, input: SettingsChangeInput) {
-    const today = await this.today();
-    if (input.effectiveFrom < today) {
-      throw new BadRequestException({
-        message: 'validationFailed',
-        errors: { effectiveFrom: 'effectiveDateInPast' },
-      });
-    }
-
     return this.tenantPrisma.db.$transaction(async (tx) => {
+      // 1. Take the settings lock alone (D-70): no punch or exception can be written until this
+      //    transaction ends, and a second save waits here for the first one to finish
+      await lockCompanySettings(tx, 'exclusive');
+
+      // 2. Check the date while holding the lock, so the answer cannot change before the save
+      if (input.effectiveFrom < (await this.earliestEffectiveFrom())) {
+        throw new BadRequestException({
+          message: 'validationFailed',
+          errors: { effectiveFrom: 'effectiveDateInPast' },
+        });
+      }
+
+      // 3. Save
       const base = await tx.companySettingsVersion.findFirst({
         where: { effectiveFrom: { lte: toDate(input.effectiveFrom) } },
         orderBy: { effectiveFrom: 'desc' },

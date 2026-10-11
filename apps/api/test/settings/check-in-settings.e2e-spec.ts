@@ -56,6 +56,26 @@ describe('Check-in settings (CS-07, SCRUM-44)', () => {
     });
   });
 
+  it('writes each IP one way, so duplicates are found (D-73)', async () => {
+    const res = await r.admin
+      .post('/company/settings/versions')
+      .send({
+        effectiveFrom: today,
+        ipAllowList: [
+          '::ffff:41.33.10.7', // IPv4 written as IPv6
+          '41.33.10.7', // the same address: a duplicate
+          '2001:DB8:0:0::1', // long IPv6 form
+          '::ffff:41.33.10.0/120', // IPv4 range written as IPv6
+        ],
+      })
+      .expect(201);
+    expect(res.body.ipAllowList).toEqual([
+      '41.33.10.7',
+      '2001:db8::1',
+      '41.33.10.0/24',
+    ]);
+  });
+
   it('empties the IP list so check-in works from anywhere again', async () => {
     const res = await r.admin
       .post('/company/settings/versions')

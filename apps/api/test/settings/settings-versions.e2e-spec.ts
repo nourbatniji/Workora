@@ -118,6 +118,40 @@ describe('Work week and dated settings (CS-04 SCRUM-41, CS-08 SCRUM-45)', () => 
     expect(audit[0].after).toEqual({ effectiveFrom: nextMonth, restDays: [5] });
   });
 
+  it('tells the screen the first date a change may start (D-70)', async () => {
+    const res = await r.admin.get('/company/settings/versions').expect(200);
+    // No attendance exists yet, so nothing is in use: today is still free
+    expect(res.body.earliestEffectiveFrom).toBe(today);
+  });
+
+  it('handles two saves for the same new day one after the other (D-70 lock)', async () => {
+    const day = addDays(today, 45);
+    // Sent at the same moment: without the lock both could try to create the day's version
+    const [first, second] = await Promise.all([
+      r.admin
+        .post('/company/settings/versions')
+        .send({ effectiveFrom: day, restDays: [5] }),
+      r.admin
+        .post('/company/settings/versions')
+        .send({ effectiveFrom: day, restDays: [6] }),
+    ]);
+    expect([first.status, second.status]).toEqual([201, 201]);
+
+    // One version for that day: the second save waited, then replaced the first one's
+    const versions = await prisma.companySettingsVersion.findMany({
+      where: {
+        companyId: r.companyId,
+        effectiveFrom: new Date(`${day}T00:00:00Z`),
+      },
+    });
+    expect(versions).toHaveLength(1);
+    const audit = await prisma.auditLog.findMany({
+      where: { companyId: r.companyId, entityId: versions[0].id },
+      orderBy: { createdAt: 'asc' },
+    });
+    expect(audit.map((a) => a.action)).toEqual(['create', 'update']);
+  });
+
   it('checks the work week', async () => {
     const all = await r.admin
       .post('/company/settings/versions')

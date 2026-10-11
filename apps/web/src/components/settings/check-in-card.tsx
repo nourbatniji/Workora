@@ -8,6 +8,7 @@ import { Card, CardHeader } from '@/components/ui/card';
 import { Field, inputClass } from '@/components/ui/field';
 import { useRouter } from '@/i18n/navigation';
 import { errorsByField } from '@/lib/form-errors';
+import LaterVersionNote from './later-version-note';
 import type { SettingsVersion } from './work-week-card';
 
 // Error keys that get their own message; anything else is "something went wrong"
@@ -29,14 +30,18 @@ const KNOWN_ERRORS = [
 export default function CheckInCard({
   onSaved,
   submitLabel,
-  today,
+  earliestDate,
+  versions,
   current,
 }: {
   /** In the setup wizard: called after a successful save (marks the step done, opens the next) */
   onSaved?: () => Promise<void> | void;
   /** In the setup wizard: "Save & continue" instead of "Save" */
   submitLabel?: string;
-  today: string;
+  /** The first date a change may start (D-70): the date picker's minimum and default */
+  earliestDate: string;
+  /** Every version, to warn about one already scheduled later (D-70) */
+  versions: SettingsVersion[];
   current: SettingsVersion;
 }) {
   const t = useTranslations('Settings.checkIn');
@@ -51,7 +56,7 @@ export default function CheckInCard({
   );
   const [ips, setIps] = useState<string[]>(current.ipAllowList);
   const [newIp, setNewIp] = useState('');
-  const [effectiveFrom, setEffectiveFrom] = useState(today);
+  const [effectiveFrom, setEffectiveFrom] = useState(earliestDate);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -221,7 +226,7 @@ export default function CheckInCard({
           )}
         </div>
 
-        {/* In the setup wizard the settings simply apply from today: no date to pick */}
+        {/* In the setup wizard the settings apply from the first free date: no date to pick */}
         {!onSaved && (
           <div className="max-w-xs">
             <Field
@@ -232,7 +237,7 @@ export default function CheckInCard({
               <input
                 type="date"
                 value={effectiveFrom}
-                min={today}
+                min={earliestDate}
                 onChange={(e) => {
                   setSaved(false);
                   setEffectiveFrom(e.target.value);
@@ -242,6 +247,8 @@ export default function CheckInCard({
             </Field>
           </div>
         )}
+
+        <LaterVersionNote versions={versions} effectiveFrom={effectiveFrom} />
 
         {errors.form && (
           <p
