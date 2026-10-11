@@ -3,6 +3,8 @@
 
 /** The answer of GET /auth/invites/:token */
 export type Invite = {
+  /** reset: an Active user's link (forgot password, or a new link from the Admin) */
+  purpose: 'invite' | 'reset';
   user: {
     name: string | null;
     email: string | null;

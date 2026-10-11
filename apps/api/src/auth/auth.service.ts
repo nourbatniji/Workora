@@ -5,14 +5,28 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { hash, verify } from '@node-rs/argon2';
-import type { AcceptInviteInput, LoginInput, SignUpInput } from '@mdarj/shared';
+import type {
+  AcceptInviteInput,
+  LoginInput,
+  PasswordResetRequest,
+  SignUpInput,
+} from '@mdarj/shared';
 import { Prisma, type User } from '../generated/prisma/client.js';
 import { AuditService } from '../common/audit/audit.service.js';
+import { MailService } from '../common/mail/mail.service.js';
+import type { MailLanguage } from '../common/mail/templates.js';
 import { runInCompany } from '../common/tenancy/tenant-context.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { TenantPrismaService } from '../prisma/tenant-prisma.service.js';
-import { hashInviteToken } from './invite-token.js';
+import {
+  RESET_VALID_HOURS,
+  RESET_VALID_MS,
+  hashInviteToken,
+  inviteLink,
+  newInviteToken,
+} from './invite-token.js';
 import { hashSessionToken, newSessionToken } from './session-token.js';
 
 /** Who opens a session: the browser's address and name, kept on the session row */
@@ -34,7 +48,14 @@ export class AuthService {
     // The guarded client: only this request's company (D-25)
     private readonly tenantPrisma: TenantPrismaService,
     private readonly audit: AuditService,
-  ) {}
+    private readonly mail: MailService,
+    config: ConfigService,
+  ) {
+    this.webUrl = config.get<string>('WEB_URL', 'http://localhost:3000');
+  }
+
+  /** The web app's address, for the links in emails */
+  private readonly webUrl: string;
 
   async signUp(input: SignUpInput) {
     // Hash first: it's slow, so keep it outside the transaction (D-24, Argon2id)
@@ -133,6 +154,8 @@ export class AuthService {
   async checkInvite(token: string) {
     const user = await this.findInvite(token);
     return {
+      // An Active user's link is a password reset; the page words itself for it (UA-04)
+      purpose: user.status === 'active' ? 'reset' : 'invite',
       user: {
         name: user.name,
         email: user.email,
@@ -185,6 +208,62 @@ export class AuthService {
     );
 
     return this.openSession({ ...user, status: 'active' }, client);
+  }
+
+  /**
+   * POST /auth/password-reset (UA-04, FR-UA-4, D-68): emails a 1-hour link to set a new password.
+   * Always answers the same, so nobody can test which emails have an account. Only Active users
+   * get a link: an Invited user's pending invite is never replaced from outside.
+   */
+  async requestPasswordReset(input: PasswordResetRequest): Promise<void> {
+    // Plain client: nobody is logged in; email is unique in the whole system
+    const user = await this.prisma.user.findUnique({
+      where: { email: input.email },
+    });
+    if (!user || !user.email || user.status !== 'active') return;
+
+    // One email a minute at most: a link made less than a minute ago is still fresh
+    const now = Date.now();
+    if (
+      user.inviteExpiresAt &&
+      user.inviteExpiresAt.getTime() > now + RESET_VALID_MS - 60_000
+    ) {
+      return;
+    }
+
+    const token = newInviteToken();
+    const expiresAt = new Date(now + RESET_VALID_MS);
+    await runInCompany(user.companyId, () =>
+      this.tenantPrisma.db.$transaction(async (tx) => {
+        await tx.user.update({
+          where: { id: user.id },
+          data: {
+            inviteToken: hashInviteToken(token),
+            inviteExpiresAt: expiresAt,
+          },
+        });
+        // Nobody is logged in: no "who" (D-58), the reason says where it came from
+        await this.audit.record(tx, null, {
+          entityType: 'user',
+          entityId: user.id,
+          action: 'update',
+          before: { inviteExpiresAt: user.inviteExpiresAt },
+          after: { inviteExpiresAt: expiresAt },
+          reason: 'Password reset requested from the login page',
+        });
+      }),
+    );
+
+    // Email after the save (D-64). A failure is logged; the answer stays the same
+    await this.mail.send(
+      user.email,
+      {
+        kind: 'passwordReset',
+        link: inviteLink(this.webUrl, user.language, token),
+        validHours: RESET_VALID_HOURS,
+      },
+      user.language as MailLanguage,
+    );
   }
 
   /** The user behind an invite link: 404 inviteInvalid (unknown, used, switched off) or inviteExpired */

@@ -21,6 +21,10 @@ export function inviteExpiresAt(now = new Date()): Date {
   return new Date(now.getTime() + INVITE_VALID_MS);
 }
 
+/** A password reset link from the email works for 1 hour (D-68) */
+export const RESET_VALID_HOURS = 1;
+export const RESET_VALID_MS = RESET_VALID_HOURS * 60 * 60 * 1000;
+
 /** The page the person opens: http://localhost:3000/ar/set-password?token=… */
 export function inviteLink(
   webUrl: string,

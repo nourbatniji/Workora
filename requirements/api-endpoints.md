@@ -26,8 +26,8 @@ Legend: ✅ built · ⬜ planned
 | ✅ | POST | `/auth/logout` | End this session | Any user | D-24 | UA-03 |
 | ✅ | GET | `/auth/invites/:token` | Check an invite link is valid (show the set-password page) | Public | FR-UA-1 | UA-01 |
 | ✅ | POST | `/auth/invites/:token/accept` | Set the password; the account becomes Active | Public | FR-UA-1 | UA-01 |
-| ⬜ | POST | `/auth/password-reset` | Ask for a reset email | Public | FR-UA-4 | UA-04 |
-| ⬜ | POST | `/auth/password-reset/:token` | Set a new password from the email link | Public | FR-UA-4 | UA-04 |
+| ✅ | POST | `/auth/password-reset` | Ask for a reset email | Public | FR-UA-4 | UA-04 |
+| — | POST | `/auth/password-reset/:token` | Not needed: the reset email links to the set-password page, which uses `POST /auth/invites/:token/accept` (D-68) | Public | FR-UA-4 | UA-04 |
 | ⬜ | PATCH | `/auth/me` | Change own language | Any user | NFR-6 | UA-04 |
 | ⬜ | POST | `/auth/me/password` | Change own password (current + new) | Any user | NFR-2 | UA-04 |
 

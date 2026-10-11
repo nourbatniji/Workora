@@ -80,3 +80,10 @@ export const listUsersQuerySchema = z.object({
 });
 
 export type ListUsersQuery = z.output<typeof listUsersQuerySchema>;
+
+/** Forgot password (UA-04, FR-UA-4): the email to send a reset link to */
+export const passwordResetRequestSchema = z.object({
+  email: signUpSchema.shape.email,
+});
+
+export type PasswordResetRequest = z.output<typeof passwordResetRequestSchema>;

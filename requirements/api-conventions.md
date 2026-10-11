@@ -146,7 +146,8 @@ No Swagger / OpenAPI in the MVP. The contract is the shared zod schemas in `pack
 | POST | `/auth/login` | Public | 200 `{ user }` + httpOnly cookie | 400 `validationFailed`, 401 `invalidCredentials`, 403 `accountDeactivated` | Yes |
 | GET | `/auth/me` | Logged in, any role | 200 `{ user }` | 401 `notLoggedIn` / `sessionExpired` | Yes |
 | POST | `/auth/logout` | Logged in, any role | 204 | 401 | Yes |
-| GET | `/auth/invites/:token` | Public | 200 `{ user: { name, email, phone, language }, company: { name } }` | 404 `inviteInvalid` / `inviteExpired` | Yes (SCRUM-29) |
+| POST | `/auth/password-reset` | Public | 204 always (never says whether the email has an account); emails a 1-hour link to Active users, at most one a minute (D-68) | 400 `validationFailed` | Yes (SCRUM-32) |
+| GET | `/auth/invites/:token` | Public | 200 `{ purpose: 'invite' \| 'reset', user: { name, email, phone, language }, company: { name } }` | 404 `inviteInvalid` / `inviteExpired` | Yes (SCRUM-29) |
 | POST | `/auth/invites/:token/accept` | Public | 200 `{ user }` + httpOnly cookie; account Active, link used up | 400 `validationFailed`, 404 `inviteInvalid` / `inviteExpired` | Yes (SCRUM-29) |
 | GET | `/users?page=&pageSize=` | Admin | 200 `{ items, total, page, pageSize }`, newest first | 400, 401, 403 | Yes (SCRUM-29) |
 | POST | `/users/:id/invite` | Admin | 200 `{ inviteLink, inviteExpiresAt, emailSent }`; the old link stops working | 400 bad id, 401, 403, 404 (not in this company), 409 `accountDeactivated` | Yes (SCRUM-30) |

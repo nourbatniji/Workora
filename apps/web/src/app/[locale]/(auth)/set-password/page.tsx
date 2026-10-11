@@ -5,7 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { getInvite } from '@/lib/invites';
 
 /**
- * Opened from an invite link: /set-password?token=… (UA-01).
+ * Opened from an invite link or a password reset email: /set-password?token=… (UA-01, UA-04).
  * The server asks the API whether the link is still good before showing the form.
  */
 export default async function SetPasswordPage({
@@ -40,14 +40,21 @@ export default async function SetPasswordPage({
     );
   }
 
-  const { user, company } = check.invite;
+  const { purpose, user, company } = check.invite;
+  const reset = purpose === 'reset';
   return (
     <>
-      <h1 className="text-xl font-medium text-text">{t('title')}</h1>
+      <h1 className="text-xl font-medium text-text">
+        {reset ? t('resetTitle') : t('title')}
+      </h1>
+      {!reset && (
+        <p className="mt-1 text-sm text-muted">
+          {t('invitedTo', { name: user.name ?? '', company: company.name })}
+        </p>
+      )}
       <p className="mt-1 text-sm text-muted">
-        {t('invitedTo', { name: user.name ?? '', company: company.name })}
+        {reset ? t('resetSubtitle') : t('subtitle')}
       </p>
-      <p className="mt-1 text-sm text-muted">{t('subtitle')}</p>
       <SetPasswordForm token={value!} />
     </>
   );

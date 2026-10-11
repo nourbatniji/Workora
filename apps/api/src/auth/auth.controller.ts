@@ -13,9 +13,11 @@ import type { Request, Response } from 'express';
 import {
   acceptInviteSchema,
   loginSchema,
+  passwordResetRequestSchema,
   signUpSchema,
   type AcceptInviteInput,
   type LoginInput,
+  type PasswordResetRequest,
   type SignUpInput,
 } from '@mdarj/shared';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
@@ -53,6 +55,18 @@ export class AuthController {
 
     setSessionCookie(res, token);
     return { user };
+  }
+
+  // POST /auth/password-reset: email a link to set a new password (UA-04, FR-UA-4).
+  // Always 204, whether or not the email has an account
+  @Post('password-reset')
+  @Public()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async requestPasswordReset(
+    @Body(new ZodValidationPipe(passwordResetRequestSchema))
+    body: PasswordResetRequest,
+  ) {
+    await this.authService.requestPasswordReset(body);
   }
 
   // GET /auth/invites/:token: is the invite link still good? (UA-01, FR-UA-1)
