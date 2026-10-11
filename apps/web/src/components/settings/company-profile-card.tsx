@@ -33,8 +33,14 @@ const KNOWN_ERRORS = [
 /** Company profile (CS-03, FR-CS-3): name, address, phone, time zone; currency EGP */
 export default function CompanyProfileCard({
   company,
+  timeZones,
 }: {
   company: CompanyProfile;
+  /**
+   * The time-zone list, made once on the server. The browser's own list differs from Node's
+   * (Chrome adds names like Etc/GMT+1), and two different lists break hydration.
+   */
+  timeZones: string[];
 }) {
   const t = useTranslations('Settings.profile');
   const tErr = useTranslations('Errors');
@@ -48,11 +54,14 @@ export default function CompanyProfileCard({
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // Every time zone the browser knows; the saved one stays in the list even if it doesn't
-  const zones = useMemo(() => {
-    const all = Intl.supportedValuesOf('timeZone');
-    return all.includes(company.timeZone) ? all : [company.timeZone, ...all];
-  }, [company.timeZone]);
+  // The saved zone stays in the list even if the list doesn't have it
+  const zones = useMemo(
+    () =>
+      timeZones.includes(company.timeZone)
+        ? timeZones
+        : [company.timeZone, ...timeZones],
+    [timeZones, company.timeZone],
+  );
 
   const message = (key?: string) =>
     key ? tErr(KNOWN_ERRORS.includes(key) ? key : 'somethingWrong') : undefined;

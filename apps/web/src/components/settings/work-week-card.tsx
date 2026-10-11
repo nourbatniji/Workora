@@ -29,6 +29,9 @@ export type SettingsVersion = {
   overtimeRestDayRate: string;
   overtimeHolidayRate: string;
   overtimeMinMinutes: number;
+  checkInWindowMinutes: number;
+  checkOutWindowMinutes: number;
+  ipAllowList: string[];
   createdBy: string | null;
   state: 'inForce' | 'scheduled' | 'past';
 };

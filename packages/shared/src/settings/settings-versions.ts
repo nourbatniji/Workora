@@ -1,7 +1,8 @@
 // Settings that change money or attendance are saved as versions with a start date
 // (FR-CS-8, D-27, D-70). One change = { effectiveFrom, and the settings that change }.
-// Work week (CS-04) and payroll rules (CS-05) so far; check-in (CS-07) adds its fields here.
+// Work week (CS-04), payroll rules (CS-05) and check-in (CS-07).
 import { z } from 'zod';
+import { isIpOrRange } from '../ip.js';
 
 /** A calendar date like "2026-11-01" (D-29) */
 export const isoDateSchema = z.iso.date('dateInvalid');
@@ -110,7 +111,18 @@ const SETTING_FIELDS = [
   'overtimeRestDayRate',
   'overtimeHolidayRate',
   'overtimeMinMinutes',
+  'checkInWindowMinutes',
+  'checkOutWindowMinutes',
+  'ipAllowList',
 ] as const;
+
+/** Office IP addresses or ranges (FR-CS-7): trimmed, duplicates removed, 50 at most */
+const ipAllowListSchema = z
+  .array(
+    z.string('ipInvalid').trim().toLowerCase().refine(isIpOrRange, 'ipInvalid'),
+  )
+  .max(50, 'tooManyIps')
+  .transform((list) => [...new Set(list)]);
 
 export const settingsChangeSchema = z
   .object({
@@ -135,6 +147,19 @@ export const settingsChangeSchema = z
       .min(0, 'minutesInvalid')
       .max(240, 'minutesInvalid')
       .optional(),
+    // Check-in (CS-07, FR-CS-7, FR-AT-2, D-38): minutes before shift start, minutes after shift end
+    checkInWindowMinutes: z
+      .int('minutesInvalid')
+      .min(0, 'minutesInvalid')
+      .max(240, 'minutesInvalid')
+      .optional(),
+    checkOutWindowMinutes: z
+      .int('minutesInvalid')
+      .min(30, 'minutesInvalid')
+      .max(720, 'minutesInvalid')
+      .optional(),
+    // Empty = check-in from anywhere (D-18)
+    ipAllowList: ipAllowListSchema.optional(),
   })
   .refine(
     (change) => SETTING_FIELDS.some((field) => change[field] !== undefined),
