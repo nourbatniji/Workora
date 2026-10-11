@@ -168,6 +168,11 @@ export class AuthService {
         if (count !== 1) {
           throw new NotFoundException({ message: 'inviteInvalid' });
         }
+        // A new password ends every older session, on every device (a reset, FR-UA-4)
+        await tx.session.updateMany({
+          where: { userId: user.id, revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
         await this.audit.record(tx, user.id, {
           entityType: 'user',
           entityId: user.id,

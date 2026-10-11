@@ -6,6 +6,8 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseUUIDPipe,
   Post,
   Query,
   Req,
@@ -43,5 +45,13 @@ export class UsersController {
     @Body(new ZodValidationPipe(createUserSchema)) body: CreateUserInput,
   ) {
     return this.users.create(req.auth!, body);
+  }
+
+  // POST /users/:id/invite: a new 7-day link; the old one stops working (UA-02, FR-UA-2, FR-UA-4)
+  @Post(':id/invite')
+  @Roles('admin')
+  @HttpCode(HttpStatus.OK)
+  newInvite(@Req() req: Request, @Param('id', new ParseUUIDPipe()) id: string) {
+    return this.users.newInvite(req.auth!, id);
   }
 }

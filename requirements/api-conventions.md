@@ -149,6 +149,7 @@ No Swagger / OpenAPI in the MVP. The contract is the shared zod schemas in `pack
 | GET | `/auth/invites/:token` | Public | 200 `{ user: { name, email, phone, language }, company: { name } }` | 404 `inviteInvalid` / `inviteExpired` | Yes (SCRUM-29) |
 | POST | `/auth/invites/:token/accept` | Public | 200 `{ user }` + httpOnly cookie; account Active, link used up | 400 `validationFailed`, 404 `inviteInvalid` / `inviteExpired` | Yes (SCRUM-29) |
 | GET | `/users?page=&pageSize=` | Admin | 200 `{ items, total, page, pageSize }`, newest first | 400, 401, 403 | Yes (SCRUM-29) |
+| POST | `/users/:id/invite` | Admin | 200 `{ inviteLink, inviteExpiresAt, emailSent }`; the old link stops working | 400 bad id, 401, 403, 404 (not in this company), 409 `accountDeactivated` | Yes (SCRUM-30) |
 | POST | `/users` | Admin | 201 `{ user, inviteLink, emailSent }` — the link is shown only here (D-65) | 400 `validationFailed` (`emailOrPhoneRequired`…), 401, 403, 409 `emailTaken` / `phoneTaken` | Yes (SCRUM-29) |
 | GET | `/` | Public | "Hello World!" | — | Starter route from the Nest template; to be removed in SCRUM-33 when routes become private by default |
 

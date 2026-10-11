@@ -1,7 +1,11 @@
 // Users and invites (UA-01, FR-UA-1, FR-UA-2, FR-UA-7). The Admin creates a user; the person
 // gets a 7-day link to set a password. Account status (invited/active/deactivated) is the
 // login's status only, never the employee's (FR-UA-8).
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { CreateUserInput, ListUsersQuery } from '@mdarj/shared';
 import { Prisma } from '../../generated/prisma/client.js';
@@ -134,6 +138,67 @@ export class UsersService {
       : false;
 
     return { user, inviteLink: link, emailSent };
+  }
+
+  /**
+   * POST /users/:id/invite (UA-02, FR-UA-2, FR-UA-4): a fresh 7-day link for someone whose link
+   * expired, who never got the email, or who forgot their password and has no email.
+   * The old link stops working. Works for Invited and Active users, never Deactivated ones.
+   */
+  async newInvite(auth: AuthContext, userId: string) {
+    const db = this.tenantPrisma.db;
+
+    // Another company's user is not found at all (tenancy, D-57)
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        status: true,
+        language: true,
+        inviteExpiresAt: true,
+        company: { select: { name: true } },
+      },
+    });
+    if (!user) {
+      throw new NotFoundException({ message: 'notFound' });
+    }
+    if (user.status === 'deactivated') {
+      throw new ConflictException({ message: 'accountDeactivated' });
+    }
+
+    // A new token replaces the old one, so the old link stops working
+    const token = newInviteToken();
+    const expiresAt = inviteExpiresAt();
+    await db.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          inviteToken: hashInviteToken(token),
+          inviteExpiresAt: expiresAt,
+        },
+      });
+      await this.audit.record(tx, auth.userId, {
+        entityType: 'user',
+        entityId: user.id,
+        action: 'update',
+        before: { inviteExpiresAt: user.inviteExpiresAt },
+        after: { inviteExpiresAt: expiresAt },
+        reason: 'New invite link issued',
+      });
+    });
+
+    // Email after the save (D-64); the link can always be copied (FR-UA-2)
+    const link = inviteLink(this.webUrl, user.language, token);
+    const emailSent = user.email
+      ? await this.mail.send(
+          user.email,
+          { kind: 'invite', link, companyName: user.company.name },
+          user.language as MailLanguage,
+        )
+      : false;
+
+    return { inviteLink: link, inviteExpiresAt: expiresAt, emailSent };
   }
 
   /** 409 when the email or phone already belongs to any user, in any company */

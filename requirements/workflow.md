@@ -214,4 +214,5 @@ Noticed, not changed:
   - No migration: `invite_token` and `invite_expires_at` were already in the schema
   - Decisions proposed: D-65, D-66
 - Not in this task: the Admin's invite screen and the Copy-link button (SCRUM-150, with SCRUM-30 UA-02); new link for an existing user, `POST /users/:id/invite` (UA-02/UA-04)
-
+- SCRUM-30 UA-02 on the same branch: `POST /users/:id/invite` (Admin) issues a new 7-day link, emails it when there is an email, and the old link stops working; Deactivated users are refused; accepting a link ends the user's older sessions; tests added to `test/users/invites.e2e-spec.ts`; decision proposed D-67. The Copy-link button is the screen part (SCRUM-150)
+- Git workflow agreed: one branch per feature (here "Users & access": SCRUM-29, 30, 150, 32, 35, 144), one commit per tested checkpoint with its Jira keys, merge to `main` only after the whole feature is tested and approved

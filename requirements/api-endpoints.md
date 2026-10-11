@@ -37,7 +37,7 @@ Legend: ✅ built · ⬜ planned
 | --- | --- | --- | --- | --- | --- | --- |
 | ✅ | GET | `/users` | List users with role and account status | Admin | FR-UA-8 | UA-01 |
 | ✅ | POST | `/users` | Create a user (Employee, Interviewer or Admin) and return the 7-day invite link; emails it when an email exists | Admin | FR-UA-1, FR-UA-2, FR-UA-7 | UA-01, UA-02, UA-07 |
-| ⬜ | POST | `/users/:id/invite` | Issue a new invite link (resend, or reset without email) | Admin | FR-UA-2, FR-UA-4 | UA-02, UA-04 |
+| ✅ | POST | `/users/:id/invite` | Issue a new invite link (resend, or reset without email) | Admin | FR-UA-2, FR-UA-4 | UA-02, UA-04 |
 | ⬜ | PATCH | `/users/:id` | Change role (never the last Active Admin) | Admin | FR-UA-7, FR-UA-9 | UA-07, UA-10 |
 | ⬜ | POST | `/users/:id/deactivate` | Switch a login off (never the last Active Admin) | Admin | FR-UA-8, FR-UA-9 | UA-07, UA-10 |
 | ⬜ | POST | `/users/:id/activate` | Switch a login back on | Admin | FR-UA-8 | UA-07 |
