@@ -9,6 +9,7 @@ import { AuditModule } from './common/audit/audit.module.js';
 import { MailModule } from './common/mail/mail.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { JobTitlesModule } from './modules/job-titles/job-titles.module.js';
+import { CompanyModule } from './modules/company/company.module.js';
 import { RolesGuard } from './auth/roles.guard.js';
 import { SessionGuard } from './auth/session.guard.js';
 
@@ -21,6 +22,7 @@ import { SessionGuard } from './auth/session.guard.js';
     AuthModule,
     UsersModule,
     JobTitlesModule,
+    CompanyModule,
   ],
   controllers: [AppController],
   providers: [

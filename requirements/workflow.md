@@ -225,4 +225,5 @@ Noticed, not changed:
 
 - Branch `feat/company-settings`, scope "Company settings": SCRUM-46 CS-09, SCRUM-40 CS-03, SCRUM-41 CS-04, SCRUM-45 CS-08, SCRUM-42 CS-05, SCRUM-43 CS-06, SCRUM-44 CS-07, SCRUM-152 UI settings, SCRUM-39 CS-02 wizard
 - SCRUM-46 CS-09: `GET`/`POST`/`PATCH`/`DELETE /job-titles` (Admin), names in Arabic and English, no duplicate names in a company, removal refused while employees use the title (D-48, also enforced by the foreign key); `/settings` page is now real (Admin only) with the Job titles section; tests in `test/settings/job-titles.e2e-spec.ts`. No migration: `job_titles` already existed. No audit row: `AuditEntity` has no job-title value and FR-DB-4 does not list job titles
+- SCRUM-40 CS-03: `GET`/`PATCH /company` (Admin): name, address, phone (normalized, D-45), time zone (checked against the IANA list); currency shown as EGP; each save writes a `company_settings` audit row with before and after; Company profile section on `/settings`; tests in `test/settings/company.e2e-spec.ts`. The logo upload waits for file storage (FND-06, SCRUM-25)
 

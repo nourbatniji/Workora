@@ -46,8 +46,8 @@ Legend: ✅ built · ⬜ planned
 
 | | Method | Path | Purpose | Access | SRS | Story |
 | --- | --- | --- | --- | --- | --- | --- |
-| ⬜ | GET | `/company` | Company profile, law mode and rules text | Admin | FR-CS-3, FR-CS-6 | CS-03 |
-| ⬜ | PATCH | `/company` | Edit profile, law mode, company rules text | Admin | FR-CS-3, FR-CS-6 | CS-03, CS-06 |
+| ✅ | GET | `/company` | Company profile (law mode and rules text come with CS-06) | Admin | FR-CS-3, FR-CS-6 | CS-03 |
+| ✅ | PATCH | `/company` | Edit profile (law mode and company rules text come with CS-06) | Admin | FR-CS-3, FR-CS-6 | CS-03, CS-06 |
 | ⬜ | GET | `/company/settings?date=` | The settings version in force on a date (default today) | Admin | FR-CS-8 | CS-08 |
 | ⬜ | GET | `/company/settings/versions` | Settings history | Admin | FR-CS-8 | CS-08 |
 | ⬜ | POST | `/company/settings/versions` | Save new settings from an effective date (work week, payroll, check-in); returns compliance warnings from MVP-2 | Admin | FR-CS-4, FR-CS-5, FR-CS-7, FR-CS-8 | CS-04, CS-05, CS-07, CS-08 |

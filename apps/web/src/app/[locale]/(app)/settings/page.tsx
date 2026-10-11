@@ -1,5 +1,8 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import CompanyProfileCard, {
+  type CompanyProfile,
+} from '@/components/settings/company-profile-card';
 import JobTitlesCard, {
   type JobTitle,
 } from '@/components/settings/job-titles-card';
@@ -8,14 +11,17 @@ import { getSession } from '@/lib/session';
 
 /**
  * Settings (SRS 3.1, SCRUM-152). Admin only. Built section by section with the Company
- * settings feature: job titles first (CS-09); profile, work week, payroll and check-in follow.
+ * settings feature: profile (CS-03) and job titles (CS-09) so far; work week, payroll and check-in follow.
  */
 export default async function SettingsPage() {
   const session = await getSession();
   if (!session.user || session.user.role !== 'admin') notFound();
 
   const t = await getTranslations('Settings');
-  const jobTitles = await serverGet<{ items: JobTitle[] }>('/job-titles');
+  const [company, jobTitles] = await Promise.all([
+    serverGet<CompanyProfile>('/company'),
+    serverGet<{ items: JobTitle[] }>('/job-titles'),
+  ]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -25,6 +31,7 @@ export default async function SettingsPage() {
           {t('hint', { company: session.user.company.name })}
         </p>
       </div>
+      <CompanyProfileCard company={company} />
       <JobTitlesCard items={jobTitles.items} />
     </div>
   );

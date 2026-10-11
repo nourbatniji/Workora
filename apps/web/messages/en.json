@@ -160,6 +160,20 @@
   "Settings": {
     "title": "Settings",
     "hint": "How {company} works in MDARJ. More sections arrive with the company settings feature.",
+    "profile": {
+      "title": "Company profile",
+      "hint": "Shown in the app and on payslips.",
+      "name": "Company name",
+      "address": "Address",
+      "phone": "Phone",
+      "optional": "optional",
+      "timeZone": "Time zone",
+      "currency": "Currency",
+      "logo": "Logo",
+      "logoLater": "Logo upload arrives with file storage (FND-06).",
+      "save": "Save profile",
+      "saved": "Saved"
+    },
     "jobTitles": {
       "title": "Job titles",
       "hint": "The list you pick from on each employee.",
@@ -487,6 +501,7 @@
     "inviteExpired": "This link has expired. Ask your company's Admin for a new one.",
     "lastActiveAdmin": "The company must keep at least one Active Admin. Make someone else an Admin first.",
     "jobTitleExists": "The company already has a job title with this name.",
-    "jobTitleInUse": "Employees still have this job title, so it can't be removed. Rename it instead."
+    "jobTitleInUse": "Employees still have this job title, so it can't be removed. Rename it instead.",
+    "timeZoneInvalid": "Choose a time zone from the list"
   }
 }
