@@ -6,3 +6,4 @@ export * from './settings/job-titles.js';
 export * from './settings/company.js';
 export * from './settings/settings-versions.js';
 export * from './ip.js';
+export * from './settings/setup.js';

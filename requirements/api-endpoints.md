@@ -51,8 +51,8 @@ Legend: ✅ built · ⬜ planned
 | ✅ | GET | `/company/settings?date=` | The settings version in force on a date (default today) | Admin | FR-CS-8 | CS-08 |
 | ✅ | GET | `/company/settings/versions` | Settings history | Admin | FR-CS-8 | CS-08 |
 | ✅ | POST | `/company/settings/versions` | Save new settings from an effective date (work week, payroll rules and check-in); returns compliance warnings from MVP-2 | Admin | FR-CS-4, FR-CS-5, FR-CS-7, FR-CS-8 | CS-04, CS-05, CS-07, CS-08 |
-| ⬜ | GET | `/company/setup` | Which setup-wizard steps are done or skipped | Admin | FR-CS-2 | CS-02 |
-| ⬜ | PATCH | `/company/setup` | Mark a wizard step done or skipped | Admin | FR-CS-2 | CS-02 |
+| ✅ | GET | `/company/setup` | Which setup-wizard steps are done or skipped | Admin | FR-CS-2 | CS-02 |
+| ✅ | PATCH | `/company/setup` | Mark a wizard step done or skipped | Admin | FR-CS-2 | CS-02 |
 | ✅ | GET | `/job-titles` | List job titles | Admin | FR-CS-9 | CS-09 |
 | ✅ | POST | `/job-titles` | Add a job title | Admin | FR-CS-9 | CS-09 |
 | ✅ | PATCH | `/job-titles/:id` | Rename a job title | Admin | FR-CS-9 | CS-09 |

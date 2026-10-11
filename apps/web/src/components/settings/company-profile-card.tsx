@@ -32,9 +32,15 @@ const KNOWN_ERRORS = [
 
 /** Company profile (CS-03, FR-CS-3): name, address, phone, time zone; currency EGP */
 export default function CompanyProfileCard({
+  onSaved,
+  submitLabel,
   company,
   timeZones,
 }: {
+  /** In the setup wizard: called after a successful save (marks the step done, opens the next) */
+  onSaved?: () => Promise<void> | void;
+  /** In the setup wizard: "Save & continue" instead of "Save" */
+  submitLabel?: string;
   company: CompanyProfile;
   /**
    * The time-zone list, made once on the server. The browser's own list differs from Node's
@@ -93,6 +99,10 @@ export default function CompanyProfileCard({
     }
     setBusy(false);
     if (status === 200) {
+      if (onSaved) {
+        await onSaved();
+        return;
+      }
       setSaved(true);
       router.refresh(); // the top bar shows the new company name
       return;
@@ -186,7 +196,7 @@ export default function CompanyProfileCard({
             disabled={busy}
             className="h-9 rounded-[10px] bg-accent px-3.5 text-sm font-medium text-white disabled:opacity-60"
           >
-            {t('save')}
+            {submitLabel ?? t('save')}
           </button>
         </div>
       </form>

@@ -20,8 +20,14 @@ const KNOWN_ERRORS = ['tooLong', 'lawModeInvalid', 'forbidden'];
  * check read these later (FR-LV-2, BR-9, D-04, FR-AI-3).
  */
 export default function ComplianceCard({
+  onSaved,
+  submitLabel,
   company,
 }: {
+  /** In the setup wizard: called after a successful save (marks the step done, opens the next) */
+  onSaved?: () => Promise<void> | void;
+  /** In the setup wizard: "Save & continue" instead of "Save" */
+  submitLabel?: string;
   company: CompanyProfile;
 }) {
   const t = useTranslations('Settings.compliance');
@@ -64,6 +70,10 @@ export default function ComplianceCard({
     }
     setBusy(false);
     if (status === 200) {
+      if (onSaved) {
+        await onSaved();
+        return;
+      }
       setSaved(true);
       router.refresh();
       return;
@@ -165,7 +175,7 @@ export default function ComplianceCard({
             disabled={busy}
             className="h-9 rounded-[10px] bg-accent px-3.5 text-sm font-medium text-white disabled:opacity-60"
           >
-            {t('save')}
+            {submitLabel ?? t('save')}
           </button>
         </div>
       </form>

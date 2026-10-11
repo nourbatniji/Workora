@@ -191,6 +191,7 @@
     "workWeek": {
       "title": "Work week",
       "hint": "Pick the weekly rest days. A change starts on the date you choose and never changes earlier days or approved payrolls.",
+      "setupHint": "Pick the weekly rest days. You can change them later in Settings, from any date you choose.",
       "restDays": "Weekly rest days",
       "summary": "Rest: {rest} · {working, plural, one {# working day} other {# working days}} a week",
       "noRestDays": "none",
@@ -209,6 +210,7 @@
     "payroll": {
       "title": "Payroll rules",
       "hint": "How pay, deductions and overtime are worked out. Changes start on the date you choose.",
+      "setupHint": "How pay, deductions and overtime are worked out. MDARJ's defaults follow common practice in Egypt; change only what your company does differently.",
       "divisorTitle": "Daily rate",
       "divisor": {
         "days_30": "Salary ÷ 30",
@@ -219,15 +221,14 @@
       "latenessTitle": "Lateness and early leave",
       "lateness": {
         "exact": "Exact",
-        "exactHint": "Every minute is deducted at the hourly rate.",
+        "exactHint": "Every late minute is deducted at the hourly rate. Simplest choice.",
         "tiered": "Bands",
-        "tieredHint": "A part of the day is deducted by how late the person was."
+        "tieredHint": "Fixed amounts by how late: e.g. 16–60 min late = ¼ day."
       },
-      "bandFrom": "From minute",
-      "bandTo": "To minute",
-      "bandOpen": "and more",
-      "minutesLate": "min late",
-      "bandFraction": "Deduction",
+      "bandFrom": "Late from (min)",
+      "bandTo": "To (min)",
+      "bandOpen": "no limit",
+      "bandFraction": "Deduct",
       "fraction": {
         "0_25": "¼ day",
         "0_5": "½ day",
@@ -247,11 +248,14 @@
       "effectiveFrom": "Starts on",
       "effectiveHint": "today or later",
       "save": "Save payroll rules",
-      "saved": "Saved. Applies from {date}."
+      "saved": "Saved. Applies from {date}.",
+      "bandSentence": "{from}–{to} minutes late → lose {fraction} of pay",
+      "bandSentenceOpen": "{from}+ minutes late → lose {fraction} of pay"
     },
     "checkIn": {
       "title": "Check-in",
       "hint": "When people can check in and out, and from where. Changes start on the date you choose.",
+      "setupHint": "When people can check in and out, and from where. Leave the defaults if you are not sure.",
       "before": "Check in from",
       "beforeHint": "minutes before the shift starts",
       "after": "Check out until",
@@ -281,6 +285,33 @@
       "rename": "Rename {name}",
       "remove": "Remove {name}"
     }
+  },
+  "Setup": {
+    "title": "Let's set up {company}",
+    "steps": "Setup steps",
+    "status": {
+      "todo": "to do",
+      "done": "done",
+      "skipped": "skipped"
+    },
+    "skip": "Skip for now",
+    "continue": "Continue",
+    "finish": "Finish",
+    "allDoneTitle": "All set!",
+    "allDoneBody": "Your company is ready. You can change any of this at any time in Settings.",
+    "openSettings": "Open Settings",
+    "toDashboard": "Go to the dashboard",
+    "banner": {
+      "title": "Finish setting up your company",
+      "body": "{done} of {total} steps done. Pay and attendance use these settings.",
+      "action": "Continue setup"
+    },
+    "stepOf": "Step {n} of {total}",
+    "saveContinue": "Save & continue",
+    "saveFinish": "Save & finish",
+    "back": "Back",
+    "intro": "A few minutes now saves work later: pay, attendance and leave all read these settings. Skip anything you are not sure about and finish it later in Settings.",
+    "exit": "Exit setup"
   },
   "LawRef": {
     "title": "Labor Law No. 14 of 2025",

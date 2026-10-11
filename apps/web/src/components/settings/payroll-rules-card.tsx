@@ -45,9 +45,15 @@ const KNOWN_ERRORS = [
  * divisor, lateness policy (exact or bands), overtime multipliers and the overtime minimum.
  */
 export default function PayrollRulesCard({
+  onSaved,
+  submitLabel,
   today,
   current,
 }: {
+  /** In the setup wizard: called after a successful save (marks the step done, opens the next) */
+  onSaved?: () => Promise<void> | void;
+  /** In the setup wizard: "Save & continue" instead of "Save" */
+  submitLabel?: string;
   today: string;
   current: SettingsVersion;
 }) {
@@ -142,6 +148,10 @@ export default function PayrollRulesCard({
     }
     setBusy(false);
     if (status === 201) {
+      if (onSaved) {
+        await onSaved();
+        return;
+      }
       setSaved(true);
       router.refresh();
       return;
@@ -158,7 +168,10 @@ export default function PayrollRulesCard({
 
   return (
     <Card id="payroll" className="scroll-mt-32">
-      <CardHeader title={t('title')} hint={t('hint')} />
+      <CardHeader
+        title={t('title')}
+        hint={onSaved ? t('setupHint') : t('hint')}
+      />
       <form onSubmit={save} noValidate className="flex flex-col gap-5">
         {/* Daily rate (BR-6) */}
         <fieldset>
@@ -216,78 +229,105 @@ export default function PayrollRulesCard({
           </div>
 
           {mode === 'tiered' && (
-            <div className="mt-3 flex flex-col gap-2">
-              {bands.map((band, i) => (
-                <div key={i}>
-                  <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <input
-                      value={band.from}
-                      onChange={(e) => updateBand(i, { from: e.target.value })}
-                      inputMode="numeric"
-                      aria-label={t('bandFrom')}
-                      className={`${inputClass(false)} w-20`}
-                    />
-                    <span className="text-muted">–</span>
-                    <input
-                      value={band.to}
-                      onChange={(e) => updateBand(i, { to: e.target.value })}
-                      inputMode="numeric"
-                      placeholder={t('bandOpen')}
-                      aria-label={t('bandTo')}
-                      className={`${inputClass(false)} w-24`}
-                    />
-                    <span className="text-muted">{t('minutesLate')}</span>
-                    <span className="text-muted">→</span>
-                    <select
-                      value={band.fraction}
-                      onChange={(e) =>
-                        updateBand(i, { fraction: e.target.value })
-                      }
-                      aria-label={t('bandFraction')}
-                      className={`${inputClass(false)} w-32`}
-                    >
-                      {FRACTIONS.map((f) => (
-                        <option key={f} value={f}>
-                          {t(`fraction.${f.replace('.', '_')}`)}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setBands((all) => all.filter((_, j) => j !== i))
-                      }
-                      aria-label={t('removeBand')}
-                      className="inline-flex size-8 items-center justify-center rounded-lg text-muted hover:bg-canvas hover:text-text"
-                    >
-                      <X className="size-4" strokeWidth={1.5} aria-hidden />
-                    </button>
-                  </div>
-                  {bandError(i) && (
-                    <p role="alert" className="mt-1 text-xs text-danger">
-                      {bandError(i)}
+            <div className="mt-3 rounded-[10px] border border-line">
+              {/* One row per band: "late from … to … minutes → deduct …" */}
+              <div className="hidden grid-cols-[1fr_1fr_1.3fr_2rem] gap-2 border-b border-line px-3 py-2 text-xs text-muted sm:grid">
+                <span>{t('bandFrom')}</span>
+                <span>{t('bandTo')}</span>
+                <span>{t('bandFraction')}</span>
+                <span />
+              </div>
+              <ul className="divide-y divide-line">
+                {bands.map((band, i) => (
+                  <li key={i} className="px-3 py-2.5">
+                    <div className="grid grid-cols-[1fr_1fr_1.3fr_2rem] items-center gap-2">
+                      <input
+                        value={band.from}
+                        onChange={(e) =>
+                          updateBand(i, { from: e.target.value })
+                        }
+                        inputMode="numeric"
+                        aria-label={t('bandFrom')}
+                        className={`${inputClass(false)} h-9`}
+                      />
+                      <input
+                        value={band.to}
+                        onChange={(e) => updateBand(i, { to: e.target.value })}
+                        inputMode="numeric"
+                        placeholder={t('bandOpen')}
+                        aria-label={t('bandTo')}
+                        className={`${inputClass(false)} h-9`}
+                      />
+                      <select
+                        value={band.fraction}
+                        onChange={(e) =>
+                          updateBand(i, { fraction: e.target.value })
+                        }
+                        aria-label={t('bandFraction')}
+                        className={`${inputClass(false)} h-9`}
+                      >
+                        {FRACTIONS.map((f) => (
+                          <option key={f} value={f}>
+                            {t(`fraction.${f.replace('.', '_')}`)}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setBands((all) => all.filter((_, j) => j !== i))
+                        }
+                        aria-label={t('removeBand')}
+                        className="inline-flex size-8 items-center justify-center rounded-lg text-muted hover:bg-canvas hover:text-text"
+                      >
+                        <X className="size-4" strokeWidth={1.5} aria-hidden />
+                      </button>
+                    </div>
+                    {/* The same row as a sentence, so nobody has to decode the boxes */}
+                    <p className="mt-1.5 text-xs text-muted">
+                      {band.to.trim() === ''
+                        ? t('bandSentenceOpen', {
+                            from: band.from || '…',
+                            fraction: t(
+                              `fraction.${band.fraction.replace('.', '_')}`,
+                            ),
+                          })
+                        : t('bandSentence', {
+                            from: band.from || '…',
+                            to: band.to,
+                            fraction: t(
+                              `fraction.${band.fraction.replace('.', '_')}`,
+                            ),
+                          })}
                     </p>
-                  )}
-                </div>
-              ))}
+                    {bandError(i) && (
+                      <p role="alert" className="mt-1 text-xs text-danger">
+                        {bandError(i)}
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
               {errors['latenessPolicy.bands'] && (
-                <p role="alert" className="text-xs text-danger">
+                <p role="alert" className="px-3 pb-2 text-xs text-danger">
                   {message(errors['latenessPolicy.bands'])}
                 </p>
               )}
-              <button
-                type="button"
-                onClick={() =>
-                  setBands((all) => [
-                    ...all,
-                    { from: '', to: '', fraction: '0.25' },
-                  ])
-                }
-                className="inline-flex h-8 w-fit items-center gap-1.5 rounded-lg border border-line px-3 text-[13px] hover:bg-canvas"
-              >
-                <Plus className="size-4" strokeWidth={1.5} aria-hidden />
-                {t('addBand')}
-              </button>
+              <div className="border-t border-line px-3 py-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setBands((all) => [
+                      ...all,
+                      { from: '', to: '', fraction: '0.25' },
+                    ])
+                  }
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-[13px] text-accent-fg hover:bg-canvas"
+                >
+                  <Plus className="size-4" strokeWidth={1.5} aria-hidden />
+                  {t('addBand')}
+                </button>
+              </div>
             </div>
           )}
           <p className="mt-2 text-xs text-muted">{t('capHint')}</p>
@@ -332,24 +372,27 @@ export default function PayrollRulesCard({
           <p className="mt-2 text-xs text-muted">{t('overtimeHint')}</p>
         </fieldset>
 
-        <div className="max-w-xs">
-          <Field
-            label={t('effectiveFrom')}
-            hint={t('effectiveHint')}
-            error={message(errors.effectiveFrom)}
-          >
-            <input
-              type="date"
-              value={effectiveFrom}
-              min={today}
-              onChange={(e) => {
-                setSaved(false);
-                setEffectiveFrom(e.target.value);
-              }}
-              className={inputClass(!!errors.effectiveFrom)}
-            />
-          </Field>
-        </div>
+        {/* In the setup wizard the settings simply apply from today: no date to pick */}
+        {!onSaved && (
+          <div className="max-w-xs">
+            <Field
+              label={t('effectiveFrom')}
+              hint={t('effectiveHint')}
+              error={message(errors.effectiveFrom)}
+            >
+              <input
+                type="date"
+                value={effectiveFrom}
+                min={today}
+                onChange={(e) => {
+                  setSaved(false);
+                  setEffectiveFrom(e.target.value);
+                }}
+                className={inputClass(!!errors.effectiveFrom)}
+              />
+            </Field>
+          </div>
+        )}
 
         {errors.form && (
           <p
@@ -377,7 +420,7 @@ export default function PayrollRulesCard({
             disabled={busy}
             className="h-9 rounded-[10px] bg-accent px-3.5 text-sm font-medium text-white disabled:opacity-60"
           >
-            {t('save')}
+            {submitLabel ?? t('save')}
           </button>
         </div>
       </form>

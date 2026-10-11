@@ -27,9 +27,15 @@ const KNOWN_ERRORS = [
  * optional office IP list (D-18).
  */
 export default function CheckInCard({
+  onSaved,
+  submitLabel,
   today,
   current,
 }: {
+  /** In the setup wizard: called after a successful save (marks the step done, opens the next) */
+  onSaved?: () => Promise<void> | void;
+  /** In the setup wizard: "Save & continue" instead of "Save" */
+  submitLabel?: string;
   today: string;
   current: SettingsVersion;
 }) {
@@ -93,6 +99,10 @@ export default function CheckInCard({
     }
     setBusy(false);
     if (status === 201) {
+      if (onSaved) {
+        await onSaved();
+        return;
+      }
       setSaved(true);
       router.refresh();
       return;
@@ -106,7 +116,10 @@ export default function CheckInCard({
 
   return (
     <Card id="check-in" className="scroll-mt-32">
-      <CardHeader title={t('title')} hint={t('hint')} />
+      <CardHeader
+        title={t('title')}
+        hint={onSaved ? t('setupHint') : t('hint')}
+      />
       <form onSubmit={save} noValidate className="flex flex-col gap-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
@@ -208,24 +221,27 @@ export default function CheckInCard({
           )}
         </div>
 
-        <div className="max-w-xs">
-          <Field
-            label={t('effectiveFrom')}
-            hint={t('effectiveHint')}
-            error={message(errors.effectiveFrom)}
-          >
-            <input
-              type="date"
-              value={effectiveFrom}
-              min={today}
-              onChange={(e) => {
-                setSaved(false);
-                setEffectiveFrom(e.target.value);
-              }}
-              className={inputClass(!!errors.effectiveFrom)}
-            />
-          </Field>
-        </div>
+        {/* In the setup wizard the settings simply apply from today: no date to pick */}
+        {!onSaved && (
+          <div className="max-w-xs">
+            <Field
+              label={t('effectiveFrom')}
+              hint={t('effectiveHint')}
+              error={message(errors.effectiveFrom)}
+            >
+              <input
+                type="date"
+                value={effectiveFrom}
+                min={today}
+                onChange={(e) => {
+                  setSaved(false);
+                  setEffectiveFrom(e.target.value);
+                }}
+                className={inputClass(!!errors.effectiveFrom)}
+              />
+            </Field>
+          </div>
+        )}
 
         {errors.form && (
           <p
@@ -253,7 +269,7 @@ export default function CheckInCard({
             disabled={busy}
             className="h-9 rounded-[10px] bg-accent px-3.5 text-sm font-medium text-white disabled:opacity-60"
           >
-            {t('save')}
+            {submitLabel ?? t('save')}
           </button>
         </div>
       </form>

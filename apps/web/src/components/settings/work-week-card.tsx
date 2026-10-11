@@ -61,9 +61,15 @@ const STATE_STYLE: Record<SettingsVersion['state'], string> = {
  * days and the day they start. The history shows which version is in force and which are coming.
  */
 export default function WorkWeekCard({
+  onSaved,
+  submitLabel,
   today,
   versions,
 }: {
+  /** In the setup wizard: called after a successful save (marks the step done, opens the next) */
+  onSaved?: () => Promise<void> | void;
+  /** In the setup wizard: "Save & continue" instead of "Save" */
+  submitLabel?: string;
   today: string;
   versions: SettingsVersion[];
 }) {
@@ -136,6 +142,10 @@ export default function WorkWeekCard({
     }
     setBusy(false);
     if (status === 201) {
+      if (onSaved) {
+        await onSaved();
+        return;
+      }
       setSaved(true);
       router.refresh(); // the history shows the new version
       return;
@@ -145,7 +155,10 @@ export default function WorkWeekCard({
 
   return (
     <Card id="work-week" className="scroll-mt-32">
-      <CardHeader title={t('title')} hint={t('hint')} />
+      <CardHeader
+        title={t('title')}
+        hint={onSaved ? t('setupHint') : t('hint')}
+      />
 
       <form onSubmit={save} noValidate className="flex flex-col gap-4">
         <fieldset>
@@ -185,24 +198,27 @@ export default function WorkWeekCard({
           )}
         </fieldset>
 
-        <div className="max-w-xs">
-          <Field
-            label={t('effectiveFrom')}
-            hint={t('effectiveHint')}
-            error={message(errors.effectiveFrom)}
-          >
-            <input
-              type="date"
-              value={effectiveFrom}
-              min={today}
-              onChange={(e) => {
-                setSaved(false);
-                setEffectiveFrom(e.target.value);
-              }}
-              className={inputClass(!!errors.effectiveFrom)}
-            />
-          </Field>
-        </div>
+        {/* In the setup wizard the settings simply apply from today: no date to pick */}
+        {!onSaved && (
+          <div className="max-w-xs">
+            <Field
+              label={t('effectiveFrom')}
+              hint={t('effectiveHint')}
+              error={message(errors.effectiveFrom)}
+            >
+              <input
+                type="date"
+                value={effectiveFrom}
+                min={today}
+                onChange={(e) => {
+                  setSaved(false);
+                  setEffectiveFrom(e.target.value);
+                }}
+                className={inputClass(!!errors.effectiveFrom)}
+              />
+            </Field>
+          </div>
+        )}
 
         {errors.form && (
           <p
@@ -223,33 +239,38 @@ export default function WorkWeekCard({
             disabled={busy}
             className="h-9 rounded-[10px] bg-accent px-3.5 text-sm font-medium text-white disabled:opacity-60"
           >
-            {t('save')}
+            {submitLabel ?? t('save')}
           </button>
         </div>
       </form>
 
-      {/* History: which rules apply from when (FR-CS-8) */}
-      <h3 className="mt-6 mb-2 text-[13px] font-medium">{t('history')}</h3>
-      <ul className="divide-y divide-line rounded-[10px] border border-line">
-        {versions.map((version) => (
-          <li
-            key={version.id}
-            className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2.5 text-sm"
-          >
-            <span className="w-28 shrink-0 font-medium">
-              {dateText(version.effectiveFrom)}
-            </span>
-            <span className="min-w-0 flex-1 text-muted">
-              {t('restLabel', { days: dayNames(version.restDays) })}
-            </span>
-            <span
-              className={`rounded-full px-2 py-0.5 text-xs whitespace-nowrap ${STATE_STYLE[version.state]}`}
-            >
-              {t(`state.${version.state}`)}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {/* History: which rules apply from when (FR-CS-8). Only on the Settings page, and only
+          once there was a change: the single version made at sign-up is not "history" */}
+      {!onSaved && versions.length > 1 && (
+        <>
+          <h3 className="mt-6 mb-2 text-[13px] font-medium">{t('history')}</h3>
+          <ul className="divide-y divide-line rounded-[10px] border border-line">
+            {versions.map((version) => (
+              <li
+                key={version.id}
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2.5 text-sm"
+              >
+                <span className="w-28 shrink-0 font-medium">
+                  {dateText(version.effectiveFrom)}
+                </span>
+                <span className="min-w-0 flex-1 text-muted">
+                  {t('restLabel', { days: dayNames(version.restDays) })}
+                </span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs whitespace-nowrap ${STATE_STYLE[version.state]}`}
+                >
+                  {t(`state.${version.state}`)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </Card>
   );
 }
