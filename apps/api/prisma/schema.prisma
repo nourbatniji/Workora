@@ -86,19 +86,22 @@ enum AuditAction {
 // ───────── Company and its settings ─────────
 
 model Company {
-  id               String   @id @default(uuid())
-  name             String
-  logo             String?
-  address          String?
-  phone            String?
-  timeZone         String   @default("Africa/Cairo") @map("time_zone")
-  currency         String   @default("EGP")
-  lawMode          Boolean  @default(false) @map("law_mode")
-  companyRulesText String?  @map("company_rules_text")
+  id                 String   @id @default(uuid())
+  name               String
+  logo               String?
+  address            String?
+  phone              String?
+  timeZone           String   @default("Africa/Cairo") @map("time_zone")
+  currency           String   @default("EGP")
+  lawMode            Boolean  @default(false) @map("law_mode")
+  companyRulesText   String?  @map("company_rules_text")
   // Setup wizard (CS-02, D-74): which steps are done or skipped, e.g. { "profile": "done" }
-  setupSteps       Json     @default("{}") @map("setup_steps")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  setupSteps         Json     @default("{}") @map("setup_steps")
+  // The number in the next employee code: EMP-0001, EMP-0002… (FR-EM-1, A-14). Only ever goes up,
+  // so a code is never reused, even after a mistaken employee is deleted (D-76)
+  nextEmployeeNumber Int      @default(1) @map("next_employee_number")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   settingsVersions CompanySettingsVersion[]
   users            User[]
@@ -223,6 +226,7 @@ model Employee {
   auditEntries  AuditLog[]
 
   @@unique([companyId, code])
+  @@unique([companyId, nationalId]) // one person is added once; empty national IDs don't clash (D-76)
   @@unique([id, companyId])
   @@map("employees")
 }
