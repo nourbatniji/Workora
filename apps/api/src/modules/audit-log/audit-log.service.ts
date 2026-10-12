@@ -23,8 +23,15 @@ const AUDIT_ROW = {
 
 type AuditRow = Prisma.AuditLogGetPayload<{ select: typeof AUDIT_ROW }>;
 
-function toItem(row: AuditRow): AuditLogItem {
-  return { ...row, createdAt: row.createdAt.toISOString() };
+type Login = { name: string | null; email: string | null };
+
+function toItem(row: AuditRow, logins: Map<string, Login>): AuditLogItem {
+  return {
+    ...row,
+    createdAt: row.createdAt.toISOString(),
+    subjectUser:
+      row.entityType === 'user' ? (logins.get(row.entityId) ?? null) : null,
+  };
 }
 
 @Injectable()
@@ -48,7 +55,33 @@ export class AuditLogService {
       }),
       db.auditLog.count({ where }),
     ]);
-    return { items: rows.map(toItem), total, page, pageSize };
+    const logins = await this.loginsOf(rows);
+    return {
+      items: rows.map((row) => toItem(row, logins)),
+      total,
+      page,
+      pageSize,
+    };
+  }
+
+  /**
+   * Whose login each 'user' row changed ("Sara: role employee → admin"). One query for the whole
+   * page; the tenant client only finds this company's users.
+   */
+  private async loginsOf(rows: AuditRow[]): Promise<Map<string, Login>> {
+    const ids = [
+      ...new Set(
+        rows.filter((row) => row.entityType === 'user').map((r) => r.entityId),
+      ),
+    ];
+    if (ids.length === 0) return new Map();
+    const users = await this.tenantPrisma.db.user.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, name: true, email: true },
+    });
+    return new Map(
+      users.map((user) => [user.id, { name: user.name, email: user.email }]),
+    );
   }
 
   /** The query's filters as a Prisma where. Dates are days in the company's time zone */

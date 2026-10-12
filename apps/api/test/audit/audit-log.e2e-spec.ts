@@ -154,7 +154,11 @@ describe('Audit log viewer (SCRUM-163)', () => {
         employee: { id: r.ownEmployeeId, code: 'R-001' },
       });
       // A change that is not about an employee
-      expect(res.body.items[2]).toMatchObject({ id: settings, employee: null });
+      expect(res.body.items[2]).toMatchObject({
+        id: settings,
+        employee: null,
+        subjectUser: null,
+      });
     });
 
     it('splits the list into pages', async () => {
@@ -228,6 +232,34 @@ describe('Audit log viewer (SCRUM-163)', () => {
       ['page 0', 'page=0'],
     ])('refuses %s', async (_label, query) => {
       await r.admin.get(`/audit-log?${query}`).expect(400);
+    });
+  });
+
+  // Last, because it adds a row that the counts above don't expect
+  describe('changes to a login', () => {
+    it('names whose login a user change was about', async () => {
+      const admin = await prisma.user.findUniqueOrThrow({
+        where: { id: adminId },
+      });
+      const row = await prisma.auditLog.create({
+        data: {
+          companyId: r.companyId,
+          userId: adminId,
+          entityType: 'user',
+          entityId: adminId,
+          action: 'update',
+          before: { role: 'employee' },
+          after: { role: 'admin' },
+          createdAt: new Date('2026-10-01T09:00:00Z'),
+        },
+      });
+      const res = await r.admin.get('/audit-log?to=2026-10-01').expect(200);
+      expect(res.body.items).toEqual([
+        expect.objectContaining({
+          id: row.id,
+          subjectUser: { name: admin.name, email: admin.email },
+        }),
+      ]);
     });
   });
 });

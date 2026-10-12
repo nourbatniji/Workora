@@ -185,7 +185,7 @@ Legend: ✅ built · ⬜ planned
 | ⬜ | GET | `/me/notifications` | Own notifications with unread count | Any user | FR-DB-3 | DB-03a, DB-03 |
 | ⬜ | POST | `/me/notifications/:id/read` | Mark one as read | Any user | FR-DB-3 | DB-03a |
 | ⬜ | POST | `/me/notifications/read-all` | Mark all as read | Any user | FR-DB-3 | DB-03a |
-| ⬜ | GET | `/audit-log` | Audit entries (filters: employee, type, dates); no edit or delete route exists | Admin | FR-DB-4, NFR-8 | FND-07 |
+| ✅ | GET | `/audit-log` | Audit entries (filters: employee, type, dates); no edit or delete route exists | Admin | FR-DB-4, NFR-8 | FND-07, SCRUM-163 |
 
 ## 13. Recruitment (MVP-2)
 

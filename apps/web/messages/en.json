@@ -52,6 +52,7 @@
     "payroll": "Payroll",
     "compliance": "Compliance",
     "users": "Users",
+    "auditLog": "Audit log",
     "settings": "Settings"
   },
   "SavedViews": {
@@ -156,6 +157,93 @@
     "switchOffHint": "They are logged out everywhere at once and can't log in. Their employee record stays exactly as it is.",
     "switchOn": "Switch login back on",
     "switchOnHint": "They can log in again. Someone who never set a password goes back to Invited and needs a new link."
+  },
+  "AuditLog": {
+    "title": "Audit log",
+    "hint": "Every important change in {company}: who made it, when, and what it was before and after. Nothing here can be edited or deleted.",
+    "filters": {
+      "type": "Record",
+      "allTypes": "All records",
+      "from": "From",
+      "to": "To",
+      "apply": "Apply",
+      "clear": "Clear filters",
+      "employee": "Employee: {name}",
+      "anEmployee": "the selected employee",
+      "removeEmployee": "Show all employees"
+    },
+    "columns": {
+      "when": "When",
+      "who": "Who",
+      "what": "What",
+      "employee": "Employee",
+      "changes": "Changes"
+    },
+    "types": {
+      "company_settings": "Company settings",
+      "salary": "Salary",
+      "employee_status": "Employee status",
+      "contract": "Contract",
+      "document": "Document",
+      "user": "Login",
+      "attendance_record": "Attendance",
+      "leave_request": "Leave request",
+      "leave_balance": "Leave balance",
+      "exception": "Exception",
+      "payroll_run": "Payroll run"
+    },
+    "actions": {
+      "create": "Created",
+      "update": "Changed",
+      "delete": "Deleted",
+      "approve": "Approved",
+      "reject": "Rejected",
+      "reopen": "Reopened"
+    },
+    "system": "Scheduled job",
+    "showOnly": "Show only {name}'s changes",
+    "reason": "Reason: {reason}",
+    "created": "New record",
+    "deleted": "Record removed",
+    "noChanges": "No field values recorded",
+    "empty": "No changes recorded yet.",
+    "emptyFiltered": "No changes match these filters.",
+    "badFilters": "These filters don't work. Check the dates and try again.",
+    "loadFailed": "The audit log couldn't be loaded. Try again in a moment.",
+    "yes": "Yes",
+    "no": "No",
+    "none": "—",
+    "pagination": "Pages",
+    "pageOf": "Page {page} of {pages}",
+    "previous": "Previous",
+    "next": "Next",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "role": "Role",
+      "status": "Status",
+      "language": "Language",
+      "inviteExpiresAt": "Link valid until",
+      "address": "Address",
+      "timeZone": "Time zone",
+      "lawMode": "Labor Law mode",
+      "companyRulesText": "Company rules",
+      "effectiveFrom": "Starts on",
+      "restDays": "Rest days",
+      "dailyRateDivisor": "Daily rate divisor",
+      "latenessPolicy": "Lateness policy",
+      "overtimeDayRate": "Overtime (day)",
+      "overtimeNightRate": "Overtime (night)",
+      "overtimeRestDayRate": "Overtime (rest day)",
+      "overtimeHolidayRate": "Overtime (holiday)",
+      "overtimeMinMinutes": "Minimum overtime (minutes)",
+      "contractExpiringDays": "Contract expiring alert (days)",
+      "checkInWindowMinutes": "Check-in window (minutes)",
+      "checkOutWindowMinutes": "Check-out window (minutes)",
+      "ipAllowList": "Office IPs",
+      "baseSalary": "Base salary"
+    }
   },
   "Settings": {
     "title": "Settings",
@@ -651,6 +739,7 @@
     "rateOutOfRange": "Use a number from 1.00 to 5.00",
     "lawModeInvalid": "Choose on or off",
     "ipInvalid": "Use an IP address or range, like 41.33.10.7 or 41.33.10.0/24",
-    "tooManyIps": "Use 50 addresses at most"
+    "tooManyIps": "Use 50 addresses at most",
+    "dateRangeInvalid": "\"To\" must be on or after \"From\"."
   }
 }

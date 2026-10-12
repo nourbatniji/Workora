@@ -95,6 +95,8 @@ export interface AuditLogItem {
   user: { id: string; name: string | null; email: string | null } | null;
   /** The employee the change is about, when there is one */
   employee: { id: string; code: string; nameAr: string; nameEn: string } | null;
+  /** For a change to a login (entityType 'user'): whose login it was */
+  subjectUser: { name: string | null; email: string | null } | null;
 }
 
 export interface AuditLogPage {
