@@ -220,6 +220,7 @@ model Employee {
   statusHistory EmployeeStatusHistory[]
   contracts     Contract[]
   documents     Document[]
+  auditEntries  AuditLog[]
 
   @@unique([companyId, code])
   @@unique([id, companyId])
@@ -335,9 +336,14 @@ model AuditLog {
   before     Json? // null when the record was created
   after      Json? // null when the record was deleted
   reason     String? // required by the service for punch corrections and payroll reopens
+  // The employee this change is about, when there is one (D-75): a salary row's entityId is the
+  // salary row, so this is what lets the viewer show "everything that happened to Ahmad"
+  employeeId String?     @map("employee_id")
+  employee   Employee?   @relation(fields: [employeeId, companyId], references: [id, companyId], onDelete: Restrict)
   createdAt  DateTime    @default(now()) @map("created_at")
 
   @@index([companyId, createdAt]) // the audit viewer: newest first, per company
+  @@index([companyId, employeeId, createdAt]) // the viewer filtered by one employee
   @@index([entityType, entityId]) // the history of one record
   @@map("audit_log")
 }
