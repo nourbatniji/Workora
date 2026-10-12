@@ -15,3 +15,18 @@ export async function serverGet<T>(path: string): Promise<T> {
   }
   return (await res.json()) as T;
 }
+
+/**
+ * GET a path and hand back the status instead of throwing, for pages that show their own error
+ * state (a filter the API refuses → 400 → "these filters don't work", not a crash page).
+ */
+export async function serverGetResult<T>(
+  path: string,
+): Promise<{ ok: true; data: T } | { ok: false; status: number }> {
+  const res = await fetch(`${API_URL}${path}`, {
+    headers: { cookie: (await cookies()).toString() },
+    cache: 'no-store',
+  });
+  if (!res.ok) return { ok: false, status: res.status };
+  return { ok: true, data: (await res.json()) as T };
+}

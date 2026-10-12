@@ -52,6 +52,7 @@
     "payroll": "الرواتب",
     "compliance": "الامتثال",
     "users": "المستخدمون",
+    "auditLog": "سجل التغييرات",
     "settings": "الإعدادات"
   },
   "SavedViews": {
@@ -156,6 +157,93 @@
     "switchOffHint": "يتم تسجيل خروجه من كل الأجهزة فورًا ولا يمكنه الدخول. يبقى سجل الموظف كما هو تمامًا.",
     "switchOn": "إعادة تفعيل تسجيل الدخول",
     "switchOnHint": "يمكنه الدخول مرة أخرى. من لم يضع كلمة مرور يعود إلى حالة \"مدعو\" ويحتاج رابطًا جديدًا."
+  },
+  "AuditLog": {
+    "title": "سجل التغييرات",
+    "hint": "كل تغيير مهم في {company}: من قام به، ومتى، وما كانت القيمة قبله وبعده. لا يمكن تعديل أو حذف أي شيء هنا.",
+    "filters": {
+      "type": "السجل",
+      "allTypes": "كل السجلات",
+      "from": "من",
+      "to": "إلى",
+      "apply": "تطبيق",
+      "clear": "مسح الفلاتر",
+      "employee": "الموظف: {name}",
+      "anEmployee": "الموظف المحدد",
+      "removeEmployee": "عرض كل الموظفين"
+    },
+    "columns": {
+      "when": "متى",
+      "who": "من",
+      "what": "ماذا",
+      "employee": "الموظف",
+      "changes": "التغييرات"
+    },
+    "types": {
+      "company_settings": "إعدادات الشركة",
+      "salary": "الراتب",
+      "employee_status": "حالة الموظف",
+      "contract": "العقد",
+      "document": "مستند",
+      "user": "حساب دخول",
+      "attendance_record": "الحضور",
+      "leave_request": "طلب إجازة",
+      "leave_balance": "رصيد الإجازات",
+      "exception": "استثناء",
+      "payroll_run": "مسير الرواتب"
+    },
+    "actions": {
+      "create": "إنشاء",
+      "update": "تعديل",
+      "delete": "حذف",
+      "approve": "اعتماد",
+      "reject": "رفض",
+      "reopen": "إعادة فتح"
+    },
+    "system": "مهمة مجدولة",
+    "showOnly": "عرض تغييرات {name} فقط",
+    "reason": "السبب: {reason}",
+    "created": "سجل جديد",
+    "deleted": "تم حذف السجل",
+    "noChanges": "لا توجد قيم مسجلة",
+    "empty": "لا توجد تغييرات مسجلة بعد.",
+    "emptyFiltered": "لا توجد تغييرات تطابق هذه الفلاتر.",
+    "badFilters": "هذه الفلاتر غير صالحة. تحقق من التواريخ وحاول مرة أخرى.",
+    "loadFailed": "تعذر تحميل سجل التغييرات. حاول مرة أخرى بعد قليل.",
+    "yes": "نعم",
+    "no": "لا",
+    "none": "—",
+    "pagination": "الصفحات",
+    "pageOf": "صفحة {page} من {pages}",
+    "previous": "السابق",
+    "next": "التالي",
+    "fields": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "role": "الدور",
+      "status": "الحالة",
+      "language": "اللغة",
+      "inviteExpiresAt": "الرابط صالح حتى",
+      "address": "العنوان",
+      "timeZone": "المنطقة الزمنية",
+      "lawMode": "وضع قانون العمل",
+      "companyRulesText": "قواعد الشركة",
+      "effectiveFrom": "يبدأ في",
+      "restDays": "أيام الراحة",
+      "dailyRateDivisor": "مقسوم الأجر اليومي",
+      "latenessPolicy": "سياسة التأخير",
+      "overtimeDayRate": "العمل الإضافي (نهاري)",
+      "overtimeNightRate": "العمل الإضافي (ليلي)",
+      "overtimeRestDayRate": "العمل الإضافي (يوم راحة)",
+      "overtimeHolidayRate": "العمل الإضافي (عطلة رسمية)",
+      "overtimeMinMinutes": "أقل عمل إضافي (دقائق)",
+      "contractExpiringDays": "تنبيه قرب انتهاء العقد (أيام)",
+      "checkInWindowMinutes": "نافذة تسجيل الحضور (دقائق)",
+      "checkOutWindowMinutes": "نافذة تسجيل الانصراف (دقائق)",
+      "ipAllowList": "عناوين IP للمكتب",
+      "baseSalary": "الراتب الأساسي"
+    }
   },
   "Settings": {
     "title": "الإعدادات",
@@ -651,6 +739,7 @@
     "rateOutOfRange": "استخدم رقمًا من 1.00 إلى 5.00",
     "lawModeInvalid": "اختر مفعّل أو غير مفعّل",
     "ipInvalid": "استخدم عنوان IP أو نطاقًا، مثل 41.33.10.7 أو 41.33.10.0/24",
-    "tooManyIps": "استخدم 50 عنوانًا على الأكثر"
+    "tooManyIps": "استخدم 50 عنوانًا على الأكثر",
+    "dateRangeInvalid": "يجب أن يكون تاريخ \"إلى\" في نفس يوم \"من\" أو بعده."
   }
 }

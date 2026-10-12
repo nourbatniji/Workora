@@ -3,6 +3,7 @@ import {
   CalendarOff,
   Clock,
   FileText,
+  History,
   Inbox,
   LayoutGrid,
   Settings,
@@ -27,6 +28,7 @@ export type NavKey =
   | 'payroll'
   | 'compliance'
   | 'users'
+  | 'auditLog'
   | 'settings';
 
 export type NavItem = {
@@ -110,6 +112,13 @@ export const NAV_ITEMS: NavItem[] = [
     key: 'users',
     href: '/users',
     icon: UserCog,
+    built: true,
+    roles: ['admin'],
+  },
+  {
+    key: 'auditLog',
+    href: '/audit-log',
+    icon: History,
     built: true,
     roles: ['admin'],
   },

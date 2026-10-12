@@ -112,6 +112,10 @@ The query is validated by a zod schema like any body. A sort or filter field the
   - Enforced in CI (SCRUM-168): a search fails the build when a raw method appears in `apps/api/src` outside `src/prisma/`.
   - If a report ever truly needs raw SQL, it lives in `src/prisma/`, filters by `company_id` from `requireCompanyId()`, and has a cross-company test.
 - **Links between company rows** are checked by the database (D-48). Pointing at another company's row → 400 `invalidReference`.
+- **Audit rows (D-58, D-75).** A change and its audit row are saved in one transaction through `AuditService.record(tx, …)`. For an employee record (salary, status, contract, document, punch, leave request, leave balance, exception), `employeeId` is required and is read from the record as stored in the database, never from an id the browser sent:
+  - Editing an existing row (`PATCH /salary-history/:id`): load the row through the tenant client and use its `employeeId`.
+  - Adding a row under an employee (`POST /employees/:id/salary-history`): load the employee through the tenant client first (another company's id → 404), then use the saved row's `employeeId`.
+  - `AuditService` refuses an employee record entry without `employeeId` (in TypeScript and at run time). Settings, user and payroll-run entries may leave it empty.
 
 ## 9. Authentication and authorization
 
@@ -161,6 +165,7 @@ No Swagger / OpenAPI in the MVP. The contract is the shared zod schemas in `pack
 | POST | `/company/settings/versions` | Admin | 201 the version: the one in force on `effectiveFrom` plus the changes; a version on the same day is replaced; audited | 400 `effectiveDateInPast`, `needWorkingDay`, `bandsOverlap`, `rateOutOfRange`, `nothingToChange`…, 401, 403 | Yes (SCRUM-41, SCRUM-42, SCRUM-44, SCRUM-45) |
 | GET | `/company/setup` | Admin | 200 `{ steps: [{ key, status: 'todo' \| 'done' \| 'skipped' }], complete }`, steps in wizard order | 401, 403 | Yes (SCRUM-39) |
 | PATCH | `/company/setup` | Admin | 200 the same shape; `{ step, status }` marks one step; a done step never goes back to skipped | 400 `stepInvalid`, `statusInvalid`, 401, 403 | Yes (SCRUM-39) |
+| GET | `/audit-log?page=&pageSize=&employeeId=&type=&from=&to=` | Admin | 200 `{ items, total, page, pageSize }`, newest first; each item `{ id, createdAt, entityType, entityId, action, before, after, reason, user, employee, subjectUser }`; `type` takes a comma list; `from`/`to` are days in the company time zone, both included; no POST, PATCH or DELETE route | 400 `badRequest`, `dateInvalid`, `dateRangeInvalid`, 401, 403 | Yes (SCRUM-163, D-75) |
 | GET | `/job-titles` | Admin | 200 `{ items: [{ id, nameAr, nameEn, employeeCount }] }`, A→Z by English name (a short list, no paging) | 401, 403 | Yes (SCRUM-46) |
 | POST | `/job-titles` | Admin | 201 the title | 400 `validationFailed`, 401, 403, 409 `jobTitleExists` | Yes (SCRUM-46) |
 | PATCH | `/job-titles/:id` | Admin | 200 the renamed title | 400, 401, 403, 404, 409 `jobTitleExists` | Yes (SCRUM-46) |
@@ -180,4 +185,5 @@ Before Oct 7 the 404 for an unknown route and crashes used Nest's own body (`{ s
 - [ ] Uses `TenantPrismaService.db`, no raw SQL (§8)
 - [ ] Access matches `permissions.md`: `@Roles` for role rules, service checks for "own" and data rules (§9)
 - [ ] Tests: happy path, invalid input (400), not logged in (401), wrong role (403), another company's record (404)
+- [ ] Changes to an employee record: audit row written in the same transaction, with `employeeId` taken from the record; tests check the audit row names the right employee (D-75)
 - [ ] Added to the endpoint list in §12
