@@ -158,6 +158,118 @@
     "switchOn": "Switch login back on",
     "switchOnHint": "They can log in again. Someone who never set a password goes back to Invited and needs a new link."
   },
+  "Employees": {
+    "title": "Employees",
+    "hint": "Everyone who works at {company}. Search, filter, and export what you see.",
+    "add": "Add employee",
+    "export": "Export to Excel",
+    "created": "{code} was added.",
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Name, code, phone or national ID",
+      "status": "Status",
+      "working": "Working (Active and Suspended)",
+      "all": "All, including those who left",
+      "type": "Employment type",
+      "allTypes": "All types",
+      "jobTitle": "Job title",
+      "allTitles": "All job titles",
+      "sort": "Sort by",
+      "apply": "Apply",
+      "clear": "Clear"
+    },
+    "sorts": {
+      "code": "Code",
+      "nameEn": "Name (English)",
+      "nameAr": "Name (Arabic)",
+      "-hireDate": "Newest hire first",
+      "hireDate": "Oldest hire first"
+    },
+    "columns": {
+      "code": "Code",
+      "name": "Name",
+      "jobTitle": "Job title",
+      "type": "Type",
+      "status": "Status",
+      "hireDate": "Hire date",
+      "phone": "Phone"
+    },
+    "types": {
+      "full_time": "Full time",
+      "part_time": "Part time",
+      "trainee": "Trainee"
+    },
+    "status": {
+      "active": "Active",
+      "suspended": "Suspended",
+      "terminated": "Left"
+    },
+    "genders": {
+      "male": "Male",
+      "female": "Female"
+    },
+    "empty": "No employees yet. Add your first one to get started.",
+    "emptyFiltered": "No one matches these filters.",
+    "badFilters": "These filters don't work. Clear them and try again.",
+    "loadFailed": "The employee list couldn't be loaded. Try again in a moment.",
+    "none": "—",
+    "pagination": "Pages",
+    "pageOf": "Page {page} of {pages}",
+    "previous": "Previous",
+    "next": "Next",
+    "form": {
+      "title": "Add employee",
+      "hint": "The system gives the new employee a code, like EMP-0001. Fields marked * are required.",
+      "back": "Back to employees",
+      "job": "Job",
+      "personal": "Personal",
+      "contact": "Contact",
+      "nameAr": "Full name in Arabic",
+      "nameEn": "Full name in English",
+      "employmentType": "Employment type",
+      "hireDate": "Hire date",
+      "jobTitle": "Job title",
+      "noJobTitle": "No job title",
+      "noJobTitlesHint": "Add job titles in Settings to pick one here.",
+      "probationEnd": "Probation ends",
+      "trainingEnd": "Training ends",
+      "nationalId": "National ID",
+      "nationalIdHint": "14 digits",
+      "birthDate": "Date of birth",
+      "gender": "Gender",
+      "chooseGender": "Not given",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "emergencyName": "Emergency contact name",
+      "emergencyPhone": "Emergency contact phone",
+      "optional": "optional",
+      "save": "Add employee",
+      "saving": "Adding…",
+      "cancel": "Cancel",
+      "settingsLink": "Open Settings"
+    },
+    "tabs": {
+      "working": "Working",
+      "active": "Active",
+      "suspended": "Suspended",
+      "terminated": "Left",
+      "all": "All"
+    },
+    "resultCount": "{count, plural, =0 {No one} one {# person} other {# people}}",
+    "chips": {
+      "remove": "Remove filter: {name}",
+      "clearAll": "Clear all",
+      "search": "“{q}”"
+    },
+    "tenure": {
+      "years": "{years} yr {months} mo",
+      "months": "{months} mo",
+      "new": "New this month",
+      "starts": "Starts soon"
+    },
+    "since": "Since {date}"
+  },
   "AuditLog": {
     "title": "Audit log",
     "hint": "Every important change in {company}: who made it, when, and what it was before and after. Nothing here can be edited or deleted.",

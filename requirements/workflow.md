@@ -246,3 +246,12 @@ Noticed, not changed:
 - The employee drop-down filter waits for `GET /employees` (SCRUM-56); until then the employee filter is set from a row
 - Tests: `test/audit/audit-log.e2e-spec.ts`, `test/audit/audit.e2e-spec.ts`
 
+### Oct 12, 2026 (employees)
+
+- Branch `feat/employees`, scope "Employees": SCRUM-48, 49, 50, 54, 34, 51, 52, 53, 55, 56, 57, 153 (one task at a time)
+- SCRUM-48 EM-01 API (commit 9f8093f): `POST /employees` (Admin); code `EMP-0001`… from `companies.next_employee_number` (migration `20261012100414_employee_code_counter`), never reused; 50-employee limit (A-15); national ID 14 digits, unique per company; first status history line and its audit row (D-75); decision D-76 proposed; `test/employees/create-employee.e2e-spec.ts`
+- SCRUM-56 EM-09 API (commits 60921e7, 1bd098d): `GET /employees` (search, filters, sort, pages; default Active and Suspended) and `GET /employees/export` (`.xlsx` with `exceljs`, English or Arabic right to left); `test/employees/list-employees.e2e-spec.ts`. Built before SCRUM-49 so a created employee can be seen: the order changed on purpose
+- Fix (commit 4867b7e): switching language no longer resets dark mode (`data-theme` left to the head script and the toggle)
+- SCRUM-153 UI: `/employees` (search, status/type/job-title filters, sort, pages, Export to Excel, "Add employee", empty states, phone cards) and `/employees/new` (Job, Personal, Contact sections; shared schema checks first; API errors per field; back to the list with "EMP-000N was added"); menu item Employees is real; prototype saved views hidden until real
+- Open for the delete feature (FR-EM-11): `audit_log.employee_id` foreign key vs deleting an employee who has audit rows; leaning to dropping the key and checking in `AuditService`
+

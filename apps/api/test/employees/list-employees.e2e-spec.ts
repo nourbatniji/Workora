@@ -156,6 +156,25 @@ describe('Employee list (EM-09, SCRUM-56)', () => {
       expect(res.body).toMatchObject({ total: 6, page: 1, pageSize: 20 });
     });
 
+    it('counts each status for the status tabs, with the other filters applied', async () => {
+      const all = await r.admin.get('/employees').expect(200);
+      expect(all.body.counts).toEqual({
+        active: 5,
+        suspended: 1,
+        terminated: 1,
+      });
+
+      // Counts follow search, type and job title, but not the status filter itself
+      const partTime = await r.admin
+        .get('/employees?employmentType=part_time&status=terminated')
+        .expect(200);
+      expect(partTime.body.counts).toEqual({
+        active: 1,
+        suspended: 1,
+        terminated: 0,
+      });
+    });
+
     it('shows what the table needs, and no national ID', async () => {
       const res = await r.admin.get('/employees').expect(200);
       expect(res.body.items[0]).toEqual({

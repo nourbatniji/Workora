@@ -88,6 +88,11 @@ export interface EmployeeListPage {
   total: number;
   page: number;
   pageSize: number;
+  /**
+   * How many people each status has with the other filters applied (search, type, job title),
+   * so the page can show "Active 12 · Suspended 1 · Left 3" on its status tabs
+   */
+  counts: Record<EmployeeStatus, number>;
 }
 
 /**

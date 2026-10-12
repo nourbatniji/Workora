@@ -49,7 +49,7 @@ export const NAV_ITEMS: NavItem[] = [
     key: 'employees',
     href: '/employees',
     icon: Users,
-    built: false,
+    built: true,
     roles: ['admin'],
   },
   {
@@ -143,18 +143,13 @@ export const SOON_MODULES = NAV_ITEMS.filter((item) => !item.built).map(
 
 export type SavedViewKey = 'nightShift' | 'probationEnding' | 'trainees';
 
-/** Saved views filter the employee list, so only Admins get them */
-
+/**
+ * Saved views filter the employee list, so only Admins get them. Empty for now: the prototype's
+ * views (night shift, probation ending, trainees) need shifts and saved filters, which don't exist
+ * yet (SCRUM-153). The menu hides the section while the list is empty.
+ */
 export const SAVED_VIEWS: { key: SavedViewKey; href: string; count: number }[] =
-  [
-    { key: 'nightShift', href: '/employees?view=night-shift', count: 9 },
-    {
-      key: 'probationEnding',
-      href: '/employees?view=probation-ending',
-      count: 3,
-    },
-    { key: 'trainees', href: '/employees?view=trainees', count: 4 },
-  ];
+  [];
 
 /** Finds the nav item for a path such as "/exceptions" or "/employees/E-014" */
 export function navItemForPath(pathname: string): NavItem | undefined {

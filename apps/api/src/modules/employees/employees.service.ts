@@ -151,7 +151,7 @@ export class EmployeesService {
     const { page, pageSize } = query;
     const where = whereFor(query);
 
-    const [rows, total] = await Promise.all([
+    const [rows, total, byStatus] = await Promise.all([
       db.employee.findMany({
         where,
         select: LIST_ROW,
@@ -160,8 +160,16 @@ export class EmployeesService {
         take: pageSize,
       }),
       db.employee.count({ where }),
+      // The status tabs: the same filters, every status
+      db.employee.groupBy({
+        by: ['status'],
+        where: { ...where, status: undefined },
+        _count: { _all: true },
+      }),
     ]);
-    return { items: rows.map(toListItem), total, page, pageSize };
+    const counts = { active: 0, suspended: 0, terminated: 0 };
+    for (const group of byStatus) counts[group.status] = group._count._all;
+    return { items: rows.map(toListItem), total, page, pageSize, counts };
   }
 
   /**
