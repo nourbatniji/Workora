@@ -1,9 +1,13 @@
 // Employees (SRS 3.3). EM-01 (SCRUM-48): the Admin creates an employee; the system gives the code.
 import { ConflictException, Injectable } from '@nestjs/common';
 import {
+  DEFAULT_EMPLOYEE_STATUSES,
   EMPLOYEE_LIMIT,
   employeeCode,
   type CreateEmployeeInput,
+  type EmployeeListPage,
+  type EmployeeSort,
+  type ListEmployeesQuery,
 } from '@mdarj/shared';
 import type { AuthContext } from '../../auth/auth-context.js';
 import { AuditService } from '../../common/audit/audit.service.js';
@@ -57,12 +61,91 @@ function toApi(row: EmployeeRow) {
   };
 }
 
+/** What one row of the list shows */
+const LIST_ROW = {
+  id: true,
+  code: true,
+  nameAr: true,
+  nameEn: true,
+  jobTitle: { select: { id: true, nameAr: true, nameEn: true } },
+  employmentType: true,
+  status: true,
+  hireDate: true,
+  phone: true,
+} satisfies Prisma.EmployeeSelect;
+
+/** sort=-hireDate → hire date newest first; the code breaks ties, so pages never shuffle */
+function orderBy(
+  sort: EmployeeSort,
+): Prisma.EmployeeOrderByWithRelationInput[] {
+  const dir: Prisma.SortOrder = sort.startsWith('-') ? 'desc' : 'asc';
+  switch (sort.replace(/^-/, '')) {
+    case 'nameEn':
+      return [{ nameEn: dir }, { code: 'asc' }];
+    case 'nameAr':
+      return [{ nameAr: dir }, { code: 'asc' }];
+    case 'hireDate':
+      return [{ hireDate: dir }, { code: 'asc' }];
+    default:
+      return [{ code: dir }];
+  }
+}
+
+/**
+ * Free-text search (FR-EM-9): name in either language, code, phone or national ID.
+ * A phone is stored as +201012345678, so "0101 234" is also tried without spaces and leading 0.
+ */
+function search(q: string): Prisma.EmployeeWhereInput {
+  const or: Prisma.EmployeeWhereInput[] = [
+    { nameAr: { contains: q, mode: 'insensitive' } },
+    { nameEn: { contains: q, mode: 'insensitive' } },
+    { code: { contains: q, mode: 'insensitive' } },
+  ];
+  const digits = q.replace(/\D/g, '');
+  if (digits.length >= 3) {
+    or.push({ phone: { contains: digits.replace(/^0/, '') } });
+    or.push({ nationalId: { contains: digits } });
+  }
+  return { OR: or };
+}
+
 @Injectable()
 export class EmployeesService {
   constructor(
     private readonly tenantPrisma: TenantPrismaService,
     private readonly audit: AuditService,
   ) {}
+
+  /** GET /employees: this company's employees (the tenant client adds company_id) */
+  async list(query: ListEmployeesQuery): Promise<EmployeeListPage> {
+    const db = this.tenantPrisma.db;
+    const { page, pageSize } = query;
+    const where: Prisma.EmployeeWhereInput = {
+      status: { in: query.status ?? DEFAULT_EMPLOYEE_STATUSES },
+      ...(query.employmentType && {
+        employmentType: { in: query.employmentType },
+      }),
+      ...(query.jobTitleId && { jobTitleId: query.jobTitleId }),
+      ...(query.q && search(query.q)),
+    };
+
+    const [rows, total] = await Promise.all([
+      db.employee.findMany({
+        where,
+        select: LIST_ROW,
+        orderBy: orderBy(query.sort),
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      db.employee.count({ where }),
+    ]);
+    return {
+      items: rows.map((row) => ({ ...row, hireDate: toDay(row.hireDate)! })),
+      total,
+      page,
+      pageSize,
+    };
+  }
 
   /**
    * POST /employees. Everything happens in one transaction: if any step fails, nothing is saved,

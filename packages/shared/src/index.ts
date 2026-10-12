@@ -9,3 +9,4 @@ export * from './ip.js';
 export * from './settings/setup.js';
 export * from './audit/audit-log.js';
 export * from './employees/create-employee.js';
+export * from './employees/list-employees.js';
