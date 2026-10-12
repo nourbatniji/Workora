@@ -63,7 +63,7 @@ Legend: ✅ built · ⬜ planned
 | | Method | Path | Purpose | Access | SRS | Story |
 | --- | --- | --- | --- | --- | --- | --- |
 | ✅ | GET | `/employees` | List with search and filters (status, employment type, job title, shift) | Admin | FR-EM-9 | EM-09 |
-| ⬜ | GET | `/employees/export` | Excel of the filtered list | Admin | FR-EM-9 | EM-09 |
+| ✅ | GET | `/employees/export` | Excel of the filtered list | Admin | FR-EM-9 | EM-09 |
 | ✅ | POST | `/employees` | Create an employee; the system assigns the code | Admin | FR-EM-1, FR-EM-2, FR-EM-3 | EM-01, EM-02, EM-03 |
 | ⬜ | GET | `/employees/:id` | Profile (personal and job data); disability field Admin-only | Admin · Employee own | FR-EM-8, FR-EM-10, NFR-3, D-04 | EM-08, EM-10 |
 | ⬜ | PATCH | `/employees/:id` | Edit personal or job data | Admin | FR-EM-2, FR-EM-3 | EM-02, EM-03 |

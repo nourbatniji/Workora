@@ -2,6 +2,7 @@
 // name, code, phone or national ID; filter by status, employment type and job title; sort; pages.
 // Without a status filter it shows Active and Suspended people only. Needs the local database: pnpm db:up
 import type { INestApplication } from '@nestjs/common';
+import ExcelJS from 'exceljs';
 import { Test } from '@nestjs/testing';
 import type { App } from 'supertest/types.js';
 import { AppModule } from '../../src/app.module.js';
@@ -18,6 +19,32 @@ describe('Employee list (EM-09, SCRUM-56)', () => {
 
   const codes = (body: { items: { code: string }[] }) =>
     body.items.map((item) => item.code);
+
+  /** Downloads an export and opens its first sheet */
+  const download = async (browser: RoleBrowsers['admin'], query = '') => {
+    const res = await browser
+      .get(`/employees/export${query}`)
+      .buffer(true)
+      .parse((stream, done) => {
+        const chunks: Buffer[] = [];
+        stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+        stream.on('end', () => done(null, Buffer.concat(chunks)));
+      })
+      .expect(200);
+    const workbook = new ExcelJS.Workbook();
+    // ExcelJS reads an ArrayBuffer: the bytes of the downloaded Buffer
+    const bytes = res.body as Buffer;
+    await workbook.xlsx.load(
+      bytes.buffer.slice(
+        bytes.byteOffset,
+        bytes.byteOffset + bytes.byteLength,
+      ) as ArrayBuffer,
+    );
+    const sheet = workbook.worksheets[0];
+    const values = (n: number) =>
+      (sheet.getRow(n).values as unknown[]).slice(1); // ExcelJS rows start at index 1
+    return { res, sheet, values };
+  };
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -246,6 +273,81 @@ describe('Employee list (EM-09, SCRUM-56)', () => {
       ['a page size over 100', 'pageSize=500'],
     ])('refuses %s', async (_label, query) => {
       await r.admin.get(`/employees?${query}`).expect(400);
+    });
+  });
+
+  describe('Excel export', () => {
+    it('needs a login and is Admin only', async () => {
+      await r.anonymous().get('/employees/export').expect(401);
+      await r.employee.get('/employees/export').expect(403);
+      await r.interviewer.get('/employees/export').expect(403);
+    });
+
+    it('downloads the list as an .xlsx file with the same default rows', async () => {
+      const { res, sheet, values } = await download(r.admin);
+      expect(res.headers['content-type']).toContain(
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
+      expect(res.headers['content-disposition']).toMatch(
+        /^attachment; filename="employees-\d{4}-\d{2}-\d{2}\.xlsx"$/,
+      );
+      expect(values(1)).toEqual([
+        'Code',
+        'Name (Arabic)',
+        'Name (English)',
+        'Job title',
+        'Employment type',
+        'Status',
+        'Hire date',
+        'Phone',
+      ]);
+      expect(values(2)).toEqual([
+        'EMP-0001',
+        'منى علي',
+        'Mona Ali',
+        'Baker',
+        'Full time',
+        'Active',
+        new Date('2026-01-10T00:00:00.000Z'),
+        '+201012345678',
+      ]);
+      // A header row and the 6 people of the default list, never another company's
+      expect(sheet.actualRowCount).toBe(7);
+    });
+
+    it('applies the filters and the sort', async () => {
+      const { sheet, values } = await download(
+        r.admin,
+        `?jobTitleId=${baker}&sort=-hireDate`,
+      );
+      expect(sheet.actualRowCount).toBe(3);
+      expect(values(2)[0]).toBe('EMP-0003');
+      expect(values(3)[0]).toBe('EMP-0001');
+    });
+
+    it('writes an Arabic sheet that reads right to left', async () => {
+      const { sheet, values } = await download(
+        r.admin,
+        '?lang=ar&status=terminated',
+      );
+      expect(sheet.views[0]).toMatchObject({ rightToLeft: true });
+      expect(values(1)[0]).toBe('الكود');
+      const row = sheet.getRow(2);
+      expect(row.getCell(1).value).toBe('EMP-0004');
+      expect(row.getCell(2).value).toBe('سارة عادل');
+      expect(row.getCell(5).value).toBe('دوام كامل');
+      expect(row.getCell(6).value).toBe('منتهية خدمته');
+      expect(row.getCell(7).value).toEqual(
+        new Date('2025-12-01T00:00:00.000Z'),
+      );
+      // No job title, no phone: empty cells
+      expect(row.getCell(4).value).toBeNull();
+      expect(row.getCell(8).value).toBeNull();
+    });
+
+    it('refuses a bad query (400)', async () => {
+      await r.admin.get('/employees/export?lang=fr').expect(400);
+      await r.admin.get('/employees/export?status=fired').expect(400);
     });
   });
 });

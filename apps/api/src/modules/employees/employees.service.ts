@@ -7,6 +7,7 @@ import {
   type CreateEmployeeInput,
   type EmployeeListPage,
   type EmployeeSort,
+  type ExportEmployeesQuery,
   type ListEmployeesQuery,
 } from '@mdarj/shared';
 import type { AuthContext } from '../../auth/auth-context.js';
@@ -14,6 +15,7 @@ import { AuditService } from '../../common/audit/audit.service.js';
 import { requireCompanyId } from '../../common/tenancy/tenant-context.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { TenantPrismaService } from '../../prisma/tenant-prisma.service.js';
+import { employeesWorkbook } from './employees-export.js';
 
 /** "2026-11-01" ↔ the Date Prisma uses for a DATE column (midnight UTC, D-29) */
 const toDate = (day: string) => new Date(`${day}T00:00:00.000Z`);
@@ -91,6 +93,33 @@ function orderBy(
   }
 }
 
+/** The list's filters as a Prisma where; no status filter = Active and Suspended */
+function whereFor(
+  query: Pick<
+    ListEmployeesQuery,
+    'q' | 'status' | 'employmentType' | 'jobTitleId'
+  >,
+): Prisma.EmployeeWhereInput {
+  return {
+    status: { in: query.status ?? DEFAULT_EMPLOYEE_STATUSES },
+    ...(query.employmentType && {
+      employmentType: { in: query.employmentType },
+    }),
+    ...(query.jobTitleId && { jobTitleId: query.jobTitleId }),
+    ...(query.q && search(query.q)),
+  };
+}
+
+type ListRow = Prisma.EmployeeGetPayload<{ select: typeof LIST_ROW }>;
+
+const toListItem = (row: ListRow) => ({
+  ...row,
+  hireDate: toDay(row.hireDate)!,
+});
+
+/** Safety net for the export: far above what one company can hold in the MVP */
+const EXPORT_LIMIT = 5_000;
+
 /**
  * Free-text search (FR-EM-9): name in either language, code, phone or national ID.
  * A phone is stored as +201012345678, so "0101 234" is also tried without spaces and leading 0.
@@ -120,14 +149,7 @@ export class EmployeesService {
   async list(query: ListEmployeesQuery): Promise<EmployeeListPage> {
     const db = this.tenantPrisma.db;
     const { page, pageSize } = query;
-    const where: Prisma.EmployeeWhereInput = {
-      status: { in: query.status ?? DEFAULT_EMPLOYEE_STATUSES },
-      ...(query.employmentType && {
-        employmentType: { in: query.employmentType },
-      }),
-      ...(query.jobTitleId && { jobTitleId: query.jobTitleId }),
-      ...(query.q && search(query.q)),
-    };
+    const where = whereFor(query);
 
     const [rows, total] = await Promise.all([
       db.employee.findMany({
@@ -139,11 +161,25 @@ export class EmployeesService {
       }),
       db.employee.count({ where }),
     ]);
+    return { items: rows.map(toListItem), total, page, pageSize };
+  }
+
+  /**
+   * GET /employees/export: the same filters as the list, every matching row, as an Excel file.
+   * A company has at most 50 working employees (A-15) plus those who left, so one query is fine;
+   * EXPORT_LIMIT is only a safety net.
+   */
+  async export(query: ExportEmployeesQuery) {
+    const rows = await this.tenantPrisma.db.employee.findMany({
+      where: whereFor(query),
+      select: LIST_ROW,
+      orderBy: orderBy(query.sort),
+      take: EXPORT_LIMIT,
+    });
+    const today = new Date().toISOString().slice(0, 10);
     return {
-      items: rows.map((row) => ({ ...row, hireDate: toDay(row.hireDate)! })),
-      total,
-      page,
-      pageSize,
+      file: await employeesWorkbook(rows.map(toListItem), query.lang),
+      fileName: `employees-${today}.xlsx`,
     };
   }
 

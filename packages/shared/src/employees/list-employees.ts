@@ -89,3 +89,17 @@ export interface EmployeeListPage {
   page: number;
   pageSize: number;
 }
+
+/**
+ * GET /employees/export?q=&status=&employmentType=&jobTitleId=&sort=&lang=
+ * The same filters as the list, without pages: the file holds every matching employee.
+ * lang picks the column titles and values (Arabic sheets read right to left).
+ */
+export const exportEmployeesQuerySchema = listEmployeesQuerySchema
+  .omit({ page: true, pageSize: true })
+  .extend({ lang: z.enum(['en', 'ar'], 'badRequest').default('en') });
+
+export type ExportEmployeesQueryRequest = z.input<
+  typeof exportEmployeesQuerySchema
+>;
+export type ExportEmployeesQuery = z.output<typeof exportEmployeesQuerySchema>;
