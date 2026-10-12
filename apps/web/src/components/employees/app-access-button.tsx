@@ -39,7 +39,11 @@ const BADGE: Record<'invited' | 'active' | 'deactivated', string> = {
 export default function AppAccessButton({
   employee,
 }: {
-  employee: EmployeeListItem;
+  /** A list row or a profile: both carry these */
+  employee: Pick<
+    EmployeeListItem,
+    'id' | 'nameAr' | 'nameEn' | 'email' | 'phone' | 'status' | 'login'
+  >;
 }) {
   const t = useTranslations('Employees.access');
   const tErr = useTranslations('Errors');

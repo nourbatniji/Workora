@@ -3,9 +3,9 @@
 import type { EmployeeListItem } from '@mdarj/shared';
 import { UserPlus } from 'lucide-react';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import AppAccessButton from './app-access-button';
+import { Avatar, useTenure } from './person-bits';
 
 /** Desktop columns: person · job · status · hired · phone · app access. Phones: one card per person (NFR-7) */
 const COLUMNS =
@@ -22,41 +22,7 @@ const STATUS_DOT: Record<EmployeeListItem['status'], string> = {
   terminated: 'bg-muted',
 };
 
-/** Soft avatar colours, picked from the code so a person always gets the same one */
-const AVATAR_TINTS = [
-  'bg-nav-selected text-accent-fg',
-  'bg-success/12 text-success',
-  'bg-warning/15 text-warning',
-];
-function tintFor(code: string) {
-  let sum = 0;
-  for (const char of code) sum += char.charCodeAt(0);
-  return AVATAR_TINTS[sum % AVATAR_TINTS.length];
-}
-
-/** "Mona Ali" → "MA"; Arabic names use the first letter only */
-function initials(name: string, locale: string) {
-  const words = name.trim().split(/\s+/);
-  if (locale === 'ar') return words[0]?.[0] ?? '';
-  return words
-    .slice(0, 2)
-    .map((word) => word[0])
-    .join('')
-    .toUpperCase();
-}
-
-/** Whole months between the hire date and today */
-function monthsSince(day: string, now: number) {
-  const hired = new Date(`${day}T00:00:00Z`);
-  const today = new Date(now);
-  return (
-    (today.getUTCFullYear() - hired.getUTCFullYear()) * 12 +
-    (today.getUTCMonth() - hired.getUTCMonth()) -
-    (today.getUTCDate() < hired.getUTCDate() ? 1 : 0)
-  );
-}
-
-/** The employee list. Rows will open the profile once it exists (EM-08, SCRUM-55) */
+/** The employee list. A name opens the employee's profile */
 export default function EmployeesTable({
   items,
   page,
@@ -74,7 +40,7 @@ export default function EmployeesTable({
   const t = useTranslations('Employees');
   const format = useFormatter();
   const locale = useLocale();
-  const [now] = useState(() => Date.now());
+  const tenure = useTenure();
 
   if (items.length === 0) {
     return filters ? (
@@ -102,17 +68,6 @@ export default function EmployeesTable({
     const query = new URLSearchParams(filters);
     query.set('page', String(n));
     return `/employees?${query}`;
-  };
-
-  const tenure = (hireDate: string) => {
-    const months = monthsSince(hireDate, now);
-    if (months < 0) return t('tenure.starts');
-    if (months === 0) return t('tenure.new');
-    if (months < 12) return t('tenure.months', { months });
-    return t('tenure.years', {
-      years: Math.floor(months / 12),
-      months: months % 12,
-    });
   };
 
   return (
@@ -148,14 +103,14 @@ export default function EmployeesTable({
             >
               {/* Person: avatar, name, code and the other-language name */}
               <span className="col-span-2 flex min-w-0 items-center gap-3 md:col-span-1">
-                <span
-                  className={`inline-flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${tintFor(employee.code)}`}
-                  aria-hidden
-                >
-                  {initials(name, locale)}
-                </span>
+                <Avatar name={name} code={employee.code} locale={locale} />
                 <span className="min-w-0 leading-tight">
-                  <span className="block truncate font-medium">{name}</span>
+                  <Link
+                    href={`/employees/${employee.code}`}
+                    className="block truncate font-medium hover:text-accent hover:underline"
+                  >
+                    {name}
+                  </Link>
                   <span className="block truncate text-xs text-muted">
                     <span dir="ltr">{employee.code}</span> · {otherName}
                   </span>
