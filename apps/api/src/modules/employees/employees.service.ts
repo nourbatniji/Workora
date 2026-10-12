@@ -11,6 +11,8 @@ import {
   employeeCode,
   type CreateEmployeeInput,
   type EmployeeAccessInput,
+  type EmployeeProfile,
+  type UpdateEmployeePersonalInput,
   type EmployeeListPage,
   type EmployeeSort,
   type ExportEmployeesQuery,
@@ -19,7 +21,7 @@ import {
 import type { AuthContext } from '../../auth/auth-context.js';
 import { AuditService } from '../../common/audit/audit.service.js';
 import { requireCompanyId } from '../../common/tenancy/tenant-context.js';
-import type { Prisma } from '../../generated/prisma/client.js';
+import { Prisma } from '../../generated/prisma/client.js';
 import { TenantPrismaService } from '../../prisma/tenant-prisma.service.js';
 import { UsersService } from '../users/users.service.js';
 import { employeesWorkbook } from './employees-export.js';
@@ -69,6 +71,32 @@ function toApi(row: EmployeeRow) {
     createdAt: row.createdAt.toISOString(),
   };
 }
+
+/** One employee's full record, for the profile page (Admin view: includes the disability field) */
+const PROFILE = {
+  ...PUBLIC_EMPLOYEE,
+  terminationDate: true,
+  hasDisability: true,
+  user: { select: { id: true, status: true } },
+} satisfies Prisma.EmployeeSelect;
+
+/** The personal fields EM-02 may change; dates are DATE columns */
+const PERSONAL_FIELDS = [
+  'nameAr',
+  'nameEn',
+  'nationalId',
+  'birthDate',
+  'gender',
+  'phone',
+  'email',
+  'address',
+  'emergencyName',
+  'emergencyPhone',
+  'hasDisability',
+] as const;
+type PersonalField = (typeof PERSONAL_FIELDS)[number];
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** What one row of the list shows */
 const LIST_ROW = {
@@ -155,6 +183,139 @@ export class EmployeesService {
     private readonly audit: AuditService,
     private readonly users: UsersService,
   ) {}
+
+  /**
+   * GET /employees/:key — by id or by code (the page's address is /employees/EMP-0001).
+   * Another company's employee is not found at all (tenancy).
+   */
+  async profile(key: string): Promise<EmployeeProfile> {
+    const db = this.tenantPrisma.db;
+    const [row, company] = await Promise.all([
+      db.employee.findFirst({
+        where: UUID.test(key) ? { id: key } : { code: key.toUpperCase() },
+        select: PROFILE,
+      }),
+      db.company.findUniqueOrThrow({
+        where: { id: requireCompanyId() },
+        select: { lawMode: true },
+      }),
+    ]);
+    if (!row) throw new NotFoundException({ message: 'notFound' });
+    const { user, ...employee } = row;
+    return {
+      ...toApi(employee),
+      hireDate: toDay(employee.hireDate)!,
+      terminationDate: toDay(employee.terminationDate),
+      hasDisability: employee.hasDisability,
+      lawMode: company.lawMode,
+      login: user,
+    };
+  }
+
+  /**
+   * PATCH /employees/:id — personal data (EM-02, FR-EM-2). Only what is sent changes; the audit
+   * row keeps only the fields that really changed, before and after (FR-DB-4 "Admin changes", D-78).
+   */
+  async updatePersonal(
+    auth: AuthContext,
+    id: string,
+    input: UpdateEmployeePersonalInput,
+  ): Promise<EmployeeProfile> {
+    try {
+      await this.tenantPrisma.db.$transaction(async (tx) => {
+        const current = await tx.employee.findUnique({
+          where: { id },
+          select: {
+            nameAr: true,
+            nameEn: true,
+            nationalId: true,
+            birthDate: true,
+            gender: true,
+            phone: true,
+            email: true,
+            address: true,
+            emergencyName: true,
+            emergencyPhone: true,
+            hasDisability: true,
+          },
+        });
+        if (!current) throw new NotFoundException({ message: 'notFound' });
+
+        // The disability field exists only for companies that follow the Labor Law (D-04)
+        if (input.hasDisability !== undefined) {
+          const company = await tx.company.findUniqueOrThrow({
+            where: { id: requireCompanyId() },
+            select: { lawMode: true },
+          });
+          if (!company.lawMode) {
+            throw new BadRequestException({
+              message: 'validationFailed',
+              errors: { hasDisability: 'disabilityNeedsLawMode' },
+            });
+          }
+        }
+
+        // What really changes, compared as the API shows it (dates as days)
+        const before: Partial<Record<PersonalField, unknown>> = {};
+        const after: Partial<Record<PersonalField, unknown>> = {};
+        for (const field of PERSONAL_FIELDS) {
+          const next = input[field];
+          if (next === undefined) continue;
+          const old =
+            field === 'birthDate' ? toDay(current.birthDate) : current[field];
+          if (old !== next) {
+            before[field] = old;
+            after[field] = next;
+          }
+        }
+        if (Object.keys(after).length === 0) {
+          throw new BadRequestException({ message: 'nothingToChange' });
+        }
+
+        // One person, one record (D-76): another employee may not hold this national ID
+        if (after.nationalId) {
+          const taken = await tx.employee.findFirst({
+            where: { nationalId: after.nationalId as string, id: { not: id } },
+            select: { id: true },
+          });
+          if (taken) throw nationalIdTaken();
+        }
+
+        await tx.employee.update({
+          where: { id },
+          data: {
+            ...after,
+            ...('birthDate' in after && {
+              birthDate:
+                after.birthDate === null
+                  ? null
+                  : toDate(after.birthDate as string),
+            }),
+          } as Prisma.EmployeeUpdateInput,
+        });
+
+        await this.audit.record(tx, auth.userId, {
+          entityType: 'employee',
+          entityId: id,
+          employeeId: id,
+          action: 'update',
+          before,
+          after,
+          reason: 'Personal data',
+        });
+      });
+    } catch (error) {
+      // Someone saved the same national ID a moment ago
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw nationalIdTaken();
+      }
+      throw error;
+    }
+    return this.profile(id);
+  }
 
   /**
    * POST /employees/:id/access (D-77): an app login for this employee, connected to the record.
@@ -288,12 +449,7 @@ export class EmployeesService {
           where: { nationalId: input.nationalId },
           select: { id: true },
         });
-        if (taken) {
-          throw new ConflictException({
-            message: 'nationalIdTaken',
-            errors: { nationalId: 'nationalIdTaken' },
-          });
-        }
+        if (taken) throw nationalIdTaken();
       }
 
       // 4. The employee. A job title of another company → the database refuses it (D-48, 400)
@@ -350,4 +506,11 @@ export class EmployeesService {
       return toApi(employee);
     });
   }
+}
+
+function nationalIdTaken() {
+  return new ConflictException({
+    message: 'nationalIdTaken',
+    errors: { nationalId: 'nationalIdTaken' },
+  });
 }

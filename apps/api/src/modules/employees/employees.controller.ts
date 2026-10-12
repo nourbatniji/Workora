@@ -6,8 +6,10 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -16,11 +18,14 @@ import {
 import type { Request } from 'express';
 import {
   createEmployeeSchema,
+  EMPLOYEE_CODE_PATTERN,
   employeeAccessSchema,
+  updateEmployeePersonalSchema,
   exportEmployeesQuerySchema,
   listEmployeesQuerySchema,
   type CreateEmployeeInput,
   type EmployeeAccessInput,
+  type UpdateEmployeePersonalInput,
   type ExportEmployeesQuery,
   type ListEmployeesQuery,
 } from '@mdarj/shared';
@@ -53,6 +58,27 @@ export class EmployeesController {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       disposition: `attachment; filename="${fileName}"`,
     });
+  }
+
+  // GET /employees/:key — one employee, by id or by code (EM-08 profile, EM-02)
+  @Get(':key')
+  profile(@Param('key') key: string) {
+    // Anything else can't be an employee: "not found" without asking the database
+    if (!EMPLOYEE_CODE_PATTERN.test(key)) {
+      throw new NotFoundException({ message: 'notFound' });
+    }
+    return this.employees.profile(key);
+  }
+
+  // PATCH /employees/:id — edit personal data (EM-02, FR-EM-2)
+  @Patch(':id')
+  updatePersonal(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(updateEmployeePersonalSchema))
+    body: UpdateEmployeePersonalInput,
+  ) {
+    return this.employees.updatePersonal(req.auth!, id, body);
   }
 
   // POST /employees: create an employee; the system assigns the code (EM-01, FR-EM-1)

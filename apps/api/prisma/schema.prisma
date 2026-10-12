@@ -53,6 +53,7 @@ enum DailyRateDivisor {
 
 // What kind of record an audit entry is about (SRS FR-DB-4)
 enum AuditEntity {
+  employee // personal and job data of an employee (EM-02, EM-03, D-78)
   company_settings
   salary
   employee_status

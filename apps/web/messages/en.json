@@ -312,6 +312,7 @@
       "changes": "Changes"
     },
     "types": {
+      "employee": "Employee data",
       "company_settings": "Company settings",
       "salary": "Salary",
       "employee_status": "Employee status",
@@ -881,6 +882,7 @@
     "employmentTypeInvalid": "Choose full-time, part-time or trainee.",
     "genderInvalid": "Choose male or female.",
     "employeeHasLogin": "This employee already has app access.",
-    "employeeTerminated": "This employee has left, so they can't get app access."
+    "employeeTerminated": "This employee has left, so they can't get app access.",
+    "disabilityNeedsLawMode": "Turn on Labor Law mode in Settings to use this field."
   }
 }

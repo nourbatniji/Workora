@@ -312,6 +312,7 @@
       "changes": "التغييرات"
     },
     "types": {
+      "employee": "بيانات الموظف",
       "company_settings": "إعدادات الشركة",
       "salary": "الراتب",
       "employee_status": "حالة الموظف",
@@ -881,6 +882,7 @@
     "employmentTypeInvalid": "اختر دوام كامل أو دوام جزئي أو متدرب.",
     "genderInvalid": "اختر ذكر أو أنثى.",
     "employeeHasLogin": "لدى هذا الموظف دخول للتطبيق بالفعل.",
-    "employeeTerminated": "غادر هذا الموظف، فلا يمكن منحه دخول التطبيق."
+    "employeeTerminated": "غادر هذا الموظف، فلا يمكن منحه دخول التطبيق.",
+    "disabilityNeedsLawMode": "فعّل وضع قانون العمل من الإعدادات لاستخدام هذا الحقل."
   }
 }

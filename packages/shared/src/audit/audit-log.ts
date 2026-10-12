@@ -5,6 +5,7 @@ import { isoDateSchema } from '../settings/settings-versions.js';
 
 /** What kind of record an audit row is about. Same list as the AuditEntity enum in schema.prisma */
 export const AUDIT_ENTITY_TYPES = [
+  'employee',
   'company_settings',
   'salary',
   'employee_status',

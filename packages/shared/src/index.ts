@@ -11,3 +11,4 @@ export * from './audit/audit-log.js';
 export * from './employees/create-employee.js';
 export * from './employees/list-employees.js';
 export * from './employees/app-access.js';
+export * from './employees/update-employee.js';
