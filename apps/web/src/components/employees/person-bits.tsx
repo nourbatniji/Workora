@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import styles from './profile.module.css';
 
 /** Soft avatar colours, picked from the code so a person always gets the same one */
 const AVATAR_TINTS = [
@@ -42,8 +43,8 @@ export function Avatar({
   return (
     <span
       aria-hidden
-      className={`inline-flex shrink-0 items-center justify-center rounded-full font-semibold ${tintFor(code)} ${
-        size === 'lg' ? 'size-16 text-xl' : 'size-9 text-xs'
+      className={`${styles.avatar} font-semibold ${tintFor(code)} ${
+        size === 'lg' ? styles.avatarLarge : styles.avatarSmall
       }`}
     >
       {initials(name, locale)}
@@ -63,9 +64,9 @@ function monthsSince(day: string, now: number) {
 }
 
 /** "1 yr 2 mo", "3 mo", "New this month" or "Starts soon", from the hire date */
-export function useTenure() {
+export function useTenure(referenceTime?: number) {
   const t = useTranslations('Employees.tenure');
-  const [now] = useState(() => Date.now());
+  const [now] = useState(() => referenceTime ?? Date.now());
   return (hireDate: string) => {
     const months = monthsSince(hireDate, now);
     if (months < 0) return t('starts');

@@ -20,12 +20,12 @@ import {
   createEmployeeSchema,
   EMPLOYEE_CODE_PATTERN,
   employeeAccessSchema,
-  updateEmployeePersonalSchema,
+  updateEmployeeSchema,
   exportEmployeesQuerySchema,
   listEmployeesQuerySchema,
   type CreateEmployeeInput,
   type EmployeeAccessInput,
-  type UpdateEmployeePersonalInput,
+  type UpdateEmployeeInput,
   type ExportEmployeesQuery,
   type ListEmployeesQuery,
 } from '@mdarj/shared';
@@ -70,15 +70,15 @@ export class EmployeesController {
     return this.employees.profile(key);
   }
 
-  // PATCH /employees/:id — edit personal data (EM-02, FR-EM-2)
+  // PATCH /employees/:id — edit personal and job data (EM-02, EM-03)
   @Patch(':id')
-  updatePersonal(
+  update(
     @Req() req: Request,
     @Param('id', new ParseUUIDPipe()) id: string,
-    @Body(new ZodValidationPipe(updateEmployeePersonalSchema))
-    body: UpdateEmployeePersonalInput,
+    @Body(new ZodValidationPipe(updateEmployeeSchema))
+    body: UpdateEmployeeInput,
   ) {
-    return this.employees.updatePersonal(req.auth!, id, body);
+    return this.employees.update(req.auth!, id, body);
   }
 
   // POST /employees: create an employee; the system assigns the code (EM-01, FR-EM-1)

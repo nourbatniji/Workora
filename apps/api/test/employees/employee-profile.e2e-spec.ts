@@ -55,6 +55,9 @@ describe('Employee profile and personal data (EM-02, SCRUM-49)', () => {
   }, 30_000);
 
   afterAll(async () => {
+    await prisma.salaryHistory.deleteMany({
+      where: { companyId: r.companyId },
+    });
     await r.cleanup();
     await other.cleanup();
     await app.close();
@@ -108,6 +111,106 @@ describe('Employee profile and personal data (EM-02, SCRUM-49)', () => {
     it('answers 404 for an unknown code or a key that cannot be one', async () => {
       await r.admin.get('/employees/EMP-9999').expect(404);
       await r.admin.get('/employees/not%20a%20code!').expect(404);
+    });
+  });
+
+  describe('job data (SCRUM-50)', () => {
+    it('saves job fields and audits only changes, including the hire-date status correction', async () => {
+      const person = await add(r, { nameEn: 'Job test' });
+      const title = await prisma.jobTitle.create({
+        data: { companyId: r.companyId, nameAr: 'محاسب', nameEn: 'Accountant' },
+      });
+      const saved = await r.admin
+        .patch(`/employees/${person.id}`)
+        .send({
+          jobTitleId: title.id,
+          employmentType: 'trainee',
+          hireDate: '2026-09-01',
+          probationEnd: '2026-12-01',
+          trainingEnd: '2026-11-01',
+        })
+        .expect(200);
+      expect(saved.body).toMatchObject({
+        jobTitle: { id: title.id },
+        employmentType: 'trainee',
+        hireDate: '2026-09-01',
+        trainingEnd: '2026-11-01',
+        probationEnd: '2026-12-01',
+      });
+      const initial = await prisma.employeeStatusHistory.findFirstOrThrow({
+        where: { employeeId: person.id, fromStatus: null },
+      });
+      expect(initial.effectiveDate.toISOString().slice(0, 10)).toBe(
+        '2026-09-01',
+      );
+      const audit = await prisma.auditLog.findFirstOrThrow({
+        where: { entityType: 'employee', employeeId: person.id },
+        orderBy: { createdAt: 'desc' },
+      });
+      expect(audit.after).toMatchObject({
+        jobTitleId: title.id,
+        employmentType: 'trainee',
+        hireDate: '2026-09-01',
+      });
+      expect(audit.after).not.toHaveProperty('nameEn');
+      const changed = await r.admin
+        .patch(`/employees/${person.id}`)
+        .send({ employmentType: 'part_time', jobTitleId: '' })
+        .expect(200);
+      expect(changed.body).toMatchObject({
+        jobTitle: null,
+        employmentType: 'part_time',
+        trainingEnd: null,
+      });
+    });
+
+    it('checks partial dates against stored values and rejects a foreign job title', async () => {
+      const person = await add(r, {
+        employmentType: 'trainee',
+        trainingEnd: '2026-11-01',
+      });
+      const badDate = await r.admin
+        .patch(`/employees/${person.id}`)
+        .send({ hireDate: '2026-12-01' })
+        .expect(400);
+      expect(badDate.body.errors.trainingEnd).toBe('dateBeforeHire');
+      const foreign = await prisma.jobTitle.create({
+        data: { companyId: other.companyId, nameAr: 'مدير', nameEn: 'Manager' },
+      });
+      const badTitle = await r.admin
+        .patch(`/employees/${person.id}`)
+        .send({ jobTitleId: foreign.id })
+        .expect(400);
+      expect(badTitle.body.errors.jobTitleId).toBe('invalidReference');
+      await r.admin
+        .patch(`/employees/${theirs.id}`)
+        .send({ employmentType: 'part_time' })
+        .expect(404);
+      await r.employee
+        .patch(`/employees/${person.id}`)
+        .send({ employmentType: 'part_time' })
+        .expect(403);
+    });
+
+    it('refuses a hire-date correction once salary records exist', async () => {
+      const person = await add(r, {});
+      await prisma.salaryHistory.create({
+        data: {
+          companyId: r.companyId,
+          employeeId: person.id,
+          baseSalary: 9000,
+          effectiveFrom: new Date('2026-10-01'),
+        },
+      });
+      const res = await r.admin
+        .patch(`/employees/${person.id}`)
+        .send({ hireDate: '2026-09-01' })
+        .expect(400);
+      expect(res.body.errors.hireDate).toBe('hireDateInUse');
+      const unchanged = await r.admin
+        .get(`/employees/${person.id}`)
+        .expect(200);
+      expect(unchanged.body.hireDate).toBe('2026-10-01');
     });
   });
 

@@ -255,3 +255,12 @@ Noticed, not changed:
 - SCRUM-153 UI: `/employees` (search, status/type/job-title filters, sort, pages, Export to Excel, "Add employee", empty states, phone cards) and `/employees/new` (Job, Personal, Contact sections; shared schema checks first; API errors per field; back to the list with "EMP-000N was added"); menu item Employees is real; prototype saved views hidden until real
 - Open for the delete feature (FR-EM-11): `audit_log.employee_id` foreign key vs deleting an employee who has audit rows; leaning to dropping the key and checking in `AuditService`
 
+
+### Oct 12, 2026 (profile review and job editing)
+
+- Profile presentation: initials circle, aligned label/value fields, desktop columns and single-column phone layout; bidi isolation for phone and ID; persisted theme restored before paint after locale navigation. Verified in Safari in English/Arabic dark mode and at 360 px.
+- SCRUM-49 remains In Progress: personal-data editing is implemented; profile photo awaits FND-06 file storage (SCRUM-25).
+- SCRUM-50: Job card edits job title, type, hire/probation/training dates through the existing PATCH endpoint. Validates merged partial updates, same-company job titles, trainee-only training dates; switching away from trainee clears its end date. Audits only changed fields. Salary awaits EM-04; assigned shift awaits SH-02; the ticket remains open.
+- Hire-date correction updates the initial status effective date with its own audit row. Corrections are refused after subsequent status changes, salary, document or contract records exist, to preserve linked history. No migration.
+
+- Profile hydration: server-formatted date snapshots avoid Node/Safari Arabic punctuation differences; tenure uses the same request timestamp during SSR and hydration.

@@ -1,10 +1,10 @@
 // Edit an employee's personal data (EM-02, FR-EM-2). One schema for the form and the API (D-30).
 // Every field is optional: only what is sent changes. An empty box clears an optional field.
-// Job data (EM-03) joins this schema in its own story.
+// The combined PATCH schema also accepts job data (EM-03).
 import { z } from 'zod';
 import { normalizePhone } from '../phone.js';
 import { isoDateSchema } from '../settings/settings-versions.js';
-import { GENDERS } from './create-employee.js';
+import { EMPLOYMENT_TYPES, GENDERS } from './create-employee.js';
 
 /** An empty box means "remove it", so it becomes null */
 const emptyToNull = (value: unknown) =>
@@ -73,6 +73,23 @@ export const updateEmployeePersonalSchema = z.object({
   /** Only when the company follows the Labor Law; Admins only (D-04) */
   hasDisability: z.boolean('badRequest').optional(),
 });
+
+/** Job edits are partial; dates are checked against the stored employee by the API. */
+export const updateEmployeeJobSchema = z.object({
+  jobTitleId: z.preprocess(
+    emptyToNull,
+    z.uuid('invalidReference').nullable().optional(),
+  ),
+  employmentType: z.enum(EMPLOYMENT_TYPES, 'employmentTypeInvalid').optional(),
+  hireDate: isoDateSchema.optional(),
+  probationEnd: z.preprocess(emptyToNull, isoDateSchema.nullable().optional()),
+  trainingEnd: z.preprocess(emptyToNull, isoDateSchema.nullable().optional()),
+});
+
+export const updateEmployeeSchema = updateEmployeePersonalSchema
+  .extend(updateEmployeeJobSchema.shape)
+  .strict();
+export type UpdateEmployeeInput = z.output<typeof updateEmployeeSchema>;
 
 export type UpdateEmployeePersonalRequest = z.input<
   typeof updateEmployeePersonalSchema

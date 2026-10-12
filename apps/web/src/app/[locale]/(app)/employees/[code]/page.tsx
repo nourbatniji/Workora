@@ -1,12 +1,14 @@
 import { ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getFormatter, getNow, getTranslations } from 'next-intl/server';
 import type { EmployeeProfile } from '@mdarj/shared';
 import JobCard from '@/components/employees/job-card';
 import PersonalCard from '@/components/employees/personal-card';
 import ProfileHeader from '@/components/employees/profile-header';
+import styles from '@/components/employees/profile.module.css';
 import { Link } from '@/i18n/navigation';
-import { serverGetResult } from '@/lib/server-api';
+import type { JobTitle } from '@/components/settings/job-titles-card';
+import { serverGet, serverGetResult } from '@/lib/server-api';
 import { getSession } from '@/lib/session';
 
 /**
@@ -31,7 +33,26 @@ export default async function EmployeePage({
     throw new Error(`GET /employees/${code} answered ${result.status}`);
   }
   const employee = result.data;
+  const jobTitles = await serverGet<{ items: JobTitle[] }>('/job-titles');
   const t = await getTranslations('Employees.profile');
+  const format = await getFormatter();
+  // Node and Safari can use different ICU punctuation. Hydrate with one server snapshot.
+  const dateText = (value: string | null, month: 'long' | 'short') =>
+    value
+      ? format.dateTime(new Date(`${value}T00:00:00Z`), {
+          day: 'numeric',
+          month,
+          year: 'numeric',
+          timeZone: 'UTC',
+        })
+      : null;
+  const profileDates = {
+    hireDate: dateText(employee.hireDate, 'short')!,
+    probationEnd: dateText(employee.probationEnd, 'short'),
+    trainingEnd: dateText(employee.trainingEnd, 'short'),
+    terminationDate: dateText(employee.terminationDate, 'short'),
+  };
+  const referenceTime = (await getNow()).getTime();
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
@@ -47,11 +68,22 @@ export default async function EmployeePage({
         {t('back')}
       </Link>
 
-      <ProfileHeader employee={employee} />
+      <ProfileHeader
+        employee={employee}
+        hireDateText={dateText(employee.hireDate, 'long')!}
+        referenceTime={referenceTime}
+      />
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <PersonalCard employee={employee} />
-        <JobCard employee={employee} />
+      <div className={styles.columns}>
+        <PersonalCard
+          employee={employee}
+          birthDateText={dateText(employee.birthDate, 'long')}
+        />
+        <JobCard
+          employee={employee}
+          jobTitles={jobTitles.items}
+          dates={profileDates}
+        />
       </div>
     </div>
   );

@@ -6,8 +6,10 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useLayoutEffect,
   useState,
 } from 'react';
+import { useLocale } from 'next-intl';
 import {
   notifications as initialNotifications,
   type MockNotification,
@@ -51,13 +53,23 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  // Pick up the theme the head script already applied
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time sync from the DOM
-    setTheme(
-      document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
-    );
-  }, []);
+  const locale = useLocale();
+
+  // Locale navigation can replace the document root without running its inline script.
+  // Restore the saved preference before paint on each language change.
+  useLayoutEffect(() => {
+    let restored: Theme =
+      document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+    try {
+      const stored = localStorage.getItem(THEME_STORAGE_KEY);
+      if (stored === 'dark' || stored === 'light') restored = stored;
+    } catch {
+      // Keep the current document preference when storage is unavailable.
+    }
+    document.documentElement.dataset.theme = restored;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync persisted preference before paint
+    setTheme(restored);
+  }, [locale]);
 
   const toggleTheme = useCallback(() => {
     setTheme((current) => {

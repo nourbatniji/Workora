@@ -296,7 +296,7 @@
       "personal": "Personal data",
       "personalHint": "Names, ID and how to reach them.",
       "job": "Job",
-      "jobHint": "Editing job data comes next (SCRUM-50).",
+      "jobHint": "Employment details and key dates.",
       "glance": "At a glance",
       "edit": "Edit",
       "save": "Save changes",
@@ -862,6 +862,7 @@
     "sending": "Sending…"
   },
   "Errors": {
+    "hireDateInUse": "The hire date cannot change after status changes, salary records, documents or contracts have been added.",
     "required": "This field is required",
     "tooLong": "This is too long",
     "emailInvalid": "Enter a valid email address",

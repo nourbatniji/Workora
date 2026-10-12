@@ -6,13 +6,14 @@ import {
   type EmployeeProfile,
 } from '@mdarj/shared';
 import { Pencil } from 'lucide-react';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Card, CardHeader } from '@/components/ui/card';
 import { Field, inputClass } from '@/components/ui/field';
 import { useRouter } from '@/i18n/navigation';
 import { patchJson } from '@/lib/api';
 import { errorsByField } from '@/lib/form-errors';
+import styles from './profile.module.css';
 
 /** The form's boxes: text everywhere, so an empty box can mean "clear it" */
 type Form = {
@@ -52,12 +53,13 @@ function formOf(employee: EmployeeProfile): Form {
  */
 export default function PersonalCard({
   employee,
+  birthDateText,
 }: {
   employee: EmployeeProfile;
+  birthDateText: string | null;
 }) {
   const t = useTranslations('Employees');
   const tErr = useTranslations('Errors');
-  const format = useFormatter();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<Form>(() => formOf(employee));
@@ -111,16 +113,6 @@ export default function PersonalCard({
     errors[field] ? tErr(errors[field]) : undefined;
   const ltr = 'rtl:text-end';
 
-  const day = (value: string | null) =>
-    value
-      ? format.dateTime(new Date(`${value}T00:00:00Z`), {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          timeZone: 'UTC',
-        })
-      : null;
-
   if (!editing) {
     const emergency = [employee.emergencyName, employee.emergencyPhone]
       .filter(Boolean)
@@ -129,7 +121,7 @@ export default function PersonalCard({
       ['nameAr', employee.nameAr],
       ['nameEn', employee.nameEn],
       ['nationalId', employee.nationalId, true],
-      ['birthDate', day(employee.birthDate)],
+      ['birthDate', birthDateText],
       ['gender', employee.gender ? t(`genders.${employee.gender}`) : null],
       ['phone', employee.phone, true],
       ['email', employee.email, true],
@@ -160,19 +152,16 @@ export default function PersonalCard({
             </button>
           }
         />
-        <dl className="grid gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
+        <dl className={`${styles.details} text-sm`}>
           {rows.map(([key, value, isLtr]) => (
-            <div key={key} className="min-w-0">
+            <div key={key} className={styles.field}>
               <dt className="text-xs text-muted">
                 {t(`profile.fields.${key}`)}
               </dt>
-              <dd
-                className={`mt-0.5 break-words ${value ? '' : 'text-muted'}`}
-                dir={isLtr && value ? 'ltr' : undefined}
-              >
-                <span className={isLtr ? ltr : undefined}>
+              <dd className={`${styles.value} ${value ? '' : 'text-muted'}`}>
+                <bdi dir={isLtr && value ? 'ltr' : 'auto'}>
                   {value ?? t('profile.notGiven')}
-                </span>
+                </bdi>
               </dd>
             </div>
           ))}

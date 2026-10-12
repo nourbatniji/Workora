@@ -12,7 +12,7 @@ import {
   type CreateEmployeeInput,
   type EmployeeAccessInput,
   type EmployeeProfile,
-  type UpdateEmployeePersonalInput,
+  type UpdateEmployeeInput,
   type EmployeeListPage,
   type EmployeeSort,
   type ExportEmployeesQuery,
@@ -80,8 +80,8 @@ const PROFILE = {
   user: { select: { id: true, status: true } },
 } satisfies Prisma.EmployeeSelect;
 
-/** The personal fields EM-02 may change; dates are DATE columns */
-const PERSONAL_FIELDS = [
+/** The personal and job fields EM-02 and EM-03 may change; dates are DATE columns */
+const EDITABLE_FIELDS = [
   'nameAr',
   'nameEn',
   'nationalId',
@@ -93,8 +93,13 @@ const PERSONAL_FIELDS = [
   'emergencyName',
   'emergencyPhone',
   'hasDisability',
+  'jobTitleId',
+  'employmentType',
+  'hireDate',
+  'probationEnd',
+  'trainingEnd',
 ] as const;
-type PersonalField = (typeof PERSONAL_FIELDS)[number];
+type EditableField = (typeof EDITABLE_FIELDS)[number];
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -213,13 +218,13 @@ export class EmployeesService {
   }
 
   /**
-   * PATCH /employees/:id — personal data (EM-02, FR-EM-2). Only what is sent changes; the audit
+   * PATCH /employees/:id — personal and job data (EM-02, EM-03). Only what is sent changes; the audit
    * row keeps only the fields that really changed, before and after (FR-DB-4 "Admin changes", D-78).
    */
-  async updatePersonal(
+  async update(
     auth: AuthContext,
     id: string,
-    input: UpdateEmployeePersonalInput,
+    input: UpdateEmployeeInput,
   ): Promise<EmployeeProfile> {
     try {
       await this.tenantPrisma.db.$transaction(async (tx) => {
@@ -237,6 +242,11 @@ export class EmployeesService {
             emergencyName: true,
             emergencyPhone: true,
             hasDisability: true,
+            jobTitleId: true,
+            employmentType: true,
+            hireDate: true,
+            probationEnd: true,
+            trainingEnd: true,
           },
         });
         if (!current) throw new NotFoundException({ message: 'notFound' });
@@ -255,14 +265,59 @@ export class EmployeesService {
           }
         }
 
+        const hireDate = input.hireDate ?? toDay(current.hireDate)!;
+        const employmentType = input.employmentType ?? current.employmentType;
+        const probationEnd =
+          input.probationEnd === undefined
+            ? toDay(current.probationEnd)
+            : input.probationEnd;
+        // Changing away from trainee clears the trainee-only date in the same transaction.
+        const trainingEnd =
+          employmentType !== 'trainee'
+            ? null
+            : input.trainingEnd === undefined
+              ? toDay(current.trainingEnd)
+              : input.trainingEnd;
+        const errors: Record<string, string> = {};
+        if (probationEnd && probationEnd < hireDate)
+          errors.probationEnd = 'dateBeforeHire';
+        if (trainingEnd && trainingEnd < hireDate)
+          errors.trainingEnd = 'dateBeforeHire';
+        if (input.trainingEnd && employmentType !== 'trainee')
+          errors.trainingEnd = 'trainingEndTraineesOnly';
+        if (
+          input.jobTitleId &&
+          !(await tx.jobTitle.findUnique({
+            where: { id: input.jobTitleId },
+            select: { id: true },
+          }))
+        ) {
+          errors.jobTitleId = 'invalidReference';
+        }
+        if (Object.keys(errors).length)
+          throw new BadRequestException({
+            message: 'validationFailed',
+            errors,
+          });
+        const changes = {
+          ...input,
+          ...(input.employmentType !== undefined && { trainingEnd }),
+        };
+
         // What really changes, compared as the API shows it (dates as days)
-        const before: Partial<Record<PersonalField, unknown>> = {};
-        const after: Partial<Record<PersonalField, unknown>> = {};
-        for (const field of PERSONAL_FIELDS) {
-          const next = input[field];
+        const before: Partial<Record<EditableField, unknown>> = {};
+        const after: Partial<Record<EditableField, unknown>> = {};
+        for (const field of EDITABLE_FIELDS) {
+          const next = changes[field];
           if (next === undefined) continue;
-          const old =
-            field === 'birthDate' ? toDay(current.birthDate) : current[field];
+          const old = [
+            'birthDate',
+            'hireDate',
+            'probationEnd',
+            'trainingEnd',
+          ].includes(field)
+            ? toDay(current[field] as Date | null)
+            : current[field];
           if (old !== next) {
             before[field] = old;
             after[field] = next;
@@ -281,16 +336,56 @@ export class EmployeesService {
           if (taken) throw nationalIdTaken();
         }
 
+        if (after.hireDate) {
+          const [statusChanges, salaries, documents, contracts] =
+            await Promise.all([
+              tx.employeeStatusHistory.count({
+                where: { employeeId: id, fromStatus: { not: null } },
+              }),
+              tx.salaryHistory.count({ where: { employeeId: id } }),
+              tx.document.count({ where: { employeeId: id } }),
+              tx.contract.count({ where: { employeeId: id } }),
+            ]);
+          if (statusChanges || salaries || documents || contracts) {
+            throw new BadRequestException({
+              message: 'validationFailed',
+              errors: { hireDate: 'hireDateInUse' },
+            });
+          }
+          const initial = await tx.employeeStatusHistory.findFirst({
+            where: { employeeId: id, fromStatus: null },
+          });
+          if (initial) {
+            await tx.employeeStatusHistory.update({
+              where: { id: initial.id },
+              data: { effectiveDate: toDate(after.hireDate as string) },
+            });
+            await this.audit.record(tx, auth.userId, {
+              entityType: 'employee_status',
+              entityId: initial.id,
+              employeeId: id,
+              action: 'update',
+              before: { effectiveDate: toDay(initial.effectiveDate) },
+              after: { effectiveDate: after.hireDate },
+              reason: 'Hire date correction',
+            });
+          }
+        }
+
         await tx.employee.update({
           where: { id },
           data: {
             ...after,
-            ...('birthDate' in after && {
-              birthDate:
-                after.birthDate === null
-                  ? null
-                  : toDate(after.birthDate as string),
-            }),
+            ...Object.fromEntries(
+              ['birthDate', 'hireDate', 'probationEnd', 'trainingEnd']
+                .filter((field) => field in after)
+                .map((field) => [
+                  field,
+                  after[field as EditableField] === null
+                    ? null
+                    : toDate(after[field as EditableField] as string),
+                ]),
+            ),
           } as Prisma.EmployeeUpdateInput,
         });
 
@@ -301,7 +396,17 @@ export class EmployeesService {
           action: 'update',
           before,
           after,
-          reason: 'Personal data',
+          reason: Object.keys(after).some((field) =>
+            [
+              'jobTitleId',
+              'employmentType',
+              'hireDate',
+              'probationEnd',
+              'trainingEnd',
+            ].includes(field),
+          )
+            ? 'Employee data'
+            : 'Personal data',
         });
       });
     } catch (error) {
