@@ -5,10 +5,11 @@ import { UserPlus } from 'lucide-react';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Link } from '@/i18n/navigation';
+import AppAccessButton from './app-access-button';
 
-/** Desktop columns: person · job · status · hired · phone. Phones: one card per person (NFR-7) */
+/** Desktop columns: person · job · status · hired · phone · app access. Phones: one card per person (NFR-7) */
 const COLUMNS =
-  'md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)_7rem_minmax(0,1.2fr)_9.5rem] md:items-center md:gap-4';
+  'md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)_7rem_minmax(0,1.1fr)_8.5rem_9.5rem] md:items-center md:gap-4';
 
 const STATUS_STYLE: Record<EmployeeListItem['status'], string> = {
   active: 'bg-success/10 text-text',
@@ -128,6 +129,7 @@ export default function EmployeesTable({
         <span>{t('columns.status')}</span>
         <span>{t('columns.hireDate')}</span>
         <span>{t('columns.phone')}</span>
+        <span>{t('access.column')}</span>
       </div>
 
       <ul className="-mx-2">
@@ -204,6 +206,11 @@ export default function EmployeesTable({
                 {employee.phone ?? (
                   <span className="hidden md:inline">{t('none')}</span>
                 )}
+              </span>
+
+              {/* App access (D-77): a badge, or the button that sends the invite */}
+              <span className="col-span-3 ps-12 pt-1 md:order-6 md:col-span-1 md:ps-0 md:pt-0">
+                <AppAccessButton employee={employee} />
               </span>
             </li>
           );

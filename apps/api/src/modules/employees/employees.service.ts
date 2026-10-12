@@ -1,10 +1,16 @@
 // Employees (SRS 3.3). EM-01 (SCRUM-48): the Admin creates an employee; the system gives the code.
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   DEFAULT_EMPLOYEE_STATUSES,
   EMPLOYEE_LIMIT,
   employeeCode,
   type CreateEmployeeInput,
+  type EmployeeAccessInput,
   type EmployeeListPage,
   type EmployeeSort,
   type ExportEmployeesQuery,
@@ -15,6 +21,7 @@ import { AuditService } from '../../common/audit/audit.service.js';
 import { requireCompanyId } from '../../common/tenancy/tenant-context.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { TenantPrismaService } from '../../prisma/tenant-prisma.service.js';
+import { UsersService } from '../users/users.service.js';
 import { employeesWorkbook } from './employees-export.js';
 
 /** "2026-11-01" ↔ the Date Prisma uses for a DATE column (midnight UTC, D-29) */
@@ -74,6 +81,8 @@ const LIST_ROW = {
   status: true,
   hireDate: true,
   phone: true,
+  email: true,
+  user: { select: { id: true, status: true } },
 } satisfies Prisma.EmployeeSelect;
 
 /** sort=-hireDate → hire date newest first; the code breaks ties, so pages never shuffle */
@@ -112,9 +121,10 @@ function whereFor(
 
 type ListRow = Prisma.EmployeeGetPayload<{ select: typeof LIST_ROW }>;
 
-const toListItem = (row: ListRow) => ({
+const toListItem = ({ user, ...row }: ListRow) => ({
   ...row,
   hireDate: toDay(row.hireDate)!,
+  login: user,
 });
 
 /** Safety net for the export: far above what one company can hold in the MVP */
@@ -143,7 +153,62 @@ export class EmployeesService {
   constructor(
     private readonly tenantPrisma: TenantPrismaService,
     private readonly audit: AuditService,
+    private readonly users: UsersService,
   ) {}
+
+  /**
+   * POST /employees/:id/access (D-77): an app login for this employee, connected to the record.
+   * The same 7-day invite as the Users page (email when there is one, link to copy always).
+   * Email and phone default to the employee's own; the login's name is the employee's name.
+   */
+  async giveAccess(
+    auth: AuthContext,
+    employeeId: string,
+    input: EmployeeAccessInput,
+  ) {
+    // Another company's employee is not found at all (tenancy)
+    const employee = await this.tenantPrisma.db.employee.findUnique({
+      where: { id: employeeId },
+      select: {
+        id: true,
+        nameAr: true,
+        nameEn: true,
+        email: true,
+        phone: true,
+        status: true,
+        user: { select: { id: true } },
+      },
+    });
+    if (!employee) throw new NotFoundException({ message: 'notFound' });
+    if (employee.status === 'terminated') {
+      throw new ConflictException({ message: 'employeeTerminated' });
+    }
+    if (employee.user) {
+      throw new ConflictException({ message: 'employeeHasLogin' });
+    }
+
+    const email = input.email ?? employee.email ?? undefined;
+    const phone = input.phone ?? employee.phone ?? undefined;
+    if (!email && !phone) {
+      // Login needs one of the two (FR-UA-3)
+      throw new BadRequestException({
+        message: 'validationFailed',
+        errors: { email: 'emailOrPhoneRequired' },
+      });
+    }
+
+    return this.users.create(
+      auth,
+      {
+        name: input.language === 'ar' ? employee.nameAr : employee.nameEn,
+        email,
+        phone,
+        role: 'employee',
+        language: input.language,
+      },
+      employee.id,
+    );
+  }
 
   /** GET /employees: this company's employees (the tenant client adds company_id) */
   async list(query: ListEmployeesQuery): Promise<EmployeeListPage> {

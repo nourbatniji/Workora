@@ -5,5 +5,7 @@ import { UsersService } from './users.service.js';
 @Module({
   controllers: [UsersController],
   providers: [UsersService],
+  // Employees use it to give an employee app access (D-77)
+  exports: [UsersService],
 })
 export class UsersModule {}

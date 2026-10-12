@@ -6,6 +6,8 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseUUIDPipe,
   Post,
   Query,
   Req,
@@ -14,9 +16,11 @@ import {
 import type { Request } from 'express';
 import {
   createEmployeeSchema,
+  employeeAccessSchema,
   exportEmployeesQuerySchema,
   listEmployeesQuerySchema,
   type CreateEmployeeInput,
+  type EmployeeAccessInput,
   type ExportEmployeesQuery,
   type ListEmployeesQuery,
 } from '@mdarj/shared';
@@ -60,5 +64,17 @@ export class EmployeesController {
     body: CreateEmployeeInput,
   ) {
     return this.employees.create(req.auth!, body);
+  }
+
+  // POST /employees/:id/access: invite this employee to the app, login connected to the record (D-77)
+  @Post(':id/access')
+  @HttpCode(HttpStatus.CREATED)
+  giveAccess(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(employeeAccessSchema))
+    body: EmployeeAccessInput,
+  ) {
+    return this.employees.giveAccess(req.auth!, id, body);
   }
 }

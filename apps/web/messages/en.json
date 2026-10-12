@@ -114,7 +114,8 @@
     "copy": "Copy link",
     "copied": "Copied",
     "another": "Invite another",
-    "done": "Done"
+    "done": "Done",
+    "employeesHint": "Employees get app access from the Employees list, so their login is connected to their record."
   },
   "Users": {
     "title": "Users",
@@ -268,7 +269,26 @@
       "new": "New this month",
       "starts": "Starts soon"
     },
-    "since": "Since {date}"
+    "since": "Since {date}",
+    "access": {
+      "column": "App access",
+      "give": "Give app access",
+      "invited": "Invited",
+      "active": "Has access",
+      "off": "Login off",
+      "none": "No access",
+      "title": "Give {name} app access",
+      "description": "They get a link to set a password. Their login is connected to this employee, so they see only their own data.",
+      "email": "Email",
+      "phone": "Phone",
+      "language": "Language of the invite",
+      "optional": "optional",
+      "needOne": "An email or a phone is needed to log in.",
+      "submit": "Create invite link",
+      "sending": "Creating…",
+      "cancel": "Cancel",
+      "done": "Done"
+    }
   },
   "AuditLog": {
     "title": "Audit log",
@@ -859,6 +879,8 @@
     "dateBeforeHire": "This date can't be before the hire date.",
     "trainingEndTraineesOnly": "Only trainees have a training end date.",
     "employmentTypeInvalid": "Choose full-time, part-time or trainee.",
-    "genderInvalid": "Choose male or female."
+    "genderInvalid": "Choose male or female.",
+    "employeeHasLogin": "This employee already has app access.",
+    "employeeTerminated": "This employee has left, so they can't get app access."
   }
 }

@@ -187,6 +187,8 @@ describe('Employee list (EM-09, SCRUM-56)', () => {
         status: 'active',
         hireDate: '2026-01-10',
         phone: '+201012345678',
+        email: null,
+        login: null,
       });
     });
 

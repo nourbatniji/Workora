@@ -65,6 +65,7 @@ Legend: ✅ built · ⬜ planned
 | ✅ | GET | `/employees` | List with search and filters (status, employment type, job title, shift) | Admin | FR-EM-9 | EM-09 |
 | ✅ | GET | `/employees/export` | Excel of the filtered list | Admin | FR-EM-9 | EM-09 |
 | ✅ | POST | `/employees` | Create an employee; the system assigns the code | Admin | FR-EM-1, FR-EM-2, FR-EM-3 | EM-01, EM-02, EM-03 |
+| ✅ | POST | `/employees/:id/access` | Give the employee app access: Employee login connected to the record, 7-day invite link (D-77) | Admin | FR-UA-1, FR-UA-2 | UA-06 (D-77) |
 | ⬜ | GET | `/employees/:id` | Profile (personal and job data); disability field Admin-only | Admin · Employee own | FR-EM-8, FR-EM-10, NFR-3, D-04 | EM-08, EM-10 |
 | ⬜ | PATCH | `/employees/:id` | Edit personal or job data | Admin | FR-EM-2, FR-EM-3 | EM-02, EM-03 |
 | ⬜ | DELETE | `/employees/:id` | Delete an employee created by mistake (refused when they have records) | Admin | FR-EM-11 | EM-07 |

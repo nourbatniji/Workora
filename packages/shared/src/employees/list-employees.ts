@@ -81,6 +81,9 @@ export interface EmployeeListItem {
   /** "2026-10-01" */
   hireDate: string;
   phone: string | null;
+  email: string | null;
+  /** The employee's app login, if they have one (D-77) */
+  login: { id: string; status: 'invited' | 'active' | 'deactivated' } | null;
 }
 
 export interface EmployeeListPage {
