@@ -71,6 +71,7 @@ HR/
 pnpm install
 cp apps/api/.env.example apps/api/.env
 pnpm db:up        # start PostgreSQL and Mailpit in Docker
+pnpm storage:up   # build/start local MinIO and create the private file bucket
 pnpm db:migrate   # create the tables
 pnpm db:generate  # build the Prisma client
 pnpm db:seed      # add the demo company and its Admin
@@ -92,11 +93,13 @@ The seed creates "MDARJ Demo Company" with one Admin. Log in with `SEED_ADMIN_EM
 | --- | --- |
 | `pnpm build:shared` | Builds `packages/shared` (validation rules and types used by both apps). `pnpm dev:api` runs it first; run it yourself after changing shared code while `pnpm dev:web` is running |
 | `pnpm db:up` | Starts PostgreSQL and Mailpit (the fake inbox) in Docker |
+| `pnpm storage:up` | Builds/starts local MinIO (S3 port 9000, console 9001) and provisions a private bucket; first build takes several minutes |
+| `pnpm storage:init` | Creates the dedicated local/CI bucket and removes any anonymous bucket policy; safe to repeat |
 | `pnpm db:migrate` | Applies new migrations to the local database |
 | `pnpm db:generate` | Rebuilds the Prisma client after a schema change (Prisma 7 no longer does this inside `db:migrate`) |
 | `pnpm db:seed` | Adds the demo company and its Admin |
 | `pnpm test` | Runs the backend unit tests (no database needed) |
-| `pnpm test:e2e` | Runs the backend tests that use the database and Mailpit (start them first with `pnpm db:up`) |
+| `pnpm test:e2e` | Runs the backend tests that use the database, Mailpit and MinIO (start them with `pnpm db:up` and `pnpm storage:up`) |
 | `pnpm lint` | Checks both apps for code mistakes |
 | `pnpm typecheck` | Builds `packages/shared`, then checks the types of shared, api and web without building them |
 | `pnpm check:raw-sql` | Fails if `apps/api/src` uses raw SQL outside `src/prisma/` (api-conventions.md §8) |
@@ -119,6 +122,22 @@ The seed creates "MDARJ Demo Company" with one Admin. Log in with `SEED_ADMIN_EM
 | web | `apps/web/.env.local` | `API_URL` | `http://localhost:4000` | Where the web app forwards `/api/*` requests |
 
 Restart the backend after changing `.env`.
+
+### Private files (SCRUM-25)
+
+Copy the `S3_*` settings from `apps/api/.env.example` into the API `.env`, then run `pnpm storage:up`.
+MinIO is built from a pinned official source release because community container images/binaries are no longer distributed.
+The local credentials in the example are only for development; MinIO binds to `127.0.0.1`.
+
+Production uses a separately provisioned private S3-compatible bucket over HTTPS, with credentials limited to object read/write/delete in that bucket. Configure `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, and `S3_FORCE_PATH_STYLE`. The endpoint must be reachable by both the API and users’ browsers (it appears in signed links). `S3_LINK_TTL_SECONDS` is 300 by default, allowed range 1–300.
+
+Feature services inject `FilesService`: `upload(file)` returns the key to save in their existing database row; `signedDownload(key)` returns `{ url, expiresAt }`; `remove(key)` cleans up a failed metadata save or an authorized replacement/deletion. Run these methods in the request’s company context. Before signing, load the record through `TenantPrismaService` and enforce Admin/employee-own access. There is no generic public file-key endpoint.
+
+Uploads accept PDF, JPG and PNG up to 10 MiB, check file signatures against MIME, and use random company-prefixed keys. Feature multipart endpoints use `FILE_UPLOAD_OPTIONS` to enforce limits before buffering. Files are private; signed links are temporary bearer links and must not be logged or stored in the database. Store only the key. New photo/document screens are built in their own stories.
+
+Employee profile photos (SCRUM-49) are available in the profile header: Add/Change/Remove photo. Photos accept JPG/PNG up to 10 MiB and are normalized to a JPEG of at most 512 px with metadata removed. Admins can change photos; photo reads allow Admins and the employee whose photo it is. The initials circle remains the fallback. Start local storage before testing uploads.
+
+Employee job data (SCRUM-50) includes dated base-salary changes and fixed-shift assignments. Run `pnpm db:migrate` after pulling the shift-table migration, then restart the API. On a profile, use Add salary change or Assign shift; the assignment form also creates the first template when needed. Future changes remain scheduled, previous rows stay in history, and duplicate start dates are refused. Shift template editing/archival and roster generation remain in their own stories.
 
 ## Working conventions
 

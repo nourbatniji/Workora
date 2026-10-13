@@ -6,6 +6,7 @@ import { AppService } from './app.service.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { AuditModule } from './common/audit/audit.module.js';
+import { FilesModule } from './common/files/files.module.js';
 import { MailModule } from './common/mail/mail.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { JobTitlesModule } from './modules/job-titles/job-titles.module.js';
@@ -21,6 +22,7 @@ import { SessionGuard } from './auth/session.guard.js';
     PrismaModule,
     AuditModule,
     MailModule,
+    FilesModule,
     AuthModule,
     UsersModule,
     JobTitlesModule,

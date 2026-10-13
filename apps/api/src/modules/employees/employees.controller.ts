@@ -2,6 +2,10 @@
 // Employees reading their own profile come with EM-10 (GET /me/profile).
 import {
   Body,
+  Delete,
+  Header,
+  UploadedFile,
+  UseInterceptors,
   Controller,
   Get,
   HttpCode,
@@ -15,6 +19,20 @@ import {
   Req,
   StreamableFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FILE_UPLOAD_OPTIONS } from '../../common/files/file-upload.js';
+import { EmployeePhotoService } from './employee-photo.service.js';
+import { EmployeeSalaryService } from './employee-salary.service.js';
+import { ShiftsService } from '../shifts/shifts.service.js';
+import {
+  shiftAssignmentSchema,
+  type ShiftAssignmentInput,
+} from '@mdarj/shared';
+import {
+  salaryChangeSchema,
+  salaryHistoryQuerySchema,
+  type SalaryChangeInput,
+} from '@mdarj/shared';
 import type { Request } from 'express';
 import {
   createEmployeeSchema,
@@ -36,7 +54,12 @@ import { EmployeesService } from './employees.service.js';
 @Controller('employees')
 @Roles('admin')
 export class EmployeesController {
-  constructor(private readonly employees: EmployeesService) {}
+  constructor(
+    private readonly employees: EmployeesService,
+    private readonly photos: EmployeePhotoService,
+    private readonly salaries: EmployeeSalaryService,
+    private readonly shifts: ShiftsService,
+  ) {}
 
   // GET /employees: search, filters, sort and pages (EM-09, FR-EM-9)
   @Get()
@@ -79,6 +102,71 @@ export class EmployeesController {
     body: UpdateEmployeeInput,
   ) {
     return this.employees.update(req.auth!, id, body);
+  }
+
+  @Post(':id/photo')
+  @UseInterceptors(FileInterceptor('file', FILE_UPLOAD_OPTIONS))
+  uploadPhoto(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    return this.photos.upload(req.auth!, id, file);
+  }
+
+  @Get(':id/salary-history')
+  @Roles('admin', 'employee')
+  @Header('Cache-Control', 'private, no-store')
+  salaryHistory(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Query(new ZodValidationPipe(salaryHistoryQuerySchema))
+    query: { date?: string },
+  ) {
+    return this.salaries.history(req.auth!, id, query.date);
+  }
+
+  @Get(':id/shift-assignments')
+  shiftAssignments(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Query(new ZodValidationPipe(salaryHistoryQuerySchema))
+    query: { date?: string },
+  ) {
+    return this.shifts.assignments(id, query.date);
+  }
+  @Post(':id/shift-assignments')
+  assignShift(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(shiftAssignmentSchema))
+    body: ShiftAssignmentInput,
+  ) {
+    return this.shifts.assign(req.auth!, id, body);
+  }
+
+  @Post(':id/salary-history')
+  addSalary(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(salaryChangeSchema)) body: SalaryChangeInput,
+  ) {
+    return this.salaries.add(req.auth!, id, body);
+  }
+
+  @Get(':id/photo')
+  @Roles('admin', 'employee')
+  @Header('Cache-Control', 'private, no-store')
+  photo(@Req() req: Request, @Param('id', new ParseUUIDPipe()) id: string) {
+    return this.photos.read(req.auth!, id);
+  }
+
+  @Delete(':id/photo')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removePhoto(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ) {
+    return this.photos.remove(req.auth!, id);
   }
 
   // POST /employees: create an employee; the system assigns the code (EM-01, FR-EM-1)

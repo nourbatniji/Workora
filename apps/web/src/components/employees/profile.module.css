@@ -86,3 +86,40 @@
     grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
   }
 }
+
+.photoControl {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  flex: 0 0 7rem;
+  max-width: 7rem;
+}
+.photo {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+.photoButton {
+  font-size: 0.75rem;
+  color: var(--accent-fg);
+  text-align: center;
+}
+.photoButton:disabled {
+  opacity: 0.5;
+}
+.photoButton:hover {
+  text-decoration: underline;
+}
+.photoHint {
+  font-size: 0.625rem;
+  color: var(--muted);
+  text-align: center;
+}
+.photoError {
+  font-size: 0.75rem;
+  color: var(--danger);
+  text-align: center;
+}

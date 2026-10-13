@@ -1,7 +1,14 @@
 import { ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { getFormatter, getNow, getTranslations } from 'next-intl/server';
-import type { EmployeeProfile } from '@mdarj/shared';
+import type {
+  EmployeeProfile,
+  SalaryHistory,
+  ShiftAssignments,
+  ShiftTemplate,
+} from '@mdarj/shared';
+import ShiftCard from '@/components/employees/shift-card';
+import SalaryCard from '@/components/employees/salary-card';
 import JobCard from '@/components/employees/job-card';
 import PersonalCard from '@/components/employees/personal-card';
 import ProfileHeader from '@/components/employees/profile-header';
@@ -34,6 +41,15 @@ export default async function EmployeePage({
   }
   const employee = result.data;
   const jobTitles = await serverGet<{ items: JobTitle[] }>('/job-titles');
+  const salary = await serverGet<SalaryHistory>(
+    `/employees/${employee.id}/salary-history`,
+  );
+  const templates = await serverGet<{ items: ShiftTemplate[] }>(
+    '/shift-templates',
+  );
+  const assignments = await serverGet<ShiftAssignments>(
+    `/employees/${employee.id}/shift-assignments`,
+  );
   const t = await getTranslations('Employees.profile');
   const format = await getFormatter();
   // Node and Safari can use different ICU punctuation. Hydrate with one server snapshot.
@@ -53,6 +69,21 @@ export default async function EmployeePage({
     terminationDate: dateText(employee.terminationDate, 'short'),
   };
   const referenceTime = (await getNow()).getTime();
+  const shiftDates = Object.fromEntries(
+    assignments.items.map((row) => [row.id, dateText(row.startDate, 'long')!]),
+  );
+  const salaryLabels = Object.fromEntries(
+    salary.items.map((row) => [
+      row.id,
+      {
+        amount: format.number(Number(row.baseSalary), {
+          style: 'currency',
+          currency: salary.currency,
+        }),
+        date: dateText(row.effectiveFrom, 'long')!,
+      },
+    ]),
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
@@ -75,15 +106,38 @@ export default async function EmployeePage({
       />
 
       <div className={styles.columns}>
-        <PersonalCard
-          employee={employee}
-          birthDateText={dateText(employee.birthDate, 'long')}
-        />
-        <JobCard
-          employee={employee}
-          jobTitles={jobTitles.items}
-          dates={profileDates}
-        />
+        <div>
+          <PersonalCard
+            employee={employee}
+            birthDateText={dateText(employee.birthDate, 'long')}
+          />
+        </div>
+        <div>
+          <JobCard
+            employee={employee}
+            jobTitles={jobTitles.items}
+            dates={profileDates}
+          />
+        </div>
+      </div>
+      <div className="grid items-start gap-4 md:grid-cols-2">
+        <div>
+          <SalaryCard
+            employeeId={employee.id}
+            hireDate={employee.hireDate}
+            history={salary}
+            labels={salaryLabels}
+          />
+        </div>
+        <div>
+          <ShiftCard
+            employeeId={employee.id}
+            hireDate={employee.hireDate}
+            templates={templates.items}
+            assignments={assignments}
+            dates={shiftDates}
+          />
+        </div>
       </div>
     </div>
   );

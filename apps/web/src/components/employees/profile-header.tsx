@@ -6,7 +6,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/card';
 import { Link } from '@/i18n/navigation';
 import AppAccessButton from './app-access-button';
-import { Avatar, useTenure } from './person-bits';
+import { useTenure } from './person-bits';
+import ProfilePhoto from './profile-photo';
 import styles from './profile.module.css';
 
 const STATUS_STYLE: Record<EmployeeProfile['status'], string> = {
@@ -45,7 +46,7 @@ export default function ProfileHeader({
     <Card>
       <div className={styles.header}>
         <div className={`${styles.identity} flex-1`}>
-          <Avatar name={name} code={employee.code} locale={locale} size="lg" />
+          <ProfilePhoto key={employee.id} employee={employee} />
 
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-xl font-semibold">{name}</h1>

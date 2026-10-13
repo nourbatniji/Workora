@@ -329,6 +329,60 @@
       "yes": "Yes",
       "no": "No",
       "notGiven": "Not given"
+    },
+    "photo": {
+      "alt": "Photo of {name}",
+      "choose": "Choose profile photo",
+      "add": "Add photo",
+      "change": "Change photo",
+      "remove": "Remove photo",
+      "hint": "JPG or PNG · max 10 MB",
+      "saving": "Saving…",
+      "saved": "Saved.",
+      "retry": "Retry"
+    },
+    "salary": {
+      "title": "Base salary",
+      "hint": "Salary changes keep their effective dates.",
+      "add": "Add salary change",
+      "amount": "Monthly base salary",
+      "effectiveFrom": "Effective from",
+      "kept": "This adds a new salary record and keeps the previous amounts.",
+      "current": "Current salary",
+      "from": "Effective from {date}",
+      "history": "Salary history",
+      "scheduled": "Scheduled",
+      "previous": "Previous"
+    },
+    "shifts": {
+      "title": "Assigned shift",
+      "hint": "Assign a fixed shift from a start date.",
+      "assign": "Assign shift",
+      "name": "Template name",
+      "startTime": "Start time",
+      "endTime": "End time",
+      "crossesMidnight": "Ends the next day",
+      "breakMinutes": "Unpaid break (minutes)",
+      "lateGraceMinutes": "Late grace (minutes)",
+      "earlyLeaveGraceMinutes": "Early-leave grace (minutes)",
+      "workingDays": "Working days",
+      "template": "Shift template",
+      "choose": "Choose a shift",
+      "empty": "Create your first shift template below.",
+      "create": "Create shift template",
+      "startDate": "Starts on",
+      "from": "Assigned from {date}",
+      "history": "Assignment history",
+      "scheduled": "Scheduled",
+      "days": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      }
     }
   },
   "AuditLog": {
@@ -364,7 +418,9 @@
       "leave_request": "Leave request",
       "leave_balance": "Leave balance",
       "exception": "Exception",
-      "payroll_run": "Payroll run"
+      "payroll_run": "Payroll run",
+      "shift_template": "Shift template",
+      "shift_assignment": "Shift assignment"
     },
     "actions": {
       "create": "Created",
@@ -416,8 +472,19 @@
       "checkInWindowMinutes": "Check-in window (minutes)",
       "checkOutWindowMinutes": "Check-out window (minutes)",
       "ipAllowList": "Office IPs",
-      "baseSalary": "Base salary"
-    }
+      "baseSalary": "Base salary",
+      "photo": "Profile photo",
+      "startTime": "Start time",
+      "endTime": "End time",
+      "crossesMidnight": "Ends the next day",
+      "breakMinutes": "Unpaid break (minutes)",
+      "lateGraceMinutes": "Late grace (minutes)",
+      "earlyLeaveGraceMinutes": "Early-leave grace (minutes)",
+      "workingDays": "Working days",
+      "startDate": "Starts on",
+      "shiftTemplateId": "Shift template"
+    },
+    "photoPresent": "Photo set"
   },
   "Settings": {
     "title": "Settings",
@@ -862,7 +929,7 @@
     "sending": "Sending…"
   },
   "Errors": {
-    "hireDateInUse": "The hire date cannot change after status changes, salary records, documents or contracts have been added.",
+    "hireDateInUse": "The hire date cannot change after status changes, salary records, documents or contracts have been added. Shift assignments also prevent hire-date changes.",
     "required": "This field is required",
     "tooLong": "This is too long",
     "emailInvalid": "Enter a valid email address",
@@ -925,6 +992,20 @@
     "genderInvalid": "Choose male or female.",
     "employeeHasLogin": "This employee already has app access.",
     "employeeTerminated": "This employee has left, so they can't get app access.",
-    "disabilityNeedsLawMode": "Turn on Labor Law mode in Settings to use this field."
+    "disabilityNeedsLawMode": "Turn on Labor Law mode in Settings to use this field.",
+    "fileRequired": "Choose a non-empty file.",
+    "fileTypeInvalid": "Upload a PDF, JPG or PNG file.",
+    "fileTooLarge": "The file must be no larger than 10 MB.",
+    "photoInvalid": "Choose a valid JPG or PNG image (up to 25 million pixels).",
+    "photoLoadFailed": "Could not load the photo.",
+    "salaryInvalid": "Enter a non-negative amount with at most two decimal places.",
+    "salaryDateTaken": "A salary already starts on this date. Choose a different effective date.",
+    "timeInvalid": "Enter a valid time.",
+    "workingDaysRequired": "Choose at least one working day.",
+    "shiftTimesInvalid": "End time must follow start time. For overnight shifts, select ends the next day.",
+    "shiftBreakInvalid": "The unpaid break must be shorter than the shift.",
+    "shiftGraceInvalid": "Grace minutes must be shorter than the shift.",
+    "shiftNameTaken": "A shift template with this name already exists.",
+    "shiftDateTaken": "An assignment already starts on this date. Choose a different start date."
   }
 }

@@ -104,6 +104,7 @@ export const EMPLOYEE_CODE_PATTERN = /^[A-Za-z0-9-]{1,40}$/; // a code or a uuid
 /** One employee as GET /employees/:id returns it (Admin view) */
 export interface EmployeeProfile {
   id: string;
+  hasPhoto: boolean;
   code: string;
   nameAr: string;
   nameEn: string;

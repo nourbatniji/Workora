@@ -33,8 +33,9 @@ export default function ChangeList({
   }
 
   /** A value as short text: lists joined, yes/no, nested rules as compact JSON */
-  const show = (value: unknown): string => {
+  const show = (value: unknown, key?: string): string => {
     if (value === undefined || value === null || value === '') return t('none');
+    if (key === 'photo') return t('photoPresent');
     if (typeof value === 'boolean') return value ? t('yes') : t('no');
     if (Array.isArray(value))
       return value.length === 0 ? t('none') : value.map(String).join(', ');
@@ -57,15 +58,15 @@ export default function ChangeList({
         <li key={key} className="break-words">
           <span className="text-muted">{label(key)}: </span>
           {created ? (
-            <bdi>{show(now[key])}</bdi>
+            <bdi>{show(now[key], key)}</bdi>
           ) : deleted ? (
             <del className="text-muted">
-              <bdi>{show(old[key])}</bdi>
+              <bdi>{show(old[key], key)}</bdi>
             </del>
           ) : (
             <>
               <del className="text-muted">
-                <bdi>{show(old[key])}</bdi>
+                <bdi>{show(old[key], key)}</bdi>
               </del>
               <span
                 className="mx-1 inline-block text-muted rtl:rotate-180"
@@ -73,7 +74,7 @@ export default function ChangeList({
               >
                 →
               </span>
-              <bdi className="font-medium">{show(now[key])}</bdi>
+              <bdi className="font-medium">{show(now[key], key)}</bdi>
             </>
           )}
         </li>

@@ -57,15 +57,23 @@ export default function JobCard({
   const error = (key: string) => (errors[key] ? tErr(errors[key]) : undefined);
   async function save(event: React.FormEvent) {
     event.preventDefault();
-    const check = updateEmployeeJobSchema.safeParse(form);
+    const fields = new FormData(event.currentTarget as HTMLFormElement);
+    const submitted = {
+      ...form,
+      hireDate: String(fields.get('hireDate') ?? ''),
+      probationEnd: String(fields.get('probationEnd') ?? ''),
+      trainingEnd: String(fields.get('trainingEnd') ?? ''),
+    };
+    setForm(submitted);
+    const check = updateEmployeeJobSchema.safeParse(submitted);
     if (!check.success) {
       setErrors(errorsByField(check.error.issues));
       return;
     }
     const validation: Record<string, string> = {};
-    if (form.probationEnd && form.probationEnd < form.hireDate)
+    if (submitted.probationEnd && submitted.probationEnd < submitted.hireDate)
       validation.probationEnd = 'dateBeforeHire';
-    if (form.trainingEnd && form.trainingEnd < form.hireDate)
+    if (submitted.trainingEnd && submitted.trainingEnd < submitted.hireDate)
       validation.trainingEnd = 'dateBeforeHire';
     if (Object.keys(validation).length) {
       setErrors(validation);
@@ -77,7 +85,7 @@ export default function JobCard({
       const { status, data } = await patchJson<{
         message?: string;
         errors?: Record<string, string>;
-      }>(`/employees/${employee.id}`, form);
+      }>(`/employees/${employee.id}`, submitted);
       if (status === 200 || data?.message === 'nothingToChange') {
         setEditing(false);
         setSaved(status === 200);
@@ -146,6 +154,7 @@ export default function JobCard({
             >
               <input
                 type="date"
+                name={key}
                 value={form[key as 'hireDate' | 'probationEnd' | 'trainingEnd']}
                 min={key === 'hireDate' ? undefined : form.hireDate}
                 onChange={(event) =>

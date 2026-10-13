@@ -74,6 +74,7 @@ function toApi(row: EmployeeRow) {
 
 /** One employee's full record, for the profile page (Admin view: includes the disability field) */
 const PROFILE = {
+  photo: true,
   ...PUBLIC_EMPLOYEE,
   terminationDate: true,
   hasDisability: true,
@@ -206,7 +207,7 @@ export class EmployeesService {
       }),
     ]);
     if (!row) throw new NotFoundException({ message: 'notFound' });
-    const { user, ...employee } = row;
+    const { user, photo, ...employee } = row;
     return {
       ...toApi(employee),
       hireDate: toDay(employee.hireDate)!,
@@ -214,6 +215,7 @@ export class EmployeesService {
       hasDisability: employee.hasDisability,
       lawMode: company.lawMode,
       login: user,
+      hasPhoto: photo !== null,
     };
   }
 
@@ -228,6 +230,11 @@ export class EmployeesService {
   ): Promise<EmployeeProfile> {
     try {
       await this.tenantPrisma.db.$transaction(async (tx) => {
+        const locked = await tx.employee.updateMany({
+          where: { id },
+          data: { updatedAt: new Date() },
+        });
+        if (!locked.count) throw new NotFoundException({ message: 'notFound' });
         const current = await tx.employee.findUnique({
           where: { id },
           select: {
@@ -337,7 +344,7 @@ export class EmployeesService {
         }
 
         if (after.hireDate) {
-          const [statusChanges, salaries, documents, contracts] =
+          const [statusChanges, salaries, documents, contracts, assignments] =
             await Promise.all([
               tx.employeeStatusHistory.count({
                 where: { employeeId: id, fromStatus: { not: null } },
@@ -345,8 +352,15 @@ export class EmployeesService {
               tx.salaryHistory.count({ where: { employeeId: id } }),
               tx.document.count({ where: { employeeId: id } }),
               tx.contract.count({ where: { employeeId: id } }),
+              tx.shiftAssignment.count({ where: { employeeId: id } }),
             ]);
-          if (statusChanges || salaries || documents || contracts) {
+          if (
+            statusChanges ||
+            salaries ||
+            documents ||
+            contracts ||
+            assignments
+          ) {
             throw new BadRequestException({
               message: 'validationFailed',
               errors: { hireDate: 'hireDateInUse' },

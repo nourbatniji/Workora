@@ -17,7 +17,9 @@
     "test:e2e": "pnpm --filter api test:e2e",
     "lint": "pnpm -r lint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "storage:up": "docker compose up -d --wait storage && pnpm storage:init",
+    "storage:init": "pnpm --filter api exec tsx tools/init-storage.ts"
   },
   "keywords": [],
   "author": "",

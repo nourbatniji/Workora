@@ -105,6 +105,9 @@ export async function setupRoleBrowsers(
       ]);
       // Status history points at the employee and the user who made the change
       await prisma.employeeStatusHistory.deleteMany({ where: { companyId } });
+      await prisma.shiftAssignment.deleteMany({ where: { companyId } });
+      await prisma.shiftTemplate.deleteMany({ where: { companyId } });
+      await prisma.salaryHistory.deleteMany({ where: { companyId } });
       await prisma.session.deleteMany({ where: { companyId } });
       // Settings versions point at the user who saved them: delete them before the users
       await prisma.companySettingsVersion.deleteMany({ where: { companyId } });

@@ -11,6 +11,8 @@ export const COMPANY_TABLES: string[] = [
   'JobTitle',
   'Employee',
   'SalaryHistory',
+  'ShiftTemplate',
+  'ShiftAssignment',
   'EmployeeStatusHistory',
   'Document',
   'Contract',

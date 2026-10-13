@@ -190,3 +190,11 @@ Before Oct 7 the 404 for an unknown route and crashes used Nest's own body (`{ s
 - [ ] Tests: happy path, invalid input (400), not logged in (401), wrong role (403), another company's record (404)
 - [ ] Changes to an employee record: audit row written in the same transaction, with `employeeId` taken from the record; tests check the audit row names the right employee (D-75)
 - [ ] Added to the endpoint list in §12
+
+## 14. Private file storage (D-80, SCRUM-25)
+
+Feature multipart routes use FileInterceptor('file', FILE_UPLOAD_OPTIONS). FilesService checks content signatures and MIME (PDF/JPEG/PNG), non-empty content and the real buffer size (maximum 10 MiB). It takes company context from the session and generates the object key; never accept an object key as the authority for read access.
+
+The feature loads its employee/document/contract through TenantPrismaService, checks role and own-record access, then signs the stored key. FilesService also refuses a foreign or malformed key. No generic file-key HTTP route exists. Save only the returned key in the database, never the signed URL. Downloads expire after five minutes and are not publicly readable. Signed links are bearer links: anyone holding one can use it until expiry; do not log them.
+
+Object writes cannot participate in a database transaction. On metadata/audit save failure, remove the newly uploaded object; on replacement, save the new key with its audit first, then remove the old object. Authorization belongs in the feature service before any storage operation.

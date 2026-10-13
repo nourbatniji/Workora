@@ -8,6 +8,8 @@ export const AUDIT_ENTITY_TYPES = [
   'employee',
   'company_settings',
   'salary',
+  'shift_template',
+  'shift_assignment',
   'employee_status',
   'contract',
   'document',
