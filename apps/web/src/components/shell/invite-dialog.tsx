@@ -32,6 +32,12 @@ export default function InviteDialog() {
 
 type Role = (typeof USER_ROLES)[number];
 
+/**
+ * Roles this dialog invites (D-77): Admins and Interviewers. Employees get app access from the
+ * Employees list, so their login is connected to their employee record.
+ */
+const INVITE_ROLES = USER_ROLES.filter((r) => r !== 'employee');
+
 /** The answer of POST /users, or an error ({ message, errors? }) */
 type CreateAnswer = {
   user?: { name: string | null; email: string | null };
@@ -54,7 +60,7 @@ function InviteForm({ onDone }: { onDone: () => void }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<Role>('employee');
+  const [role, setRole] = useState<Role>('interviewer');
   // The invite opens in this language; it starts as the page's language (D-66)
   const [language, setLanguage] = useState(locale === 'ar' ? 'ar' : 'en');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -103,7 +109,7 @@ function InviteForm({ onDone }: { onDone: () => void }) {
     setName('');
     setPhone('');
     setEmail('');
-    setRole('employee');
+    setRole('interviewer');
     setErrors({});
     setCreated(null);
   }
@@ -172,6 +178,7 @@ function InviteForm({ onDone }: { onDone: () => void }) {
           className={`${inputClass(!!errors.email)} rtl:text-end`}
         />
       </Field>
+      <p className="-mb-1 text-xs text-muted">{t('employeesHint')}</p>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t('role')} error={message(errors.role)}>
           <select
@@ -179,7 +186,7 @@ function InviteForm({ onDone }: { onDone: () => void }) {
             onChange={(e) => setRole(e.target.value as Role)}
             className={inputClass(!!errors.role)}
           >
-            {USER_ROLES.map((r) => (
+            {INVITE_ROLES.map((r) => (
               <option key={r} value={r}>
                 {tRoles(r)}
               </option>

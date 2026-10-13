@@ -62,14 +62,18 @@ Legend: ✅ built · ⬜ planned
 
 | | Method | Path | Purpose | Access | SRS | Story |
 | --- | --- | --- | --- | --- | --- | --- |
-| ⬜ | GET | `/employees` | List with search and filters (status, employment type, job title, shift) | Admin | FR-EM-9 | EM-09 |
-| ⬜ | GET | `/employees/export` | Excel of the filtered list | Admin | FR-EM-9 | EM-09 |
-| ⬜ | POST | `/employees` | Create an employee; the system assigns the code | Admin | FR-EM-1, FR-EM-2, FR-EM-3 | EM-01, EM-02, EM-03 |
-| ⬜ | GET | `/employees/:id` | Profile (personal and job data); disability field Admin-only | Admin · Employee own | FR-EM-8, FR-EM-10, NFR-3, D-04 | EM-08, EM-10 |
-| ⬜ | PATCH | `/employees/:id` | Edit personal or job data | Admin | FR-EM-2, FR-EM-3 | EM-02, EM-03 |
+| ✅ | GET | `/employees` | List with search and filters (status, employment type, job title, shift) | Admin | FR-EM-9 | EM-09 |
+| ✅ | GET | `/employees/export` | Excel of the filtered list | Admin | FR-EM-9 | EM-09 |
+| ✅ | POST | `/employees` | Create an employee; the system assigns the code | Admin | FR-EM-1, FR-EM-2, FR-EM-3 | EM-01, EM-02, EM-03 |
+| ✅ | POST | `/employees/:id/access` | Give the employee app access: Employee login connected to the record, 7-day invite link (D-77) | Admin | FR-UA-1, FR-UA-2 | UA-06 (D-77) |
+| ✅ | GET | `/employees/:id` | Profile (personal and job data); disability field Admin-only | Admin · Employee own | FR-EM-8, FR-EM-10, NFR-3, D-04 | EM-08, EM-10 |
+| ✅ | PATCH | `/employees/:id` | Edit personal or job data | Admin | FR-EM-2, FR-EM-3 | EM-02, EM-03 |
+| ✅ | POST | `/employees/:id/photo` | Upload/replace profile photo (JPEG/PNG, 10 MiB) | Admin | FR-EM-2, NFR-3 | EM-02 |
+| ✅ | GET | `/employees/:id/photo` | Short-lived signed image link | Admin · Employee own | FR-EM-2, NFR-3 | EM-02 |
+| ✅ | DELETE | `/employees/:id/photo` | Remove profile photo | Admin | FR-EM-2, NFR-3 | EM-02 |
 | ⬜ | DELETE | `/employees/:id` | Delete an employee created by mistake (refused when they have records) | Admin | FR-EM-11 | EM-07 |
-| ⬜ | GET | `/employees/:id/salary-history` | Salary history | Admin · Employee own | FR-EM-4, NFR-3 | EM-04 |
-| ⬜ | POST | `/employees/:id/salary-history` | Add a salary from an effective date (audited) | Admin | FR-EM-4 | EM-04 |
+| ✅ | GET | `/employees/:id/salary-history` | Salary history | Admin · Employee own | FR-EM-4, NFR-3 | EM-04 |
+| ✅ | POST | `/employees/:id/salary-history` | Add a salary from an effective date (audited) | Admin | FR-EM-4 | EM-04 |
 | ⬜ | GET | `/employees/:id/pay-items` | Recurring additions and deductions | Admin | FR-EM-5 | EM-05 |
 | ⬜ | POST | `/employees/:id/pay-items` | Add a recurring pay item | Admin | FR-EM-5 | EM-05 |
 | ⬜ | PATCH | `/employees/:id/pay-items/:itemId` | End or change a recurring pay item | Admin | FR-EM-5 | EM-05 |
@@ -96,12 +100,12 @@ Legend: ✅ built · ⬜ planned
 
 | | Method | Path | Purpose | Access | SRS | Story |
 | --- | --- | --- | --- | --- | --- | --- |
-| ⬜ | GET | `/shift-templates` | List shift templates | Admin | FR-SH-1 | SH-01 |
-| ⬜ | POST | `/shift-templates` | Create a template (times, crosses midnight, break, grace, days) | Admin | FR-SH-1 | SH-01 |
+| ✅ | GET | `/shift-templates` | List shift templates | Admin | FR-SH-1 | SH-01 |
+| ✅ | POST | `/shift-templates` | Create a template (times, crosses midnight, break, grace, days) | Admin | FR-SH-1 | SH-01 |
 | ⬜ | PATCH | `/shift-templates/:id` | Edit a template (only days not started change) | Admin | FR-SH-1, FR-SH-4 | SH-01 |
 | ⬜ | POST | `/shift-templates/:id/archive` | Archive a template | Admin | FR-SH-1 | SH-01 |
-| ⬜ | GET | `/employees/:id/shift-assignments` | An employee's shift assignments | Admin | FR-SH-2 | SH-02 |
-| ⬜ | POST | `/employees/:id/shift-assignments` | Assign a template from a start date | Admin | FR-SH-2 | SH-02 |
+| ✅ | GET | `/employees/:id/shift-assignments` | An employee's shift assignments | Admin | FR-SH-2 | SH-02 |
+| ✅ | POST | `/employees/:id/shift-assignments` | Assign a template from a start date | Admin | FR-SH-2 | SH-02 |
 | ⬜ | GET | `/roster?from=&to=` | Weekly grid: employees by days | Admin | FR-SH-7, D-51 | SH-07 |
 | ⬜ | PATCH | `/roster/:entryId` | Override one day (other shift or day off, with reason) | Admin | FR-SH-6 | SH-06 |
 | ⬜ | GET | `/me/shifts?from=&to=` | Own upcoming shifts | Employee own | FR-SH-7, D-51 | SH-07 |

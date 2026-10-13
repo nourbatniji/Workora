@@ -123,7 +123,7 @@ All jobs run per company in the company time zone and are safe to re-run (NFR-5,
 - Login by email or phone, sessions with 12-hour inactivity expiry, Argon2id, no limit on failed attempts (FR-UA-3, FR-UA-8, NFR-2, D-24, D-46).
 - Tenancy guard and Prisma extension; a reusable cross-tenant test helper every later module uses (NFR-1, D-25).
 - Audit writer that stores before and after values; no update or delete route for audit rows (NFR-8).
-- Files service: upload to S3, type and 10 MB checks, short-lived signed links (NFR-3).
+- Files service: private S3 bucket; server-generated company-prefixed keys, PDF/JPEG/PNG signature and MIME checks, maximum 10 MiB, five-minute signed links (NFR-3, D-80). Feature routes enforce role and own-record access before signing.
 - Next.js shell with `ar` and `en` locales, RTL switch, per-user language, 360 px layout (NFR-6, NFR-7).
 
 **Exit:** a company can sign up and log in; a second company cannot read the first company's data in the isolation test; deactivating a user account leaves the employee record unchanged.

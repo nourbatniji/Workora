@@ -17,5 +17,26 @@ services:
       - '1025:1025'
       - '8025:8025'
 
+  # Local private S3 storage (D-36, D-80). Bind to loopback; these are development credentials.
+  storage:
+    build: ./docker/minio
+    image: mdarj-minio:2025-10-15
+    pull_policy: build
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: mdarj-local
+      MINIO_ROOT_PASSWORD: mdarj-local-storage-only
+    ports:
+      - '127.0.0.1:9000:9000'
+      - '127.0.0.1:9001:9001'
+    volumes:
+      - storage-data:/data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
 volumes:
   db-data:
+  storage-data:

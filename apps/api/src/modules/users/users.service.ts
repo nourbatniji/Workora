@@ -81,7 +81,12 @@ export class UsersService {
    * POST /users: creates an Invited user and a 7-day link.
    * The link is returned once, here, so the Admin can copy it (FR-UA-2); it is never shown again (D-65).
    */
-  async create(auth: AuthContext, input: CreateUserInput) {
+  async create(
+    auth: AuthContext,
+    input: CreateUserInput,
+    /** Set by "Give app access" on an employee (D-77): the login belongs to this employee */
+    employeeId?: string,
+  ) {
     const db = this.tenantPrisma.db;
 
     // 1. Email and phone are unique in the whole system (FR-UA-3)
@@ -111,6 +116,7 @@ export class UsersService {
             role: input.role,
             status: 'invited',
             language,
+            employeeId,
             inviteToken: hashInviteToken(token),
             inviteExpiresAt: expiresAt,
           },
@@ -121,6 +127,7 @@ export class UsersService {
           entityId: created.id,
           action: 'create',
           after: created,
+          employeeId, // the audit log can show it under the employee too (D-75)
         });
         return created;
       });

@@ -20,6 +20,7 @@ export type AuditDb = Pick<TenantPrismaClient, 'auditLog'>;
  */
 export const EMPLOYEE_AUDIT_ENTITIES = [
   'salary',
+  'shift_assignment',
   'employee_status',
   'contract',
   'document',

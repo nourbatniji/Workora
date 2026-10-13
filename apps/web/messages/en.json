@@ -114,7 +114,8 @@
     "copy": "Copy link",
     "copied": "Copied",
     "another": "Invite another",
-    "done": "Done"
+    "done": "Done",
+    "employeesHint": "Employees get app access from the Employees list, so their login is connected to their record."
   },
   "Users": {
     "title": "Users",
@@ -158,6 +159,232 @@
     "switchOn": "Switch login back on",
     "switchOnHint": "They can log in again. Someone who never set a password goes back to Invited and needs a new link."
   },
+  "Employees": {
+    "title": "Employees",
+    "hint": "Everyone who works at {company}. Search, filter, and export what you see.",
+    "add": "Add employee",
+    "export": "Export to Excel",
+    "created": "{code} was added.",
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Name, code, phone or national ID",
+      "status": "Status",
+      "working": "Working (Active and Suspended)",
+      "all": "All, including those who left",
+      "type": "Employment type",
+      "allTypes": "All types",
+      "jobTitle": "Job title",
+      "allTitles": "All job titles",
+      "sort": "Sort by",
+      "apply": "Apply",
+      "clear": "Clear"
+    },
+    "sorts": {
+      "code": "Code",
+      "nameEn": "Name (English)",
+      "nameAr": "Name (Arabic)",
+      "-hireDate": "Newest hire first",
+      "hireDate": "Oldest hire first"
+    },
+    "columns": {
+      "code": "Code",
+      "name": "Name",
+      "jobTitle": "Job title",
+      "type": "Type",
+      "status": "Status",
+      "hireDate": "Hire date",
+      "phone": "Phone"
+    },
+    "types": {
+      "full_time": "Full time",
+      "part_time": "Part time",
+      "trainee": "Trainee"
+    },
+    "status": {
+      "active": "Active",
+      "suspended": "Suspended",
+      "terminated": "Left"
+    },
+    "genders": {
+      "male": "Male",
+      "female": "Female"
+    },
+    "empty": "No employees yet. Add your first one to get started.",
+    "emptyFiltered": "No one matches these filters.",
+    "badFilters": "These filters don't work. Clear them and try again.",
+    "loadFailed": "The employee list couldn't be loaded. Try again in a moment.",
+    "none": "—",
+    "pagination": "Pages",
+    "pageOf": "Page {page} of {pages}",
+    "previous": "Previous",
+    "next": "Next",
+    "form": {
+      "title": "Add employee",
+      "hint": "The system gives the new employee a code, like EMP-0001. Fields marked * are required.",
+      "back": "Back to employees",
+      "job": "Job",
+      "personal": "Personal",
+      "contact": "Contact",
+      "nameAr": "Full name in Arabic",
+      "nameEn": "Full name in English",
+      "employmentType": "Employment type",
+      "hireDate": "Hire date",
+      "jobTitle": "Job title",
+      "noJobTitle": "No job title",
+      "noJobTitlesHint": "Add job titles in Settings to pick one here.",
+      "probationEnd": "Probation ends",
+      "trainingEnd": "Training ends",
+      "nationalId": "National ID",
+      "nationalIdHint": "14 digits",
+      "birthDate": "Date of birth",
+      "gender": "Gender",
+      "chooseGender": "Not given",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "emergencyName": "Emergency contact name",
+      "emergencyPhone": "Emergency contact phone",
+      "optional": "optional",
+      "save": "Add employee",
+      "saving": "Adding…",
+      "cancel": "Cancel",
+      "settingsLink": "Open Settings"
+    },
+    "tabs": {
+      "working": "Working",
+      "active": "Active",
+      "suspended": "Suspended",
+      "terminated": "Left",
+      "all": "All"
+    },
+    "resultCount": "{count, plural, =0 {No one} one {# person} other {# people}}",
+    "chips": {
+      "remove": "Remove filter: {name}",
+      "clearAll": "Clear all",
+      "search": "“{q}”"
+    },
+    "tenure": {
+      "years": "{years} yr {months} mo",
+      "months": "{months} mo",
+      "new": "New this month",
+      "starts": "Starts soon"
+    },
+    "since": "Since {date}",
+    "access": {
+      "column": "App access",
+      "give": "Give app access",
+      "invited": "Invited",
+      "active": "Has access",
+      "off": "Login off",
+      "none": "No access",
+      "title": "Give {name} app access",
+      "description": "They get a link to set a password. Their login is connected to this employee, so they see only their own data.",
+      "email": "Email",
+      "phone": "Phone",
+      "language": "Language of the invite",
+      "optional": "optional",
+      "needOne": "An email or a phone is needed to log in.",
+      "submit": "Create invite link",
+      "sending": "Creating…",
+      "cancel": "Cancel",
+      "done": "Done"
+    },
+    "profile": {
+      "back": "All employees",
+      "history": "Change history",
+      "since": "With us since {date} · {tenure}",
+      "personal": "Personal data",
+      "personalHint": "Names, ID and how to reach them.",
+      "job": "Job",
+      "jobHint": "Employment details and key dates.",
+      "glance": "At a glance",
+      "edit": "Edit",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "saved": "Saved.",
+      "fields": {
+        "nameAr": "Name in Arabic",
+        "nameEn": "Name in English",
+        "nationalId": "National ID",
+        "birthDate": "Date of birth",
+        "gender": "Gender",
+        "phone": "Phone",
+        "email": "Email",
+        "address": "Address",
+        "emergency": "Emergency contact",
+        "emergencyName": "Emergency contact name",
+        "emergencyPhone": "Emergency contact phone",
+        "hasDisability": "Has a disability",
+        "disabilityHint": "Shown because the company follows the Labor Law. Only Admins see it.",
+        "jobTitle": "Job title",
+        "employmentType": "Employment type",
+        "hireDate": "Hire date",
+        "probationEnd": "Probation ends",
+        "trainingEnd": "Training ends",
+        "status": "Status",
+        "terminationDate": "Left on",
+        "appAccess": "App access"
+      },
+      "yes": "Yes",
+      "no": "No",
+      "notGiven": "Not given"
+    },
+    "photo": {
+      "alt": "Photo of {name}",
+      "choose": "Choose profile photo",
+      "add": "Add photo",
+      "change": "Change photo",
+      "remove": "Remove photo",
+      "hint": "JPG or PNG · max 10 MB",
+      "saving": "Saving…",
+      "saved": "Saved.",
+      "retry": "Retry"
+    },
+    "salary": {
+      "title": "Base salary",
+      "hint": "Salary changes keep their effective dates.",
+      "add": "Add salary change",
+      "amount": "Monthly base salary",
+      "effectiveFrom": "Effective from",
+      "kept": "This adds a new salary record and keeps the previous amounts.",
+      "current": "Current salary",
+      "from": "Effective from {date}",
+      "history": "Salary history",
+      "scheduled": "Scheduled",
+      "previous": "Previous"
+    },
+    "shifts": {
+      "title": "Assigned shift",
+      "hint": "Assign a fixed shift from a start date.",
+      "assign": "Assign shift",
+      "name": "Template name",
+      "startTime": "Start time",
+      "endTime": "End time",
+      "crossesMidnight": "Ends the next day",
+      "breakMinutes": "Unpaid break (minutes)",
+      "lateGraceMinutes": "Late grace (minutes)",
+      "earlyLeaveGraceMinutes": "Early-leave grace (minutes)",
+      "workingDays": "Working days",
+      "template": "Shift template",
+      "choose": "Choose a shift",
+      "empty": "Create your first shift template below.",
+      "create": "Create shift template",
+      "startDate": "Starts on",
+      "from": "Assigned from {date}",
+      "history": "Assignment history",
+      "scheduled": "Scheduled",
+      "days": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      }
+    }
+  },
   "AuditLog": {
     "title": "Audit log",
     "hint": "Every important change in {company}: who made it, when, and what it was before and after. Nothing here can be edited or deleted.",
@@ -180,6 +407,7 @@
       "changes": "Changes"
     },
     "types": {
+      "employee": "Employee data",
       "company_settings": "Company settings",
       "salary": "Salary",
       "employee_status": "Employee status",
@@ -190,7 +418,9 @@
       "leave_request": "Leave request",
       "leave_balance": "Leave balance",
       "exception": "Exception",
-      "payroll_run": "Payroll run"
+      "payroll_run": "Payroll run",
+      "shift_template": "Shift template",
+      "shift_assignment": "Shift assignment"
     },
     "actions": {
       "create": "Created",
@@ -242,8 +472,19 @@
       "checkInWindowMinutes": "Check-in window (minutes)",
       "checkOutWindowMinutes": "Check-out window (minutes)",
       "ipAllowList": "Office IPs",
-      "baseSalary": "Base salary"
-    }
+      "baseSalary": "Base salary",
+      "photo": "Profile photo",
+      "startTime": "Start time",
+      "endTime": "End time",
+      "crossesMidnight": "Ends the next day",
+      "breakMinutes": "Unpaid break (minutes)",
+      "lateGraceMinutes": "Late grace (minutes)",
+      "earlyLeaveGraceMinutes": "Early-leave grace (minutes)",
+      "workingDays": "Working days",
+      "startDate": "Starts on",
+      "shiftTemplateId": "Shift template"
+    },
+    "photoPresent": "Photo set"
   },
   "Settings": {
     "title": "Settings",
@@ -688,6 +929,7 @@
     "sending": "Sending…"
   },
   "Errors": {
+    "hireDateInUse": "The hire date cannot change after status changes, salary records, documents or contracts have been added. Shift assignments also prevent hire-date changes.",
     "required": "This field is required",
     "tooLong": "This is too long",
     "emailInvalid": "Enter a valid email address",
@@ -740,6 +982,30 @@
     "lawModeInvalid": "Choose on or off",
     "ipInvalid": "Use an IP address or range, like 41.33.10.7 or 41.33.10.0/24",
     "tooManyIps": "Use 50 addresses at most",
-    "dateRangeInvalid": "\"To\" must be on or after \"From\"."
+    "dateRangeInvalid": "\"To\" must be on or after \"From\".",
+    "employeeLimitReached": "This company already has 50 active employees, the most for now. Terminate someone who has left before adding a new person.",
+    "nationalIdInvalid": "The national ID has 14 digits.",
+    "nationalIdTaken": "An employee with this national ID already exists.",
+    "dateBeforeHire": "This date can't be before the hire date.",
+    "trainingEndTraineesOnly": "Only trainees have a training end date.",
+    "employmentTypeInvalid": "Choose full-time, part-time or trainee.",
+    "genderInvalid": "Choose male or female.",
+    "employeeHasLogin": "This employee already has app access.",
+    "employeeTerminated": "This employee has left, so they can't get app access.",
+    "disabilityNeedsLawMode": "Turn on Labor Law mode in Settings to use this field.",
+    "fileRequired": "Choose a non-empty file.",
+    "fileTypeInvalid": "Upload a PDF, JPG or PNG file.",
+    "fileTooLarge": "The file must be no larger than 10 MB.",
+    "photoInvalid": "Choose a valid JPG or PNG image (up to 25 million pixels).",
+    "photoLoadFailed": "Could not load the photo.",
+    "salaryInvalid": "Enter a non-negative amount with at most two decimal places.",
+    "salaryDateTaken": "A salary already starts on this date. Choose a different effective date.",
+    "timeInvalid": "Enter a valid time.",
+    "workingDaysRequired": "Choose at least one working day.",
+    "shiftTimesInvalid": "End time must follow start time. For overnight shifts, select ends the next day.",
+    "shiftBreakInvalid": "The unpaid break must be shorter than the shift.",
+    "shiftGraceInvalid": "Grace minutes must be shorter than the shift.",
+    "shiftNameTaken": "A shift template with this name already exists.",
+    "shiftDateTaken": "An assignment already starts on this date. Choose a different start date."
   }
 }

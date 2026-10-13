@@ -6,11 +6,13 @@ import { AppService } from './app.service.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { AuditModule } from './common/audit/audit.module.js';
+import { FilesModule } from './common/files/files.module.js';
 import { MailModule } from './common/mail/mail.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { JobTitlesModule } from './modules/job-titles/job-titles.module.js';
 import { CompanyModule } from './modules/company/company.module.js';
 import { AuditLogModule } from './modules/audit-log/audit-log.module.js';
+import { EmployeesModule } from './modules/employees/employees.module.js';
 import { RolesGuard } from './auth/roles.guard.js';
 import { SessionGuard } from './auth/session.guard.js';
 
@@ -20,11 +22,13 @@ import { SessionGuard } from './auth/session.guard.js';
     PrismaModule,
     AuditModule,
     MailModule,
+    FilesModule,
     AuthModule,
     UsersModule,
     JobTitlesModule,
     CompanyModule,
     AuditLogModule,
+    EmployeesModule,
   ],
   controllers: [AppController],
   providers: [

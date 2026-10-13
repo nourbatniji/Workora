@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import 'tailwindcss' source('../');
 
 /* dark: classes follow <html data-theme="dark">, not the OS setting */
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));

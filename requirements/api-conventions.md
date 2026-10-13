@@ -166,6 +166,9 @@ No Swagger / OpenAPI in the MVP. The contract is the shared zod schemas in `pack
 | GET | `/company/setup` | Admin | 200 `{ steps: [{ key, status: 'todo' \| 'done' \| 'skipped' }], complete }`, steps in wizard order | 401, 403 | Yes (SCRUM-39) |
 | PATCH | `/company/setup` | Admin | 200 the same shape; `{ step, status }` marks one step; a done step never goes back to skipped | 400 `stepInvalid`, `statusInvalid`, 401, 403 | Yes (SCRUM-39) |
 | GET | `/audit-log?page=&pageSize=&employeeId=&type=&from=&to=` | Admin | 200 `{ items, total, page, pageSize }`, newest first; each item `{ id, createdAt, entityType, entityId, action, before, after, reason, user, employee, subjectUser }`; `type` takes a comma list; `from`/`to` are days in the company time zone, both included; no POST, PATCH or DELETE route | 400 `badRequest`, `dateInvalid`, `dateRangeInvalid`, 401, 403 | Yes (SCRUM-163, D-75) |
+| GET | `/employees?page=&pageSize=&q=&status=&employmentType=&jobTitleId=&sort=` | Admin | 200 `{ items, total, page, pageSize }`; each item `{ id, code, nameAr, nameEn, jobTitle, employmentType, status, hireDate, phone }`; `q` searches name (either language), code, phone and national ID; `status` and `employmentType` take comma lists; no `status` = Active and Suspended; `sort` one of `code`, `nameEn`, `nameAr`, `hireDate` (leading `-` = descending, code breaks ties), default `code` | 400 `badRequest`, 401, 403 | Yes (SCRUM-56) |
+| GET | `/employees/export?q=&status=&employmentType=&jobTitleId=&sort=&lang=` | Admin | 200 an `.xlsx` file (`attachment; filename="employees-YYYY-MM-DD.xlsx"`): the list's filters and sort, every matching row, no pages; columns code, both names, job title, employment type, status, hire date (date cell), phone; `lang=ar` gives Arabic titles and a right-to-left sheet | 400 `badRequest`, 401, 403 | Yes (SCRUM-56) |
+| POST | `/employees` | Admin | 201 the employee with its code (`EMP-0001`…, D-76), status `active`, dates as days; also writes the first status line and its audit row | 400 `validationFailed` (`nationalIdInvalid`, `dateBeforeHire`, `trainingEndTraineesOnly`…), 400 `invalidReference` (another company's job title), 401, 403, 409 `nationalIdTaken`, 409 `employeeLimitReached` | Yes (SCRUM-48) |
 | GET | `/job-titles` | Admin | 200 `{ items: [{ id, nameAr, nameEn, employeeCount }] }`, A→Z by English name (a short list, no paging) | 401, 403 | Yes (SCRUM-46) |
 | POST | `/job-titles` | Admin | 201 the title | 400 `validationFailed`, 401, 403, 409 `jobTitleExists` | Yes (SCRUM-46) |
 | PATCH | `/job-titles/:id` | Admin | 200 the renamed title | 400, 401, 403, 404, 409 `jobTitleExists` | Yes (SCRUM-46) |
@@ -187,3 +190,11 @@ Before Oct 7 the 404 for an unknown route and crashes used Nest's own body (`{ s
 - [ ] Tests: happy path, invalid input (400), not logged in (401), wrong role (403), another company's record (404)
 - [ ] Changes to an employee record: audit row written in the same transaction, with `employeeId` taken from the record; tests check the audit row names the right employee (D-75)
 - [ ] Added to the endpoint list in §12
+
+## 14. Private file storage (D-80, SCRUM-25)
+
+Feature multipart routes use FileInterceptor('file', FILE_UPLOAD_OPTIONS). FilesService checks content signatures and MIME (PDF/JPEG/PNG), non-empty content and the real buffer size (maximum 10 MiB). It takes company context from the session and generates the object key; never accept an object key as the authority for read access.
+
+The feature loads its employee/document/contract through TenantPrismaService, checks role and own-record access, then signs the stored key. FilesService also refuses a foreign or malformed key. No generic file-key HTTP route exists. Save only the returned key in the database, never the signed URL. Downloads expire after five minutes and are not publicly readable. Signed links are bearer links: anyone holding one can use it until expiry; do not log them.
+
+Object writes cannot participate in a database transaction. On metadata/audit save failure, remove the newly uploaded object; on replacement, save the new key with its audit first, then remove the old object. Authorization belongs in the feature service before any storage operation.

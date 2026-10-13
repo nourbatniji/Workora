@@ -246,3 +246,46 @@ Noticed, not changed:
 - The employee drop-down filter waits for `GET /employees` (SCRUM-56); until then the employee filter is set from a row
 - Tests: `test/audit/audit-log.e2e-spec.ts`, `test/audit/audit.e2e-spec.ts`
 
+### Oct 12, 2026 (employees)
+
+- Branch `feat/employees`, scope "Employees": SCRUM-48, 49, 50, 54, 34, 51, 52, 53, 55, 56, 57, 153 (one task at a time)
+- SCRUM-48 EM-01 API (commit 9f8093f): `POST /employees` (Admin); code `EMP-0001`… from `companies.next_employee_number` (migration `20261012100414_employee_code_counter`), never reused; 50-employee limit (A-15); national ID 14 digits, unique per company; first status history line and its audit row (D-75); decision D-76 proposed; `test/employees/create-employee.e2e-spec.ts`
+- SCRUM-56 EM-09 API (commits 60921e7, 1bd098d): `GET /employees` (search, filters, sort, pages; default Active and Suspended) and `GET /employees/export` (`.xlsx` with `exceljs`, English or Arabic right to left); `test/employees/list-employees.e2e-spec.ts`. Built before SCRUM-49 so a created employee can be seen: the order changed on purpose
+- Fix (commit 4867b7e): switching language no longer resets dark mode (`data-theme` left to the head script and the toggle)
+- SCRUM-153 UI: `/employees` (search, status/type/job-title filters, sort, pages, Export to Excel, "Add employee", empty states, phone cards) and `/employees/new` (Job, Personal, Contact sections; shared schema checks first; API errors per field; back to the list with "EMP-000N was added"); menu item Employees is real; prototype saved views hidden until real
+- Open for the delete feature (FR-EM-11): `audit_log.employee_id` foreign key vs deleting an employee who has audit rows; leaning to dropping the key and checking in `AuditService`
+
+
+### Oct 12, 2026 (profile review and job editing)
+
+- Profile presentation: initials circle, aligned label/value fields, desktop columns and single-column phone layout; bidi isolation for phone and ID; persisted theme restored before paint after locale navigation. Verified in Safari in English/Arabic dark mode and at 360 px.
+- SCRUM-49 personal-data editing was implemented here; the remaining photo work is completed in the entry below.
+- SCRUM-50: Job card edits job title, type, hire/probation/training dates through the existing PATCH endpoint. Validates merged partial updates, same-company job titles, trainee-only training dates; switching away from trainee clears its end date. Audits only changed fields. Salary awaits EM-04; assigned shift awaits SH-02; the ticket remains open.
+- Hire-date correction updates the initial status effective date with its own audit row. Corrections are refused after subsequent status changes, salary, document or contract records exist, to preserve linked history. No migration.
+
+- Profile hydration: server-formatted date snapshots avoid Node/Safari Arabic punctuation differences; tenure uses the same request timestamp during SSR and hydration.
+
+### Oct 12, 2026 (private files foundation, SCRUM-25)
+
+- FND-06: global FilesService stores validated PDF/JPEG/PNG buffers (up to 10 MiB), returning only a generated company-prefixed key. Private S3 downloads use five-minute signed GET links and no-store caching. Foreign/malformed keys and missing company context are refused. Feature routes must enforce record/role/own access; no generic file-key route ships. D-80 records the design.
+- FILE_UPLOAD_OPTIONS bounds multipart size/count before buffering; validateFile independently checks actual buffer length, emptiness, signature and MIME. New translated error keys in Arabic/English.
+- Local MinIO built from official pinned source (community images/binary archives are unavailable), localhost-only ports, persistent Docker volume; pnpm storage:up and storage:init provision the private local bucket. S3 settings added to .env.example. CI builds the same storage server before integration tests. No database migration.
+- Feature photo/document/logo/contract routes and screens remain in their own stories; this foundation unblocks them. Tests cover multipart validation, real S3 round-trip, denied anonymous access, signature tampering, expiration and company isolation.
+- Validation: 24 unit tests and all 272 integration tests passed, including 7 real MinIO file tests. API/web typechecks, lint, both builds, formatting and raw-SQL checks passed. Local private bucket is running.
+
+### Oct 12, 2026 (employee photos, SCRUM-49)
+
+- EM-02 is implemented end to end: profile photo add/replace/remove in Arabic and English, JPEG/PNG up to 10 MiB. Photos are decoded with a pixel limit, oriented, cropped to at most 512 px, and converted to JPEG with metadata stripped (D-81).
+- Record-specific routes enforce Admin writes and Admin/employee-own reads after tenant lookup. The profile exposes only `hasPhoto`; private keys and signed links are not embedded in profile data. The browser refreshes expiring links and falls back to the initials circle with a retry control.
+- Metadata and photo audit changes commit together with compare-and-set protection. A failed metadata save removes the new object; successful replacement/removal cleans up the old object. Audit UI shows photo presence rather than storage keys.
+- Browser verified: synthetic photo upload, persistence after refresh, removal restoring initials, English/Arabic locale switches preserving dark mode, 360 px layout without horizontal overflow, and no browser errors. The synthetic test photo was removed afterward.
+- Validation: all 24 unit tests and 277 integration tests passed; typechecks, lint, API/web production builds, formatting and raw-SQL check passed. Changes are local; Jira remains In Progress until the PR and CI requirements in development-plan.md §6 are met.
+
+### Oct 13, 2026 (complete job fields, SCRUM-50)
+
+- Added profile base-salary and fixed-shift cards, alongside existing job-title/type/hire/probation/training editing. Salary changes and assignments keep their effective dates and history; future changes show as scheduled without replacing today's values. Duplicate dates are refused, and dates before hire are invalid. Training end is visible only for trainees and clears when switching away.
+- Salary GET allows Admin/employee-own and accepts `?date=YYYY-MM-DD` for past-date resolution. Writes are Admin-only and audited in the same transaction. Monetary inputs use bounded exact decimal strings (D-82).
+- Built the required shift dependency: Admin template list/create and assignment list/create, composite same-company foreign keys, bounded times/break/grace/weekdays, overnight validation, company tenancy registration, and translated audit types. Migration `20261013090109_employee_fixed_shifts` adds two tables and two audit enum values. Existing employee-row locking serializes hire-date edits, salary additions and shift assignments.
+- SH-01 template edit/archive and SH-04 roster generation/regeneration remain pending. SCRUM-51's salary storage/read foundation exists; payroll-period calculation and approved-payroll protection remain with payroll integration. These stories are not marked Done.
+- Browser verified using a disposable local company: salary save, scheduled raise retaining the current amount, shift creation/assignment, scheduled assignment history, training date save/clear, Arabic dark mode, 360 px without horizontal overflow, and no browser errors. Fixture removed. New forms submit the visible date values to prevent stale controlled-state values.
+- Validation: 28 unit tests and all 288 integration tests passed. Typechecks, lint and both production builds pass. SCRUM-50 implementation is ready for a PR; changes remain uncommitted and Jira stays In Progress pending CI.

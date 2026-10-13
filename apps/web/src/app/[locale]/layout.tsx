@@ -30,11 +30,13 @@ export default async function LocaleLayout({
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
 
   return (
-    // data-theme is set by the head script before paint, so React must not complain that it differs
+    // data-theme belongs to the head script and the theme toggle, never to React: if React rendered
+    // it, switching language (which re-renders <html> with the new lang and dir) would put it back
+    // to light. With no data-theme the page is light (globals.css :root), so nothing flashes.
+    // suppressHydrationWarning: the script adds data-theme before React loads
     <html
       lang={locale}
       dir={dir}
-      data-theme="light"
       suppressHydrationWarning
       className={`${dmSans.variable} ${plexArabic.variable} h-full antialiased`}
     >

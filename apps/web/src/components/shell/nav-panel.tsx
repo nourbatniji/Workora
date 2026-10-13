@@ -112,7 +112,7 @@ export default function NavPanel({ onNavigate }: { onNavigate?: () => void }) {
         </nav>
 
         {/* Saved views and the payroll card are Admin tools (requirements/permissions.md) */}
-        {role === 'admin' && (
+        {role === 'admin' && SAVED_VIEWS.length > 0 && (
           <>
             <p className="mt-6 mb-2 px-3 text-xs text-muted">
               {t('savedViews')}
