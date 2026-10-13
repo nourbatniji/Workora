@@ -107,6 +107,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** What one row of the list shows */
 const LIST_ROW = {
   id: true,
+  photo: true,
   code: true,
   nameAr: true,
   nameEn: true,
@@ -155,8 +156,9 @@ function whereFor(
 
 type ListRow = Prisma.EmployeeGetPayload<{ select: typeof LIST_ROW }>;
 
-const toListItem = ({ user, ...row }: ListRow) => ({
+const toListItem = ({ user, photo, ...row }: ListRow) => ({
   ...row,
+  hasPhoto: photo !== null,
   hireDate: toDay(row.hireDate)!,
   login: user,
 });

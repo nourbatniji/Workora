@@ -64,6 +64,18 @@ describe('Profile photo (SCRUM-49)', () => {
       .expect(200);
     expect(profile.body.hasPhoto).toBe(true);
     expect(profile.body).not.toHaveProperty('photo');
+    const list = await r.admin.get('/employees').expect(200);
+    const listed = list.body.items.find(
+      (row: { id: string }) => row.id === r.ownEmployeeId,
+    );
+    expect(listed.hasPhoto).toBe(true);
+    expect(listed).not.toHaveProperty('photo');
+    expect(listed).not.toHaveProperty('url');
+    expect(JSON.stringify(list.body)).not.toContain(employee.photo);
+    const noPhoto = list.body.items.find(
+      (row: { id: string }) => row.id === r.otherEmployeeId,
+    );
+    expect(noPhoto.hasPhoto).toBe(false);
     const audit = await prisma.auditLog.findFirstOrThrow({
       where: { entityType: 'employee', employeeId: r.ownEmployeeId },
       orderBy: { createdAt: 'desc' },
@@ -162,6 +174,11 @@ describe('Profile photo (SCRUM-49)', () => {
       .get(`/employees/${r.ownEmployeeId}`)
       .expect(200);
     expect(profile.body.hasPhoto).toBe(false);
+    const list = await r.admin.get('/employees').expect(200);
+    expect(
+      list.body.items.find((row: { id: string }) => row.id === r.ownEmployeeId)
+        .hasPhoto,
+    ).toBe(false);
     await expect(
       runInCompany(r.companyId, () => files.signedDownload(employee.photo!)),
     ).rejects.toThrow();

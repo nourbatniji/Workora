@@ -72,6 +72,8 @@ export type ListEmployeesQuery = z.output<typeof listEmployeesQuerySchema>;
 /** One row of the list: what the table shows, nothing more (no national ID, no contacts but phone) */
 export interface EmployeeListItem {
   id: string;
+  /** Only a flag; photo keys and signed URLs are never included in list data. */
+  hasPhoto: boolean;
   code: string;
   nameAr: string;
   nameEn: string;

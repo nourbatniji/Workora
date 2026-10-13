@@ -289,3 +289,9 @@ Noticed, not changed:
 - SH-01 template edit/archive and SH-04 roster generation/regeneration remain pending. SCRUM-51's salary storage/read foundation exists; payroll-period calculation and approved-payroll protection remain with payroll integration. These stories are not marked Done.
 - Browser verified using a disposable local company: salary save, scheduled raise retaining the current amount, shift creation/assignment, scheduled assignment history, training date save/clear, Arabic dark mode, 360 px without horizontal overflow, and no browser errors. Fixture removed. New forms submit the visible date values to prevent stale controlled-state values.
 - Validation: 28 unit tests and all 288 integration tests passed. Typechecks, lint and both production builds pass. SCRUM-50 implementation is ready for a PR; changes remain uncommitted and Jira stays In Progress pending CI.
+
+### Oct 13, 2026 (employee-list photo follow-up)
+
+- The list now returns `hasPhoto` without the private storage key or signed URL. A read-only avatar component requests the existing protected photo link only for employees with a photo on the current list page, renews expiring links, and cancels requests/timers when rows unmount. Photo management stays on the profile.
+- Desktop rows and mobile cards show the photo with initials underneath while it loads; no-photo and failed-photo cases keep initials. Excel export remains unchanged.
+- Validation: all 33 targeted photo/list/export integration tests passed, plus API/web typechecks, lint, formatting and both builds. Browser checked English/Arabic dark mode, refresh, a real private image and both fallback cases, and 360 px without horizontal overflow using a disposable local fixture.

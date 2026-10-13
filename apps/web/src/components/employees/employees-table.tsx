@@ -5,7 +5,8 @@ import { UserPlus } from 'lucide-react';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import AppAccessButton from './app-access-button';
-import { Avatar, useTenure } from './person-bits';
+import { useTenure } from './person-bits';
+import EmployeeAvatar from './employee-avatar';
 
 /** Desktop columns: person · job · status · hired · phone · app access. Phones: one card per person (NFR-7) */
 const COLUMNS =
@@ -103,7 +104,11 @@ export default function EmployeesTable({
             >
               {/* Person: avatar, name, code and the other-language name */}
               <span className="col-span-2 flex min-w-0 items-center gap-3 md:col-span-1">
-                <Avatar name={name} code={employee.code} locale={locale} />
+                <EmployeeAvatar
+                  employee={employee}
+                  name={name}
+                  locale={locale}
+                />
                 <span className="min-w-0 leading-tight">
                   <Link
                     href={`/employees/${employee.code}`}

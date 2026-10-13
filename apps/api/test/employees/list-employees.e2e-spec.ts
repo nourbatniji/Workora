@@ -179,6 +179,7 @@ describe('Employee list (EM-09, SCRUM-56)', () => {
       const res = await r.admin.get('/employees').expect(200);
       expect(res.body.items[0]).toEqual({
         id: expect.any(String),
+        hasPhoto: false,
         code: 'EMP-0001',
         nameAr: 'منى علي',
         nameEn: 'Mona Ali',
