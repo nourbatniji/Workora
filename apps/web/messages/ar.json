@@ -291,6 +291,17 @@
     },
     "profile": {
       "back": "كل الموظفين",
+      "comingSoon": "هذا القسم غير متاح بعد.",
+      "tabs": {
+        "personal": "البيانات الشخصية",
+        "job": "الوظيفة",
+        "contract": "العقد",
+        "documents": "المستندات",
+        "attendance": "الحضور",
+        "leave": "الإجازات",
+        "payroll": "الرواتب",
+        "compliance": "الامتثال"
+      },
       "history": "سجل التغييرات",
       "since": "معنا منذ {date} · {tenure}",
       "personal": "البيانات الشخصية",

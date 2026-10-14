@@ -14,7 +14,6 @@ import SalaryCard from '@/components/employees/salary-card';
 import JobCard from '@/components/employees/job-card';
 import PersonalCard from '@/components/employees/personal-card';
 import ProfileHeader from '@/components/employees/profile-header';
-import styles from '@/components/employees/profile.module.css';
 import { Link } from '@/i18n/navigation';
 import type { JobTitle } from '@/components/settings/job-titles-card';
 import { serverGet, serverGetResult } from '@/lib/server-api';
@@ -25,15 +24,32 @@ import { getSession } from '@/lib/session';
  * Employees will see their own with EM-10. Sections are added story by story (job, salary,
  * documents, contracts…).
  */
+
+const profileTabs = [
+  'personal',
+  'job',
+  'contract',
+  'documents',
+  'attendance',
+  'leave',
+  'payroll',
+  'compliance',
+];
+
 export default async function EmployeePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ code: string }>;
+  searchParams: Promise<{ tab?: string | string[] }>;
 }) {
   const session = await getSession();
   if (!session.user || session.user.role !== 'admin') notFound();
 
   const { code } = await params;
+  const { tab } = await searchParams;
+  const activeTab =
+    typeof tab === 'string' && profileTabs.includes(tab) ? tab : 'personal';
   const result = await serverGetResult<EmployeeProfile>(
     `/employees/${encodeURIComponent(code)}`,
   );
@@ -113,45 +129,67 @@ export default async function EmployeePage({
         referenceTime={referenceTime}
       />
 
-      <div className={styles.columns}>
-        <div>
-          <PersonalCard
-            employee={employee}
-            birthDateText={dateText(employee.birthDate, 'long')}
-          />
-        </div>
-        <div>
+      <div className="flex gap-2 overflow-x-auto">
+        {profileTabs.map((name) => (
+          <Link
+            key={name}
+            href={`/employees/${encodeURIComponent(code)}?tab=${name}`}
+            aria-current={activeTab === name ? 'page' : undefined}
+            className={
+              activeTab === name
+                ? 'whitespace-nowrap rounded-lg border px-3 py-2 font-semibold'
+                : 'whitespace-nowrap rounded-lg px-3 py-2 text-muted hover:text-text'
+            }
+          >
+            {t(`tabs.${name}`)}
+          </Link>
+        ))}
+      </div>
+
+      {activeTab === 'personal' && (
+        <PersonalCard
+          employee={employee}
+          birthDateText={dateText(employee.birthDate, 'long')}
+        />
+      )}
+      {activeTab === 'job' && (
+        <>
           <JobCard
             employee={employee}
             jobTitles={jobTitles.items}
             dates={profileDates}
           />
-        </div>
-      </div>
-      <div className="grid items-start gap-4 md:grid-cols-2">
-        <div>
-          <SalaryCard
-            employeeId={employee.id}
-            hireDate={employee.hireDate}
-            history={salary}
-            labels={salaryLabels}
-          />
-        </div>
-        <div>
-          <ShiftCard
-            employeeId={employee.id}
-            hireDate={employee.hireDate}
-            templates={templates.items}
-            assignments={assignments}
-            dates={shiftDates}
-          />
-        </div>
-      </div>
-      <DocumentsCard
-        employeeId={employee.id}
-        documents={documents}
-        dates={documentDates}
-      />
+          <div className="grid items-start gap-4 md:grid-cols-2">
+            <div>
+              <SalaryCard
+                employeeId={employee.id}
+                hireDate={employee.hireDate}
+                history={salary}
+                labels={salaryLabels}
+              />
+            </div>
+            <div>
+              <ShiftCard
+                employeeId={employee.id}
+                hireDate={employee.hireDate}
+                templates={templates.items}
+                assignments={assignments}
+                dates={shiftDates}
+              />
+            </div>
+          </div>
+        </>
+      )}
+      {activeTab === 'documents' && (
+        <DocumentsCard
+          employeeId={employee.id}
+          documents={documents}
+          dates={documentDates}
+        />
+      )}
+      {!['personal', 'job', 'documents'].includes(activeTab) && (
+        <p className="rounded-lg border p-6 text-muted">{t('comingSoon')}</p>
+      )}
     </div>
   );
 }

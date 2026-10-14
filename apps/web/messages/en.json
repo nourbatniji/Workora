@@ -291,6 +291,17 @@
     },
     "profile": {
       "back": "All employees",
+      "comingSoon": "This section is not available yet.",
+      "tabs": {
+        "personal": "Personal",
+        "job": "Job",
+        "contract": "Contract",
+        "documents": "Documents",
+        "attendance": "Attendance",
+        "leave": "Leave",
+        "payroll": "Payroll",
+        "compliance": "Compliance"
+      },
       "history": "Change history",
       "since": "With us since {date} · {tenure}",
       "personal": "Personal data",
