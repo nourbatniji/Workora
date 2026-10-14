@@ -50,6 +50,11 @@ import {
 import { Roles } from '../../auth/roles.decorator.js';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe.js';
 import { EmployeesService } from './employees.service.js';
+import { EmployeeDocumentsService } from './employee-documents.service.js';
+import {
+  uploadEmployeeDocumentSchema,
+  type UploadEmployeeDocumentInput,
+} from '@mdarj/shared';
 
 @Controller('employees')
 @Roles('admin')
@@ -59,6 +64,7 @@ export class EmployeesController {
     private readonly photos: EmployeePhotoService,
     private readonly salaries: EmployeeSalaryService,
     private readonly shifts: ShiftsService,
+    private readonly documents: EmployeeDocumentsService,
   ) {}
 
   // GET /employees: search, filters, sort and pages (EM-09, FR-EM-9)
@@ -151,6 +157,51 @@ export class EmployeesController {
     @Body(new ZodValidationPipe(salaryChangeSchema)) body: SalaryChangeInput,
   ) {
     return this.salaries.add(req.auth!, id, body);
+  }
+
+  @Get(':id/documents')
+  @Roles('admin', 'employee')
+  @Header('Cache-Control', 'private, no-store')
+  listDocuments(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ) {
+    return this.documents.list(req.auth!, id);
+  }
+
+  @Get(':id/documents/:documentId/file')
+  @Roles('admin', 'employee')
+  @Header('Cache-Control', 'private, no-store')
+  documentFile(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('documentId', new ParseUUIDPipe()) documentId: string,
+  ) {
+    return this.documents.read(req.auth!, id, documentId);
+  }
+
+  @Post(':id/documents')
+  @Roles('admin')
+  @UseInterceptors(FileInterceptor('file', FILE_UPLOAD_OPTIONS))
+  uploadDocument(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(uploadEmployeeDocumentSchema))
+    body: UploadEmployeeDocumentInput,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    return this.documents.upload(req.auth!, id, body, file);
+  }
+
+  @Delete(':id/documents/:documentId')
+  @Roles('admin')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeDocument(
+    @Req() req: Request,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('documentId', new ParseUUIDPipe()) documentId: string,
+  ) {
+    return this.documents.remove(req.auth!, id, documentId);
   }
 
   @Get(':id/photo')

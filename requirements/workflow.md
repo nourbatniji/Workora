@@ -295,3 +295,10 @@ Noticed, not changed:
 - The list now returns `hasPhoto` without the private storage key or signed URL. A read-only avatar component requests the existing protected photo link only for employees with a photo on the current list page, renews expiring links, and cancels requests/timers when rows unmount. Photo management stays on the profile.
 - Desktop rows and mobile cards show the photo with initials underneath while it loads; no-photo and failed-photo cases keep initials. Excel export remains unchanged.
 - Validation: all 33 targeted photo/list/export integration tests passed, plus API/web typechecks, lint, formatting and both builds. Browser checked English/Arabic dark mode, refresh, a real private image and both fallback cases, and 360 px without horizontal overflow using a disposable local fixture.
+
+### Oct 13, 2026 (SCRUM-53 employee documents)
+
+- Admins can upload PDF/JPG/PNG documents with a required type and optional expiry date, download them through temporary private links, and delete them after confirmation. Employee accounts can list/download only their own documents through the API; their profile portal remains SCRUM-57. Documents appear in a bilingual card on the Admin employee details page.
+- Reuses the existing Document table and private FilesService. Upload and deletion metadata are committed together with employee-linked audit entries. Failed upload transactions attempt file cleanup; deletion removes storage only after database commit. Storage cleanup failures are logged and need operational cleanup; no automatic retry job is added here.
+- Validation: 17 document integration tests, all 305 API integration tests and 28 unit tests passed. Typechecks, lint and both builds passed. Browser verified upload/expiry, download, cancellation and deletion, Arabic validation, dark mode and 360 px without overflow or console errors. Disposable browser company removed.
+- Implementation is ready for review on feat/employee-documents. No commit, push, merge or Jira Done transition has been performed.

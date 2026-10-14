@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getFormatter, getLocale, getTranslations } from 'next-intl/server';
 import type { AuditLogPage as AuditPage } from '@mdarj/shared';
 import AuditFilters from '@/components/audit-log/audit-filters';
 import AuditTable from '@/components/audit-log/audit-table';
@@ -39,6 +39,20 @@ export default async function AuditLogPage({
   if (page) query.set('page', page);
 
   const result = await serverGetResult<AuditPage>(`/audit-log?${query}`);
+  const format = await getFormatter();
+  // Safari and Node can use different ICU punctuation; send one formatted snapshot.
+  const timestamps = Object.fromEntries(
+    (result.ok ? result.data.items : []).map((item) => [
+      item.id,
+      format.dateTime(new Date(item.createdAt), {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      }),
+    ]),
+  );
 
   // The employee chip: the rows already carry the filtered employee's code and name
   const employeeId = one('employeeId');
@@ -70,6 +84,7 @@ export default async function AuditLogPage({
       {result.ok ? (
         <AuditTable
           items={result.data.items}
+          timestamps={timestamps}
           page={result.data.page}
           pageSize={result.data.pageSize}
           total={result.data.total}
