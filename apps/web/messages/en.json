@@ -383,6 +383,23 @@
         "5": "Friday",
         "6": "Saturday"
       }
+    },
+    "documents": {
+      "title": "Documents",
+      "hint": "Private files belonging to this employee.",
+      "add": "Add document",
+      "type": "Document type",
+      "expiry": "Expiry date",
+      "optional": "Optional",
+      "file": "File",
+      "formats": "PDF, JPG or PNG · up to 10 MB",
+      "upload": "Upload",
+      "empty": "No documents uploaded yet.",
+      "expires": "Expires on {date}",
+      "noExpiry": "No expiry date",
+      "view": "View / download",
+      "delete": "Delete",
+      "confirm": "Delete “{type}”? This permanently removes the document."
     }
   },
   "AuditLog": {
@@ -482,7 +499,9 @@
       "earlyLeaveGraceMinutes": "Early-leave grace (minutes)",
       "workingDays": "Working days",
       "startDate": "Starts on",
-      "shiftTemplateId": "Shift template"
+      "shiftTemplateId": "Shift template",
+      "docType": "Document type",
+      "expiryDate": "Expiry date"
     },
     "photoPresent": "Photo set"
   },

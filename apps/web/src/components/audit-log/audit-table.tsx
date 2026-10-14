@@ -1,7 +1,7 @@
 'use client';
 
 import type { AuditLogItem } from '@mdarj/shared';
-import { useFormatter, useLocale, useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import ChangeList from './change-list';
 
@@ -12,12 +12,14 @@ const COLUMNS =
 /** Audit rows, newest first, read-only: there is no edit or delete action anywhere (NFR-8) */
 export default function AuditTable({
   items,
+  timestamps,
   page,
   pageSize,
   total,
   filters,
 }: {
   items: AuditLogItem[];
+  timestamps: Record<string, string>;
   page: number;
   pageSize: number;
   total: number;
@@ -25,7 +27,6 @@ export default function AuditTable({
   filters: string;
 }) {
   const t = useTranslations('AuditLog');
-  const format = useFormatter();
   const locale = useLocale();
 
   if (items.length === 0) {
@@ -71,15 +72,7 @@ export default function AuditTable({
             >
               {/* When: in the company time zone (next-intl is set to Africa/Cairo) */}
               <p className="text-xs text-muted md:text-sm md:text-text">
-                <time dateTime={item.createdAt}>
-                  {format.dateTime(new Date(item.createdAt), {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                  })}
-                </time>
+                <time dateTime={item.createdAt}>{timestamps[item.id]}</time>
               </p>
 
               {/* Who */}

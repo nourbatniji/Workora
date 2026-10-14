@@ -15,3 +15,4 @@ export * from './employees/update-employee.js';
 export * from './files.js';
 export * from './employees/salary-history.js';
 export * from './employees/shifts.js';
+export * from './employees/documents.js';

@@ -2,12 +2,14 @@ import { ArrowLeft } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { getFormatter, getNow, getTranslations } from 'next-intl/server';
 import type {
+  EmployeeDocumentList,
   EmployeeProfile,
   SalaryHistory,
   ShiftAssignments,
   ShiftTemplate,
 } from '@mdarj/shared';
 import ShiftCard from '@/components/employees/shift-card';
+import DocumentsCard from '@/components/employees/documents-card';
 import SalaryCard from '@/components/employees/salary-card';
 import JobCard from '@/components/employees/job-card';
 import PersonalCard from '@/components/employees/personal-card';
@@ -40,6 +42,9 @@ export default async function EmployeePage({
     throw new Error(`GET /employees/${code} answered ${result.status}`);
   }
   const employee = result.data;
+  const documents = await serverGet<EmployeeDocumentList>(
+    `/employees/${employee.id}/documents`,
+  );
   const jobTitles = await serverGet<{ items: JobTitle[] }>('/job-titles');
   const salary = await serverGet<SalaryHistory>(
     `/employees/${employee.id}/salary-history`,
@@ -69,6 +74,9 @@ export default async function EmployeePage({
     terminationDate: dateText(employee.terminationDate, 'short'),
   };
   const referenceTime = (await getNow()).getTime();
+  const documentDates = Object.fromEntries(
+    documents.items.map((row) => [row.id, dateText(row.expiryDate, 'long')]),
+  );
   const shiftDates = Object.fromEntries(
     assignments.items.map((row) => [row.id, dateText(row.startDate, 'long')!]),
   );
@@ -139,6 +147,11 @@ export default async function EmployeePage({
           />
         </div>
       </div>
+      <DocumentsCard
+        employeeId={employee.id}
+        documents={documents}
+        dates={documentDates}
+      />
     </div>
   );
 }
