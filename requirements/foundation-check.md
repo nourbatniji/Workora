@@ -25,7 +25,7 @@ The next features handle salaries, settings and personal data. Before they start
 | 11 | 401 vs 403 behaviour correct | No session → 401 `notLoggedIn`; wrong role or someone else's record → 403 `forbidden`; another company's record → 404 (D-57). Tested in `permissions.e2e-spec.ts` and `test/api/errors.e2e-spec.ts` | ✅ |
 | 12 | API conventions documented and applied (SCRUM-167) | `api-conventions.md` (Agreed, D-55…D-57); one error shape via `ApiExceptionFilter`, proven by `errors.e2e-spec.ts` (7 tests) | ✅ |
 | 13 | The Next.js app is behind login (SCRUM-169) | `apps/web/src/app/[locale]/(app)/layout.tsx` checks the session on the server (D-63); SCRUM-169 manual script, 9 of 9 steps passed | ✅ |
-| 14 | Mock/prototype UI clearly separated from real features | The dashboard and exceptions inbox now show a "UI prototype · sample data" badge; the shell's user and company come from the API; `mock/shell.ts` holds only prototype data | ✅ after fix |
+| 14 | Mock/prototype UI clearly separated from real features | The dashboard and exceptions inbox now show a "UI prototype · sample data" badge; the shell's user and company come from the API; shell prototype notifications and payroll progress removed on Oct 18, 2026 | ✅ after fix |
 | 15 | Lint passes | CI run above, step "Lint" | ✅ |
 | 16 | Type-check passes | CI run above, step "Typecheck" (shared, api, web) | ✅ |
 | 17 | Automated tests pass | CI run above: unit tests (8) and e2e tests (76 in 9 files) against a fresh PostgreSQL | ✅ |

@@ -32,7 +32,7 @@ A feature is one Jira story (usually one FR). It goes top to bottom before the n
 | --- | --- | --- |
 | 1. Requirement + acceptance criteria | Jira story "Done when", SRS FR/BR IDs | Criteria are testable |
 | 2. Database changes | `apps/api/prisma/schema.prisma` + migration; `COMPANY_TABLES` if it has `company_id` | Migration runs on an empty DB |
-| 3. NestJS module | `apps/api/src/modules/<name>/` | Module registered in `AppModule` |
+| 3. API feature | `apps/api/src/<feature>/` | Controllers and services registered directly in `app.module.ts` |
 | 4. Service / business logic | `<name>.service.ts`; pure rules in `apps/api/src/domain/` | Rules have unit tests |
 | 5. REST API / controller | `<name>.controller.ts`; zod schema in `packages/shared` | Follows the API conventions |
 | 6. Authentication & authorization | `@Roles(...)` on each route, own-data checks | Matches the permission matrix |
@@ -207,7 +207,7 @@ Noticed, not changed:
 ### Oct 11, 2026 (invites)
 
 - SCRUM-29 UA-01, code ready on `feat/scrum-29-invites` (not committed yet):
-  - API: `POST /users` and `GET /users` (Admin, `modules/users/`), `GET /auth/invites/:token` and `POST /auth/invites/:token/accept` (Public); invite token hashed in `users.invite_token` (`auth/invite-token.ts`); user create and invite accept write audit rows; the invite email goes through `MailService` after the save
+  - API: `POST /users` and `GET /users` (Admin, `users/`), `GET /auth/invites/:token` and `POST /auth/invites/:token/accept` (Public); invite token hashed in `users.invite_token` (`auth/invite-token.ts`); user create and invite accept write audit rows; the invite email goes through `MailService` after the save
   - Shared: `createUserSchema`, `acceptInviteSchema`, `listUsersQuerySchema` (`packages/shared/src/users/invite.ts`)
   - Web: the set-password page checks the link on the server and the form calls the API; the `?expired=1` stub is gone
   - Tests: `test/users/invites.e2e-spec.ts`; `role-browsers.ts` cleanup now removes audit rows
@@ -239,7 +239,7 @@ Noticed, not changed:
 
 - SCRUM-40 CS-03 kept In Progress on purpose (Jira comment): the logo upload waits for SCRUM-25 FND-06 file storage; "shows on payslips" waits for the payslip (FR-PR-7)
 - Branch `feat/audit-log-viewer`, scope "Audit log viewer": SCRUM-163
-- API (commit 56405d1): `GET /audit-log` (Admin): newest first, pages, filters by employee, record type (comma list) and days in the company time zone (`common/time/zoned-day.ts`); no POST, PATCH or DELETE route; `modules/audit-log/`; query schema `packages/shared/src/audit/audit-log.ts`
+- API (commit 56405d1): `GET /audit-log` (Admin): newest first, pages, filters by employee, record type (comma list) and days in the company time zone (`common/time/zoned-day.ts`); no POST, PATCH or DELETE route; `audit-log/`; query schema `packages/shared/src/audit/audit-log.ts`
 - D-75 Agreed: migration `20261012092931_audit_log_employee` adds `audit_log.employee_id` (same-company foreign key, index with `company_id` and `created_at`); `AuditService` requires `employeeId` for the 8 employee record types (TypeScript and run time), taken from the stored record, never from the browser; `api-conventions.md` §8 and §13 updated
 - Each item also carries `subjectUser` (whose login a `user` row changed), read in one query per page
 - UI: `/audit-log` page (Admin, new "Audit log" menu item): filters for record type and dates in the address bar; click an employee's name to see only their changes (chip to remove it); changed fields only, as old → new; reason; one card per row on phones; empty, no-match, bad-filter and load-error states; Arabic and English

@@ -3,7 +3,6 @@
 // The logged-in user, handed down from the (app) layout, which asked the API on the server (SCRUM-169)
 import { createContext, useContext } from 'react';
 import type { CurrentUser, Role } from '@/lib/session';
-import { useAppState } from './app-state';
 
 const CurrentUserContext = createContext<CurrentUser | null>(null);
 
@@ -28,13 +27,7 @@ export function useCurrentUser(): CurrentUser {
   return user;
 }
 
-/**
- * The role the screens follow: the real one, unless the development-only switch
- * previews another. Production builds never set a preview, so this is always the real role there.
- * Hiding things here is only for a tidy screen: the API checks every request itself (SCRUM-33).
- */
+/** The signed-in user's role. API permission checks remain authoritative. */
 export function useRole(): Role {
-  const user = useCurrentUser();
-  const { previewRole } = useAppState();
-  return previewRole ?? user.role;
+  return useCurrentUser().role;
 }

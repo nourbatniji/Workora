@@ -6,7 +6,7 @@ import { Test } from '@nestjs/testing';
 import type { App } from 'supertest/types.js';
 import { AppModule } from '../../src/app.module.js';
 import { setupApp } from '../../src/app.setup.js';
-import { todayIn } from '../../src/modules/company/company-settings.service.js';
+import { todayIn } from '../../src/company/company-settings.service.js';
 import { PrismaService } from '../../src/prisma/prisma.service.js';
 import { setupRoleBrowsers, type RoleBrowsers } from '../auth/role-browsers.js';
 

@@ -8,7 +8,6 @@ import IconButton from '@/components/ui/icon-button';
 import { useAppState } from './app-state';
 import IconRail from './icon-rail';
 import NavPanel from './nav-panel';
-import RoleSwitcher from './role-switcher';
 
 /**
  * Below 1024px the sidebar slides in from the start side (left in English, right in Arabic).
@@ -77,7 +76,6 @@ export default function MobileDrawer() {
             label={theme === 'dark' ? t('themeToLight') : t('themeToDark')}
             onClick={toggleTheme}
           />
-          <RoleSwitcher />
         </div>
       </div>
     </div>

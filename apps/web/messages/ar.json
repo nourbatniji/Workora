@@ -9,10 +9,6 @@
     "search": "بحث",
     "searchShortcutMac": "⌘K",
     "searchShortcutOther": "Ctrl K",
-    "savedViews": "العروض المحفوظة",
-    "payrollTitle": "رواتب أكتوبر",
-    "payrollStatus": "مسودة",
-    "payrollSteps": "اكتملت {done} من {total} خطوات",
     "payrollOpen": "فتح الرواتب",
     "lawRef": "قانون العمل رقم 14 لسنة 2025",
     "lawRefHint": "مرجع فحوصات الامتثال",
@@ -20,16 +16,11 @@
     "switchLanguageLabel": "التبديل إلى الإنجليزية",
     "themeToDark": "التبديل إلى الوضع الداكن",
     "themeToLight": "التبديل إلى الوضع الفاتح",
-    "notifications": "الإشعارات",
-    "messages": "الرسائل",
     "invite": "دعوة",
     "railHome": "الصفحة الرئيسية لمدارج",
     "railWorkspace": "مساحة الموارد البشرية",
     "railCompliance": "الامتثال",
-    "railNotifications": "الإشعارات",
     "railHelp": "المساعدة",
-    "devRole": "دور التطوير",
-    "devRoleHint": "للتطوير فقط: معاينة بوابات الأدوار الأخرى",
     "userMenu": "حسابك",
     "logOut": "تسجيل الخروج",
     "loggingOut": "جارٍ تسجيل الخروج…",
@@ -55,32 +46,10 @@
     "auditLog": "سجل التغييرات",
     "settings": "الإعدادات"
   },
-  "SavedViews": {
-    "nightShift": "فريق الوردية الليلية",
-    "probationEnding": "فترة اختبار تنتهي قريبًا",
-    "trainees": "المتدربون"
-  },
-  "Notifications": {
-    "title": "الإشعارات",
-    "unread": "{count, plural, =0 {لا جديد} other {# غير مقروءة}}",
-    "markAllRead": "تحديد الكل كمقروء",
-    "empty": "لا توجد إشعارات",
-    "exceptionCreated": "{count} استثناءات حضور جديدة تنتظر قرارًا",
-    "leaveRequested": "{name} طلب إجازة سنوية",
-    "contractExpiring": "عقد {name} ينتهي خلال {days} يومًا",
-    "leaveDecided": "تمت الموافقة على إجازة {name}",
-    "payslipReady": "قسائم رواتب سبتمبر جاهزة"
-  },
-  "Messages": {
-    "title": "الرسائل",
-    "empty": "لا توجد رسائل بعد",
-    "emptyHint": "رسائل الفريق تأتي في مرحلة لاحقة."
-  },
   "Palette": {
     "label": "لوحة الأوامر",
     "placeholder": "ابحث عن صفحة أو إجراء…",
     "pages": "الصفحات",
-    "savedViews": "العروض المحفوظة",
     "actions": "إجراءات",
     "actionInvite": "دعوة شخص",
     "actionThemeDark": "التبديل إلى الوضع الداكن",
@@ -702,7 +671,6 @@
     "badge": "المرحلة القادمة",
     "title": "صفحة {module} ضمن المرحلة القادمة",
     "body": "هذه الصفحة ضمن خطة النسخة الأولى، وستُبنى بعد الهيكل ولوحة التحكم وصندوق الاستثناءات. كل ما تراه هنا بيانات تجريبية.",
-    "savedView": "عرض محفوظ: {name}",
     "back": "العودة إلى لوحة التحكم",
     "exceptions": "فتح صندوق الاستثناءات"
   },

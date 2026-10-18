@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Bookmark,
   CornerDownLeft,
   Languages,
   Moon,
@@ -14,14 +13,14 @@ import {
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from '@/i18n/navigation';
-import { SAVED_VIEWS, navItemsFor } from '@/lib/nav';
+import { navItemsFor } from '@/lib/nav';
 import Modal from '@/components/ui/modal';
 import { useAppState } from './app-state';
 import { useRole } from './current-user';
 
 type Command = {
   id: string;
-  group: 'pages' | 'savedViews' | 'actions';
+  group: 'pages' | 'actions';
   label: string;
   icon: LucideIcon;
   soon?: boolean;
@@ -51,7 +50,6 @@ export default function CommandPalette() {
 function PaletteBody() {
   const t = useTranslations('Palette');
   const tNav = useTranslations('Nav');
-  const tViews = useTranslations('SavedViews');
   const tShell = useTranslations('Shell');
   const locale = useLocale();
   const router = useRouter();
@@ -76,13 +74,6 @@ function PaletteBody() {
         icon: item.icon,
         soon: !item.built,
         run: go(item.href),
-      })),
-      ...(role === 'admin' ? SAVED_VIEWS : []).map((view) => ({
-        id: `view-${view.key}`,
-        group: 'savedViews' as const,
-        label: tViews(view.key),
-        icon: Bookmark,
-        run: go(view.href),
       })),
       ...(role === 'admin'
         ? [
@@ -127,7 +118,6 @@ function PaletteBody() {
     role,
     t,
     tNav,
-    tViews,
     theme,
     locale,
     pathname,
@@ -162,7 +152,7 @@ function PaletteBody() {
     }
   }
 
-  const groups: Command['group'][] = ['pages', 'savedViews', 'actions'];
+  const groups: Command['group'][] = ['pages', 'actions'];
 
   return (
     <div onKeyDown={onKeyDown}>

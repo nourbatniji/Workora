@@ -43,6 +43,12 @@ Order of change: decision first (`decisions.md`), then the SRS, then Jira, then 
 
 Details and reasons: [`decisions.md`](requirements/decisions.md) D-01 and D-21 to D-36.
 
+## Simple code structure
+
+The backend registers all controllers and services in `apps/api/src/app.module.ts`. Feature folders (`employees`, `company`, `users`, `shifts`, `job-titles`, `audit-log`, and `auth`) sit directly under `src`; there are no separate feature module files. Each controller handles HTTP requests and its service holds the logic. `common` holds shared code for files, email, audit and company isolation; `prisma` handles database access.
+
+The frontend keeps pages in `src/app`, screen components in `src/components`, shared helpers in `src/lib`, and Arabic/English routing in `src/i18n`. `src/mock` is temporary sample data for the dashboard and exceptions prototypes. Development role previews, fake notifications, fake payroll progress, and unused saved-view scaffolding have been removed.
+
 ## Repository layout
 
 ```

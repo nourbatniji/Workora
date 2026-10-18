@@ -1,9 +1,8 @@
 'use client';
 
-import { ArrowLeft, Check, Construction } from 'lucide-react';
+import { Check, Construction } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/card';
-import { useAppState } from './app-state';
 import { useRole } from './current-user';
 import CommandPalette from './command-palette';
 import IconRail from './icon-rail';
@@ -59,7 +58,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 function FuturePortal() {
   const t = useTranslations('Portal');
   const role = useRole();
-  const { previewRole, setPreviewRole } = useAppState();
   const isEmployee = role === 'employee';
   const items = isEmployee
     ? (['employee1', 'employee2', 'employee3', 'employee4'] as const)
@@ -92,21 +90,6 @@ function FuturePortal() {
           </li>
         ))}
       </ul>
-      {/* "Back" only ends a development preview; a real Employee has nowhere to go back to */}
-      {previewRole !== null && (
-        <button
-          type="button"
-          onClick={() => setPreviewRole(null)}
-          className="mt-6 inline-flex h-9 items-center gap-2 rounded-[10px] bg-accent px-3.5 text-sm font-medium text-white"
-        >
-          <ArrowLeft
-            className="size-4 rtl:-scale-x-100"
-            strokeWidth={1.5}
-            aria-hidden
-          />
-          {t('back')}
-        </button>
-      )}
     </Card>
   );
 }
