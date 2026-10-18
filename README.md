@@ -155,3 +155,9 @@ Employee job data (SCRUM-50) includes dated base-salary changes and fixed-shift 
 - A new table with `company_id` must be added to `COMPANY_TABLES` in `apps/api/src/common/tenancy/tenancy.extension.ts`. A unit test fails until it is.
 - Every pull request and every merge into `main` runs CI (`.github/workflows/ci.yml`, SCRUM-168): Prisma schema check, format, lint, typecheck, raw-SQL check, all migrations on an empty database, unit and e2e tests, and both builds. Merge only when it is green. When a step is red, open it in the pull request's Checks tab, run the same `pnpm` command on your Mac, fix it and push again.
 - A task is done when it meets the definition of done in [`development-plan.md`](requirements/development-plan.md) section 6: Arabic and English, 360 px phones, server-side permission and company checks, audit log where needed, tests passing.
+
+### Employee status and removal (SCRUM-54)
+
+In an employee’s Job tab, record a status change with an effective date and reason. Due terminations deactivate the linked login, invalidate invite links and end existing sessions; suspension keeps login available. Rehiring does not automatically restore app access.
+
+The profile header offers Delete employee for entries created by mistake. Employees with work records, a photo, a login or later status changes cannot be removed; terminate them instead. Removal hides the entry while retaining audit history and never reuses its code. Run `pnpm db:migrate` after pulling the employee-removal migration.

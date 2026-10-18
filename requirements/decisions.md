@@ -134,3 +134,9 @@ Status values:
 ## Structure simplification — October 18, 2026
 
 At the project owner’s request, keep this application understandable for one intern: register controllers and services in one AppModule, place API feature folders directly under src, and remove empty feature-module wrappers and the Hello World service wrapper. Remove the development role preview, mock notification/message controls, mock payroll progress, and unimplemented saved-view scaffolding. Keep real features, shared validation, database migrations, company isolation, permissions and audit history. Existing scope documents remain historical requirements; this refactor does not implement their planned features.
+
+## Employee termination and removal — October 18, 2026
+
+FR-UA-6: applying a due termination deactivates the linked login, clears invite/reset links and revokes all sessions in the same transaction. Suspended employees retain access. Login, invite validation and authenticated requests reconcile due changes for their linked employee, so the minute worker interval cannot extend access. Employment reactivation does not reactivate the login; an Admin explicitly restores access after employment is active/suspended. The last active Admin cannot be terminated without a replacement.
+
+FR-EM-11: deletion removes a mistaken employee from the directory using deleted_at, retaining their identity and append-only audit references. It is refused when salary, shift, contract, document, photo, login or later status records exist. Initial creation/status audit rows do not prevent correcting a mistaken entry. The tenant client excludes removed employees from direct reads/counts/updates/exports. Employee codes are never reused. Document and login creation acquire the same employee lock as removal. Future attendance/leave/payroll tables must be added to this guard when implemented.
