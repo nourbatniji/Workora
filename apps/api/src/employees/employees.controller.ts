@@ -126,6 +126,12 @@ export class EmployeesController {
     return this.employees.profile(key);
   }
 
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Req() req: Request, @Param('id', new ParseUUIDPipe()) id: string) {
+    return this.employees.remove(req.auth!, id);
+  }
+
   // PATCH /employees/:id — edit personal and job data (EM-02, EM-03)
   @Patch(':id')
   update(

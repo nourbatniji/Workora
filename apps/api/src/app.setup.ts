@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { sessionMiddleware } from './auth/session.middleware.js';
 import { ApiExceptionFilter } from './common/api-exception.filter.js';
 import { trustedProxySetting } from './common/trusted-proxy.js';
+import { EmployeeStatusService } from './employees/employee-status.service.js';
 import { PrismaService } from './prisma/prisma.service.js';
 
 export function setupApp(app: INestApplication) {
@@ -16,7 +17,9 @@ export function setupApp(app: INestApplication) {
   // 1. Read the Cookie header into req.cookies
   app.use(cookieParser());
   // 2. Find the session and put the company badge on (D-24, D-25)
-  app.use(sessionMiddleware(app.get(PrismaService)));
+  app.use(
+    sessionMiddleware(app.get(PrismaService), app.get(EmployeeStatusService)),
+  );
   // 3. Every error leaves as { message, errors? } (D-44, api-conventions.md §6)
   app.useGlobalFilters(new ApiExceptionFilter());
 }

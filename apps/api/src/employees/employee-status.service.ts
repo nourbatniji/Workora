@@ -15,6 +15,10 @@ import { requireCompanyId } from '../common/tenancy/tenant-context.js';
 import { todayIn } from '../company/company-settings.service.js';
 import { assertOwnEmployee } from '../auth/own-data.js';
 
+type StatusTx = Parameters<
+  Parameters<TenantPrismaService['db']['$transaction']>[0]
+>[0];
+
 @Injectable()
 export class EmployeeStatusService {
   constructor(
@@ -68,6 +72,10 @@ export class EmployeeStatusService {
     input: ChangeEmployeeStatusInput,
   ) {
     return this.tenant.db.$transaction(async (tx) => {
+      await tx.company.update({
+        where: { id: requireCompanyId() },
+        data: { updatedAt: new Date() },
+      });
       // Lock the employee row so simultaneous changes cannot fork the timeline.
       const locked = await tx.employee.updateMany({
         where: { id: employeeId },
@@ -113,15 +121,20 @@ export class EmployeeStatusService {
         where: { id: requireCompanyId() },
         select: { timeZone: true },
       });
-      if (input.effectiveDate <= todayIn(company.timeZone))
+      if (input.effectiveDate <= todayIn(company.timeZone)) {
         await tx.employee.update({
           where: { id: employeeId },
           data: {
             status: input.toStatus,
             terminationDate:
               input.toStatus === 'terminated' ? row.effectiveDate : null,
+            terminationReason:
+              input.toStatus === 'terminated' ? row.reason : null,
           },
         });
+        if (input.toStatus === 'terminated')
+          await this.disableLogin(tx, employeeId, auth.userId);
+      }
       await this.audit.record(tx, auth.userId, {
         entityType: 'employee_status',
         entityId: row.id,
@@ -143,7 +156,7 @@ export class EmployeeStatusService {
   }
 
   /** Reconcile the stored current status with the timeline on company-local today. */
-  async refreshCurrent() {
+  async refreshCurrent(employeeId?: string) {
     const company = await this.tenant.db.company.findUnique({
       where: { id: requireCompanyId() },
       select: { timeZone: true },
@@ -152,6 +165,7 @@ export class EmployeeStatusService {
     if (!company) return;
     const today = new Date(todayIn(company.timeZone) + 'T00:00:00Z');
     const employees = await this.tenant.db.employee.findMany({
+      where: employeeId ? { id: employeeId } : {},
       select: { id: true, status: true, terminationDate: true },
     });
     for (const employee of employees) {
@@ -159,16 +173,23 @@ export class EmployeeStatusService {
         where: { employeeId: employee.id, effectiveDate: { lte: today } },
         orderBy: [{ effectiveDate: 'desc' }, { createdAt: 'desc' }],
       });
+      if (!due && employee.status === 'terminated') {
+        await this.tenant.db.$transaction((tx) =>
+          this.disableLogin(tx, employee.id, null),
+        );
+      }
       if (
         !due ||
-        (employee.status === due.toStatus &&
-          (employee.terminationDate?.getTime() ?? null) ===
-            (due.toStatus === 'terminated'
-              ? due.effectiveDate.getTime()
-              : null))
+        (due.toStatus !== 'terminated' &&
+          employee.status === due.toStatus &&
+          employee.terminationDate === null)
       )
         continue;
       await this.tenant.db.$transaction(async (tx) => {
+        await tx.company.update({
+          where: { id: requireCompanyId() },
+          data: { updatedAt: new Date() },
+        });
         // Same lock as add(): never overwrite a concurrent change with a stale snapshot.
         const locked = await tx.employee.updateMany({
           where: { id: employee.id },
@@ -179,7 +200,7 @@ export class EmployeeStatusService {
           where: { employeeId: employee.id, effectiveDate: { lte: today } },
           orderBy: [{ effectiveDate: 'desc' }, { createdAt: 'desc' }],
         });
-        if (current)
+        if (current) {
           await tx.employee.updateMany({
             where: { id: employee.id },
             data: {
@@ -188,9 +209,59 @@ export class EmployeeStatusService {
                 current.toStatus === 'terminated'
                   ? current.effectiveDate
                   : null,
+              terminationReason:
+                current.toStatus === 'terminated' ? current.reason : null,
             },
           });
+          if (current.toStatus === 'terminated')
+            await this.disableLogin(tx, employee.id, null);
+        }
       });
     }
+  }
+  private async disableLogin(
+    tx: StatusTx,
+    employeeId: string,
+    actorId: string | null,
+  ) {
+    const user = await tx.user.findFirst({ where: { employeeId } });
+    if (!user) return;
+    if (user.status !== 'deactivated' || user.inviteToken) {
+      // Serialize with other account changes that protect the last active Admin.
+      await tx.company.update({
+        where: { id: requireCompanyId() },
+        data: { updatedAt: new Date() },
+      });
+      if (
+        user.role === 'admin' &&
+        user.status === 'active' &&
+        (await tx.user.count({
+          where: { role: 'admin', status: 'active', id: { not: user.id } },
+        })) === 0
+      ) {
+        throw new ConflictException({ message: 'lastActiveAdmin' });
+      }
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          status: 'deactivated',
+          inviteToken: null,
+          inviteExpiresAt: null,
+        },
+      });
+      await this.audit.record(tx, actorId, {
+        entityType: 'user',
+        entityId: user.id,
+        employeeId,
+        action: 'update',
+        before: { status: user.status },
+        after: { status: 'deactivated' },
+        reason: 'Employment terminated',
+      });
+    }
+    await tx.session.updateMany({
+      where: { userId: user.id, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
   }
 }

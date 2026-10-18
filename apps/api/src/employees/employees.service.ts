@@ -194,6 +194,60 @@ export class EmployeesService {
     private readonly statuses: EmployeeStatusService,
   ) {}
 
+  /** Remove only mistakes; preserve the identity and immutable audit history. */
+  async remove(auth: AuthContext, id: string) {
+    return this.tenantPrisma.db.$transaction(async (tx) => {
+      const locked = await tx.employee.updateMany({
+        where: { id },
+        data: { updatedAt: new Date() },
+      });
+      if (!locked.count) throw new NotFoundException({ message: 'notFound' });
+      const employee = await tx.employee.findUniqueOrThrow({
+        where: { id },
+        include: {
+          _count: {
+            select: {
+              salaryHistory: true,
+              shiftAssignments: true,
+              documents: true,
+              contracts: true,
+            },
+          },
+        },
+      });
+      const [login, laterStatus] = await Promise.all([
+        tx.user.count({ where: { employeeId: id } }),
+        tx.employeeStatusHistory.count({
+          where: { employeeId: id, fromStatus: { not: null } },
+        }),
+      ]);
+      if (
+        employee.photo ||
+        login ||
+        laterStatus ||
+        Object.values(employee._count).some(Boolean)
+      ) {
+        throw new ConflictException({ message: 'employeeHasRecords' });
+      }
+      await this.audit.record(tx, auth.userId, {
+        entityType: 'employee',
+        entityId: id,
+        employeeId: id,
+        action: 'delete',
+        before: {
+          code: employee.code,
+          nameAr: employee.nameAr,
+          nameEn: employee.nameEn,
+        },
+        reason: 'Employee created by mistake',
+      });
+      await tx.employee.update({
+        where: { id },
+        data: { deletedAt: new Date(), nationalId: null },
+      });
+    });
+  }
+
   /**
    * GET /employees/:key — by id or by code (the page's address is /employees/EMP-0001).
    * Another company's employee is not found at all (tenancy).

@@ -25,6 +25,7 @@ import { MailService } from '../common/mail/mail.service.js';
 import type { MailLanguage } from '../common/mail/templates.js';
 import { requireCompanyId } from '../common/tenancy/tenant-context.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { EmployeeStatusService } from '../employees/employee-status.service.js';
 import { TenantPrismaService } from '../prisma/tenant-prisma.service.js';
 
 /** The client inside tenantPrisma.db.$transaction(async (tx) => …) */
@@ -50,6 +51,7 @@ export class UsersService {
   private readonly webUrl: string;
 
   constructor(
+    private readonly statuses: EmployeeStatusService,
     private readonly tenantPrisma: TenantPrismaService,
     // Plain client, only for the system-wide email/phone check: one email or phone belongs
     // to one user in the whole system (FR-UA-3), so the check must look past this company.
@@ -107,6 +109,19 @@ export class UsersService {
     let user;
     try {
       user = await db.$transaction(async (tx) => {
+        if (employeeId) {
+          const locked = await tx.employee.updateMany({
+            where: { id: employeeId },
+            data: { updatedAt: new Date() },
+          });
+          if (!locked.count)
+            throw new NotFoundException({ message: 'notFound' });
+          const employee = await tx.employee.findUniqueOrThrow({
+            where: { id: employeeId },
+          });
+          if (employee.status === 'terminated')
+            throw new ConflictException({ message: 'employeeTerminated' });
+        }
         const created = await tx.user.create({
           data: {
             companyId: requireCompanyId(),
@@ -287,6 +302,12 @@ export class UsersService {
    * password goes back to Invited and needs a new link.
    */
   async activate(auth: AuthContext, userId: string) {
+    const linked = await this.tenantPrisma.db.user.findUnique({
+      where: { id: userId },
+      select: { employeeId: true },
+    });
+    if (linked?.employeeId)
+      await this.statuses.refreshCurrent(linked.employeeId);
     return this.tenantPrisma.db.$transaction(async (tx) => {
       const user = await this.findOrThrow(tx, userId);
       if (user.status !== 'deactivated') return user;
@@ -295,6 +316,12 @@ export class UsersService {
         where: { id: user.id },
         select: { passwordHash: true },
       });
+      const linked = await tx.user.findUniqueOrThrow({
+        where: { id: userId },
+        select: { employee: { select: { status: true } } },
+      });
+      if (linked.employee?.status === 'terminated')
+        throw new ConflictException({ message: 'employeeTerminated' });
       const status: UserStatus = row.passwordHash ? 'active' : 'invited';
       const updated = await tx.user.update({
         where: { id: user.id },
@@ -340,9 +367,18 @@ export class UsersService {
     work: (tx: UsersTx) => Promise<T>,
   ): Promise<T> {
     try {
-      return await this.tenantPrisma.db.$transaction(work, {
-        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-      });
+      return await this.tenantPrisma.db.$transaction(
+        async (tx) => {
+          await tx.company.update({
+            where: { id: requireCompanyId() },
+            data: { updatedAt: new Date() },
+          });
+          return work(tx);
+        },
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        },
+      );
     } catch (error) {
       // P2034: the database stopped one of two clashing changes; the person can try again
       if (

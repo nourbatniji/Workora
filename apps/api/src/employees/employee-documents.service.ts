@@ -100,6 +100,11 @@ export class EmployeeDocumentsService {
 
     try {
       return await this.tenant.db.$transaction(async (tx) => {
+        const locked = await tx.employee.updateMany({
+          where: { id: employee.id },
+          data: { updatedAt: new Date() },
+        });
+        if (!locked.count) throw new NotFoundException({ message: 'notFound' });
         const document = await tx.document.create({
           data: {
             companyId: requireCompanyId(),

@@ -27,6 +27,7 @@ import {
   inviteLink,
   newInviteToken,
 } from './invite-token.js';
+import { EmployeeStatusService } from '../employees/employee-status.service.js';
 import { hashSessionToken, newSessionToken } from './session-token.js';
 
 /** Who opens a session: the browser's address and name, kept on the session row */
@@ -44,6 +45,7 @@ function todayInCairo(): Date {
 export class AuthService {
   // The plain client: at sign-up nobody is logged in and the company doesn't exist yet (D-25)
   constructor(
+    private readonly statuses: EmployeeStatusService,
     private readonly prisma: PrismaService,
     // The guarded client: only this request's company (D-25)
     private readonly tenantPrisma: TenantPrismaService,
@@ -121,7 +123,7 @@ export class AuthService {
   /** Log in with email or phone (UA-03). Returns the new session token for the cookie. */
   async login(input: LoginInput, client: Client) {
     // 1. Find the user: email and phone are unique in the whole system, so no company is needed
-    const user = await this.prisma.user.findUnique({
+    let user = await this.prisma.user.findUnique({
       where:
         input.identifier.kind === 'email'
           ? { email: input.identifier.value }
@@ -136,6 +138,16 @@ export class AuthService {
     const passwordOk = await verify(user.passwordHash, input.password);
     if (!passwordOk) {
       throw new UnauthorizedException({ message: 'invalidCredentials' });
+    }
+
+    if (user.employeeId) {
+      const employeeId = user.employeeId;
+      await runInCompany(user.companyId, () =>
+        this.statuses.refreshCurrent(employeeId),
+      );
+      user = await this.prisma.user.findUniqueOrThrow({
+        where: { id: user.id },
+      });
     }
 
     // 3. Right password but the account was switched off
@@ -271,10 +283,20 @@ export class AuthService {
   /** The user behind an invite link: 404 inviteInvalid (unknown, used, switched off) or inviteExpired */
   private async findInvite(token: string) {
     // Plain client: nobody is logged in. The token's hash is unique in the whole system.
-    const user = await this.prisma.user.findUnique({
+    let user = await this.prisma.user.findUnique({
       where: { inviteToken: hashInviteToken(token) },
       include: { company: { select: { name: true } } },
     });
+    if (user?.employeeId) {
+      const employeeId = user.employeeId;
+      await runInCompany(user.companyId, () =>
+        this.statuses.refreshCurrent(employeeId),
+      );
+      user = await this.prisma.user.findUnique({
+        where: { inviteToken: hashInviteToken(token) },
+        include: { company: { select: { name: true } } },
+      });
+    }
     if (!user || !user.inviteExpiresAt || user.status === 'deactivated') {
       throw new NotFoundException({ message: 'inviteInvalid' });
     }

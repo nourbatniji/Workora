@@ -219,6 +219,7 @@ model Employee {
   status            EmployeeStatus @default(active)
   terminationDate   DateTime?      @map("termination_date") @db.Date
   terminationReason String?        @map("termination_reason")
+  deletedAt         DateTime?      @map("deleted_at")
   hasDisability     Boolean        @default(false) @map("has_disability")
   createdAt         DateTime       @default(now()) @map("created_at")
   updatedAt         DateTime       @updatedAt @map("updated_at")

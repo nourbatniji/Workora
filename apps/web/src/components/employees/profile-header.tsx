@@ -1,6 +1,10 @@
 'use client';
 
 import type { EmployeeProfile } from '@mdarj/shared';
+import { useState } from 'react';
+import Modal from '@/components/ui/modal';
+import { useRouter } from '@/i18n/navigation';
+import type { ApiError } from '@/lib/api';
 import { History } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/card';
@@ -32,6 +36,34 @@ export default function ProfileHeader({
   referenceTime: number;
 }) {
   const t = useTranslations('Employees');
+  const removeText = useTranslations('Employees.removal');
+  const errors = useTranslations('Errors');
+  const router = useRouter();
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState('');
+
+  async function removeEmployee() {
+    if (removing) return;
+    setRemoving(true);
+    setRemoveError('');
+    try {
+      const response = await fetch(`/api/employees/${employee.id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const data: ApiError | null = await response.json().catch(() => null);
+        setRemoveError(data?.message ?? 'somethingWrong');
+        return;
+      }
+      router.replace('/employees');
+      router.refresh();
+    } catch {
+      setRemoveError('somethingWrong');
+    } finally {
+      setRemoving(false);
+    }
+  }
   const locale = useLocale();
   const tenure = useTenure(referenceTime);
   const name = locale === 'ar' ? employee.nameAr : employee.nameEn;
@@ -84,6 +116,16 @@ export default function ProfileHeader({
 
         <div className={styles.actions}>
           <AppAccessButton employee={employee} />
+          <button
+            type="button"
+            onClick={() => {
+              setRemoveError('');
+              setConfirmRemove(true);
+            }}
+            className="inline-flex h-8 items-center rounded-lg border border-line px-2.5 text-[13px] text-danger hover:bg-canvas"
+          >
+            {removeText('button')}
+          </button>
           <Link
             href={`/audit-log?employeeId=${employee.id}`}
             className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line px-2.5 text-[13px] whitespace-nowrap hover:bg-canvas"
@@ -93,6 +135,39 @@ export default function ProfileHeader({
           </Link>
         </div>
       </div>
+      <Modal
+        open={confirmRemove}
+        onClose={() => {
+          if (!removing) setConfirmRemove(false);
+        }}
+        title={removeText('title')}
+        description={removeText('description', { name })}
+        closeLabel={removeText('cancel')}
+      >
+        {removeError && (
+          <p role="alert" className="mb-4 text-sm text-danger">
+            {errors(errors.has(removeError) ? removeError : 'somethingWrong')}
+          </p>
+        )}
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            disabled={removing}
+            onClick={() => setConfirmRemove(false)}
+            className="h-9 rounded-lg border border-line px-3 text-sm"
+          >
+            {removeText('cancel')}
+          </button>
+          <button
+            type="button"
+            disabled={removing}
+            onClick={removeEmployee}
+            className="h-9 rounded-lg bg-danger px-3 text-sm text-white disabled:opacity-60"
+          >
+            {removeText(removing ? 'removing' : 'confirm')}
+          </button>
+        </div>
+      </Modal>
     </Card>
   );
 }

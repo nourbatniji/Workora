@@ -122,6 +122,17 @@ export const tenancyExtension = Prisma.defineExtension({
         // 4. Reads, updates and deletes: add "only this company" to the where
         if (OPERATIONS_WITH_WHERE.includes(operation)) {
           scoped.where = onlyThisCompany(scoped.where, 'companyId', companyId);
+          // Removed employees remain audit identities, never directory entries.
+          if (model === 'Employee') {
+            const where = scoped.where as Args;
+            scoped.where = {
+              ...where,
+              AND: [
+                ...(where.AND === undefined ? [] : [where.AND].flat()),
+                { deletedAt: null },
+              ],
+            };
+          }
         }
 
         // 5. Creates: every new row must carry this company's id

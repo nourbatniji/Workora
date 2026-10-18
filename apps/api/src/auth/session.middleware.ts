@@ -3,6 +3,7 @@
 // No cookie or a dead session → the request continues without req.auth; SessionGuard refuses protected routes.
 import type { NextFunction, Request, Response } from 'express';
 import { runInCompany } from '../common/tenancy/tenant-context.js';
+import type { EmployeeStatusService } from '../employees/employee-status.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import {
   SESSION_COOKIE,
@@ -10,7 +11,10 @@ import {
   hashSessionToken,
 } from './session-token.js';
 
-export function sessionMiddleware(prisma: PrismaService) {
+export function sessionMiddleware(
+  prisma: PrismaService,
+  statuses: EmployeeStatusService,
+) {
   return async (req: Request, _res: Response, next: NextFunction) => {
     try {
       const token: unknown = req.cookies?.[SESSION_COOKIE];
@@ -35,6 +39,18 @@ export function sessionMiddleware(prisma: PrismaService) {
         session.user.status !== 'active'
       ) {
         return next();
+      }
+
+      if (session.user.employeeId) {
+        const employeeId = session.user.employeeId;
+        await runInCompany(session.companyId, () =>
+          statuses.refreshCurrent(employeeId),
+        );
+        const live = await prisma.user.findUnique({
+          where: { id: session.userId },
+          select: { status: true },
+        });
+        if (live?.status !== 'active') return next();
       }
 
       // This request counts as activity, so the 12 hours start again

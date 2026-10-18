@@ -380,6 +380,14 @@
       "view": "View / download",
       "delete": "Delete",
       "confirm": "Delete “{type}”? This permanently removes the document."
+    },
+    "removal": {
+      "button": "Delete employee",
+      "title": "Delete a mistaken employee",
+      "description": "Remove {name} from the employee directory? Only employees without work records or a login can be removed. Audit history is retained.",
+      "cancel": "Cancel",
+      "confirm": "Delete employee",
+      "removing": "Deleting…"
     }
   },
   "AuditLog": {
@@ -1004,6 +1012,7 @@
     "shiftBreakInvalid": "The unpaid break must be shorter than the shift.",
     "shiftGraceInvalid": "Grace minutes must be shorter than the shift.",
     "shiftNameTaken": "A shift template with this name already exists.",
-    "shiftDateTaken": "An assignment already starts on this date. Choose a different start date."
+    "shiftDateTaken": "An assignment already starts on this date. Choose a different start date.",
+    "employeeHasRecords": "This employee has related records. Terminate their employment instead."
   }
 }
