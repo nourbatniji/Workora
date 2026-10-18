@@ -144,10 +144,12 @@ export class EmployeeStatusService {
 
   /** Reconcile the stored current status with the timeline on company-local today. */
   async refreshCurrent() {
-    const company = await this.tenant.db.company.findUniqueOrThrow({
+    const company = await this.tenant.db.company.findUnique({
       where: { id: requireCompanyId() },
       select: { timeZone: true },
     });
+    // A worker may have listed the company just before it was deleted.
+    if (!company) return;
     const today = new Date(todayIn(company.timeZone) + 'T00:00:00Z');
     const employees = await this.tenant.db.employee.findMany({
       select: { id: true, status: true, terminationDate: true },
@@ -168,26 +170,18 @@ export class EmployeeStatusService {
         continue;
       await this.tenant.db.$transaction(async (tx) => {
         // Same lock as add(): never overwrite a concurrent change with a stale snapshot.
-        await tx.employee.updateMany({
+        const locked = await tx.employee.updateMany({
           where: { id: employee.id },
           data: { updatedAt: new Date() },
         });
+        if (!locked.count) return;
         const current = await tx.employeeStatusHistory.findFirst({
           where: { employeeId: employee.id, effectiveDate: { lte: today } },
           orderBy: [{ effectiveDate: 'desc' }, { createdAt: 'desc' }],
         });
         if (current)
           await tx.employee.updateMany({
-            where: {
-              id: employee.id,
-              OR: [
-                { status: { not: current.toStatus } },
-                {
-                  terminationDate:
-                    current.toStatus === 'terminated' ? null : { not: null },
-                },
-              ],
-            },
+            where: { id: employee.id },
             data: {
               status: current.toStatus,
               terminationDate:

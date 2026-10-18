@@ -36,6 +36,7 @@ import { SessionGuard } from './auth/session.guard.js';
 // One place to register the app's controllers and services.
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true })],
+  exports: [PrismaService, FilesService],
   controllers: [
     AppController,
     AuthController,

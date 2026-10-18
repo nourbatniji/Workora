@@ -12,25 +12,32 @@ import { EmployeeStatusService } from './employee-status.service.js';
 @Injectable()
 export class EmployeeStatusWorker implements OnModuleInit, OnModuleDestroy {
   private timer?: ReturnType<typeof setInterval>;
-  private running = false;
+  private running?: Promise<void>;
   private readonly logger = new Logger(EmployeeStatusWorker.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly statuses: EmployeeStatusService,
   ) {}
-  onModuleInit() {
-    void this.tick();
+  async onModuleInit() {
+    await this.tick();
     this.timer = setInterval(() => {
       void this.tick();
     }, 60_000);
     this.timer.unref();
   }
-  onModuleDestroy() {
+  async onModuleDestroy() {
     if (this.timer) clearInterval(this.timer);
+    await this.running;
   }
-  async tick() {
-    if (this.running) return;
-    this.running = true;
+  tick(): Promise<void> {
+    if (this.running) return this.running;
+    this.running = this.run().finally(() => {
+      this.running = undefined;
+    });
+    return this.running;
+  }
+
+  private async run() {
     try {
       const companies = await this.prisma.company.findMany({
         select: { id: true },
@@ -39,8 +46,6 @@ export class EmployeeStatusWorker implements OnModuleInit, OnModuleDestroy {
         await runInCompany(company.id, () => this.statuses.refreshCurrent());
     } catch (error) {
       this.logger.error('Failed to apply due employee statuses', error);
-    } finally {
-      this.running = false;
     }
   }
 }
