@@ -10,30 +10,16 @@ import {
   useState,
 } from 'react';
 import { useLocale } from 'next-intl';
-import {
-  notifications as initialNotifications,
-  type MockNotification,
-} from '@/mock/shell';
 
 export type Theme = 'light' | 'dark';
-export type Role = 'admin' | 'employee' | 'interviewer';
 export type Overlay = 'palette' | 'invite' | 'lawRef' | 'help' | 'menu' | null;
 
 type AppState = {
   theme: Theme;
   toggleTheme: () => void;
-  /** Development only: preview another role's screens. null = show the real role */
-  previewRole: Role | null;
-  setPreviewRole: (role: Role | null) => void;
   overlay: Overlay;
   open: (overlay: Exclude<Overlay, null>) => void;
   close: () => void;
-  notifications: MockNotification[];
-  unreadCount: number;
-  markRead: (id: string) => void;
-  markAllRead: () => void;
-  notificationsOpen: boolean;
-  setNotificationsOpen: (open: boolean) => void;
 };
 
 const AppStateContext = createContext<AppState | null>(null);
@@ -48,10 +34,7 @@ export const themeInitScript = `(function(){try{var t=localStorage.getItem('${TH
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light');
-  const [previewRole, setPreviewRole] = useState<Role | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
-  const [notifications, setNotifications] = useState(initialNotifications);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const locale = useLocale();
 
@@ -100,30 +83,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     () => ({
       theme,
       toggleTheme,
-      previewRole,
-      setPreviewRole,
       overlay,
       open: (next) => setOverlay(next),
       close: () => setOverlay(null),
-      notifications,
-      unreadCount: notifications.filter((n) => !n.read).length,
-      markRead: (id) =>
-        setNotifications((list) =>
-          list.map((n) => (n.id === id ? { ...n, read: true } : n)),
-        ),
-      markAllRead: () =>
-        setNotifications((list) => list.map((n) => ({ ...n, read: true }))),
-      notificationsOpen,
-      setNotificationsOpen,
     }),
-    [
-      theme,
-      toggleTheme,
-      previewRole,
-      overlay,
-      notifications,
-      notificationsOpen,
-    ],
+    [theme, toggleTheme, overlay],
   );
 
   return (

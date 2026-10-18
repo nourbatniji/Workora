@@ -4,6 +4,7 @@ import { getFormatter, getNow, getTranslations } from 'next-intl/server';
 import type {
   EmployeeDocumentList,
   EmployeeProfile,
+  EmployeeStatusHistory,
   SalaryHistory,
   ShiftAssignments,
   ShiftTemplate,
@@ -11,6 +12,7 @@ import type {
 import ShiftCard from '@/components/employees/shift-card';
 import DocumentsCard from '@/components/employees/documents-card';
 import SalaryCard from '@/components/employees/salary-card';
+import StatusCard from '@/components/employees/status-card';
 import JobCard from '@/components/employees/job-card';
 import PersonalCard from '@/components/employees/personal-card';
 import ProfileHeader from '@/components/employees/profile-header';
@@ -58,6 +60,12 @@ export default async function EmployeePage({
     throw new Error(`GET /employees/${code} answered ${result.status}`);
   }
   const employee = result.data;
+  const statusHistory =
+    activeTab === 'job'
+      ? await serverGet<EmployeeStatusHistory>(
+          `/employees/${employee.id}/status-history`,
+        )
+      : null;
   const documents = await serverGet<EmployeeDocumentList>(
     `/employees/${employee.id}/documents`,
   );
@@ -92,6 +100,12 @@ export default async function EmployeePage({
   const referenceTime = (await getNow()).getTime();
   const documentDates = Object.fromEntries(
     documents.items.map((row) => [row.id, dateText(row.expiryDate, 'long')]),
+  );
+  const statusDates = Object.fromEntries(
+    (statusHistory?.items ?? []).map((row) => [
+      row.id,
+      dateText(row.effectiveDate, 'long')!,
+    ]),
   );
   const shiftDates = Object.fromEntries(
     assignments.items.map((row) => [row.id, dateText(row.startDate, 'long')!]),
@@ -159,6 +173,15 @@ export default async function EmployeePage({
             jobTitles={jobTitles.items}
             dates={profileDates}
           />
+          {statusHistory && (
+            <StatusCard
+              key={employee.id}
+              employeeId={employee.id}
+              hireDate={employee.hireDate}
+              history={statusHistory}
+              dates={statusDates}
+            />
+          )}
           <div className="grid items-start gap-4 md:grid-cols-2">
             <div>
               <SalaryCard

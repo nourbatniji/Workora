@@ -103,15 +103,23 @@ describe('Employee list (EM-09, SCRUM-56)', () => {
       employmentType: 'part_time',
       hireDate: '2026-04-01',
     }); // EMP-0005, then Suspended
-    // Status changes have their own story (EM-07); here they are set directly
-    await prisma.employee.update({
-      where: { id: sara.id },
-      data: { status: 'terminated' },
-    });
-    await prisma.employee.update({
-      where: { id: hana.id },
-      data: { status: 'suspended' },
-    });
+    // Use the real status API so current state and history stay consistent.
+    await r.admin
+      .post(`/employees/${sara.id}/status-changes`)
+      .send({
+        toStatus: 'terminated',
+        effectiveDate: '2026-05-01',
+        reason: 'Left company',
+      })
+      .expect(201);
+    await r.admin
+      .post(`/employees/${hana.id}/status-changes`)
+      .send({
+        toStatus: 'suspended',
+        effectiveDate: '2026-05-01',
+        reason: 'Temporary suspension',
+      })
+      .expect(201);
 
     // Another company's employee, who must never appear
     await other.admin

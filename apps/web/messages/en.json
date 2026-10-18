@@ -9,10 +9,6 @@
     "search": "Search",
     "searchShortcutMac": "⌘K",
     "searchShortcutOther": "Ctrl K",
-    "savedViews": "Saved views",
-    "payrollTitle": "October payroll",
-    "payrollStatus": "Draft",
-    "payrollSteps": "{done} of {total} steps done",
     "payrollOpen": "Open payroll",
     "lawRef": "Labor Law No. 14 of 2025",
     "lawRefHint": "Reference for compliance checks",
@@ -20,16 +16,11 @@
     "switchLanguageLabel": "Switch to Arabic",
     "themeToDark": "Switch to dark mode",
     "themeToLight": "Switch to light mode",
-    "notifications": "Notifications",
-    "messages": "Messages",
     "invite": "Invite",
     "railHome": "MDARJ home",
     "railWorkspace": "HR workspace",
     "railCompliance": "Compliance",
-    "railNotifications": "Notifications",
     "railHelp": "Help",
-    "devRole": "Dev role",
-    "devRoleHint": "Development only: preview other role portals",
     "userMenu": "Your account",
     "logOut": "Log out",
     "loggingOut": "Logging out…",
@@ -55,32 +46,10 @@
     "auditLog": "Audit log",
     "settings": "Settings"
   },
-  "SavedViews": {
-    "nightShift": "Night shift team",
-    "probationEnding": "Probation ending",
-    "trainees": "Trainees"
-  },
-  "Notifications": {
-    "title": "Notifications",
-    "unread": "{count, plural, =0 {All caught up} one {# unread} other {# unread}}",
-    "markAllRead": "Mark all as read",
-    "empty": "No notifications",
-    "exceptionCreated": "{count} new attendance exceptions need a decision",
-    "leaveRequested": "{name} requested annual leave",
-    "contractExpiring": "{name}'s contract ends in {days} days",
-    "leaveDecided": "{name}'s leave was approved",
-    "payslipReady": "September payslips are ready"
-  },
-  "Messages": {
-    "title": "Messages",
-    "empty": "No messages yet",
-    "emptyHint": "Team messages arrive in a later phase."
-  },
   "Palette": {
     "label": "Command palette",
     "placeholder": "Search pages and actions…",
     "pages": "Pages",
-    "savedViews": "Saved views",
     "actions": "Actions",
     "actionInvite": "Invite a person",
     "actionThemeDark": "Switch to dark mode",
@@ -702,7 +671,6 @@
     "badge": "Next phase",
     "title": "{module} is coming in the next phase",
     "body": "This page is planned for the MVP and will be built after the shell, dashboard and Exceptions inbox. Everything you see here uses mock data.",
-    "savedView": "Saved view: {name}",
     "back": "Back to dashboard",
     "exceptions": "Open the Exceptions inbox"
   },

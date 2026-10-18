@@ -1,25 +1,21 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { ArrowLeft, Bookmark, Construction } from 'lucide-react';
+import { ArrowLeft, Construction } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
-import { NAV_ITEMS, SAVED_VIEWS, SOON_MODULES, type NavKey } from '@/lib/nav';
+import { NAV_ITEMS, SOON_MODULES, type NavKey } from '@/lib/nav';
 import { Card } from '@/components/ui/card';
 
 /** Every module that isn't built yet lands here, clearly marked as next phase */
 export default async function ComingSoonPage({
   params,
-  searchParams,
 }: PageProps<'/[locale]/[module]'>) {
   const { module } = await params;
-  const { view } = await searchParams;
   if (!SOON_MODULES.includes(module as NavKey)) notFound();
 
   const t = await getTranslations('Soon');
   const tNav = await getTranslations('Nav');
-  const tViews = await getTranslations('SavedViews');
   const item = NAV_ITEMS.find((n) => n.key === module)!;
   const Icon = item.icon;
-  const savedView = SAVED_VIEWS.find((v) => v.href.endsWith(`view=${view}`));
 
   return (
     <Card className="mx-auto mt-6 max-w-xl text-center">
@@ -33,12 +29,6 @@ export default async function ComingSoonPage({
       <h2 className="mt-4 text-xl font-medium">
         {t('title', { module: tNav(item.key) })}
       </h2>
-      {savedView && (
-        <p className="mt-2 inline-flex items-center gap-1.5 text-[13px] text-accent-fg">
-          <Bookmark className="size-4" strokeWidth={1.5} aria-hidden />
-          {t('savedView', { name: tViews(savedView.key) })}
-        </p>
-      )}
       <p className="mx-auto mt-2 max-w-md text-sm text-muted">{t('body')}</p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <Link

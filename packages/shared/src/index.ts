@@ -16,3 +16,4 @@ export * from './files.js';
 export * from './employees/salary-history.js';
 export * from './employees/shifts.js';
 export * from './employees/documents.js';
+export * from './employees/employee-status.js';

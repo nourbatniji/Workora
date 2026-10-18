@@ -48,7 +48,7 @@ HR/
 │   ├── api/               NestJS
 │   │   └── src/
 │   │       ├── domain/    pure business rules BR-1 to BR-18 (no database access)
-│   │       ├── modules/   one folder per module in 2.3
+│   │       ├── employees/, company/, users/, shifts/ (feature folders)
 │   │       ├── jobs/      BullMQ processors and schedules
 │   │       └── common/    auth, tenancy, audit, files, i18n
 │   └── web/               Next.js

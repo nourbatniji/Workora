@@ -1,11 +1,10 @@
 'use client';
 
-import { Bookmark, ChevronRight, Scale, Search } from 'lucide-react';
+import { ChevronRight, Scale, Search } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
-import { SAVED_VIEWS, navItemForPath, navItemsFor } from '@/lib/nav';
-import { payrollProgress } from '@/mock/shell';
+import { navItemForPath, navItemsFor } from '@/lib/nav';
 import { useExceptions } from '@/components/exceptions/exceptions-store';
 import { useAppState } from './app-state';
 import { useCurrentUser, useRole } from './current-user';
@@ -20,11 +19,10 @@ function useIsMac() {
   return isMac;
 }
 
-/** The 240px panel: search, navigation, saved views, payroll progress, law reference, company */
+/** The 240px panel: search, navigation, law reference, company */
 export default function NavPanel({ onNavigate }: { onNavigate?: () => void }) {
   const t = useTranslations('Shell');
   const tNav = useTranslations('Nav');
-  const tViews = useTranslations('SavedViews');
   const tRoles = useTranslations('Roles');
   const format = useFormatter();
   const user = useCurrentUser();
@@ -34,8 +32,6 @@ export default function NavPanel({ onNavigate }: { onNavigate?: () => void }) {
   const { open } = useAppState();
   const { pendingCount } = useExceptions();
   const isMac = useIsMac();
-  const progress =
-    (payrollProgress.stepsDone / payrollProgress.stepsTotal) * 100;
 
   return (
     <div className="flex h-full w-60 shrink-0 flex-col border-e border-line bg-surface">
@@ -111,75 +107,7 @@ export default function NavPanel({ onNavigate }: { onNavigate?: () => void }) {
           </ul>
         </nav>
 
-        {/* Saved views and the payroll card are Admin tools (requirements/permissions.md) */}
-        {role === 'admin' && SAVED_VIEWS.length > 0 && (
-          <>
-            <p className="mt-6 mb-2 px-3 text-xs text-muted">
-              {t('savedViews')}
-            </p>
-            <ul className="flex flex-col gap-0.5">
-              {SAVED_VIEWS.map((view) => (
-                <li key={view.key}>
-                  <Link
-                    href={view.href}
-                    onClick={onNavigate}
-                    className="flex h-8 items-center gap-3 rounded-[10px] px-3 text-[13px] text-muted transition-colors hover:bg-canvas hover:text-text"
-                  >
-                    <Bookmark
-                      className="size-4 shrink-0"
-                      strokeWidth={1.5}
-                      aria-hidden
-                    />
-                    <span className="flex-1 truncate">{tViews(view.key)}</span>
-                    <span className="text-xs tabular-nums">
-                      {format.number(view.count)}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-
         <div className="mt-auto pt-6">
-          {/* Payroll progress (prototype, mock data): one of the four places the brand gradient is allowed */}
-          {role === 'admin' && (
-            <Link
-              href="/payroll"
-              onClick={onNavigate}
-              className="block rounded-[14px] border border-line p-3 transition-colors hover:bg-canvas"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-[13px] font-medium">{t('payrollTitle')}</p>
-                <span className="rounded-full bg-canvas px-2 text-[11px] leading-5 text-muted">
-                  {t('payrollStatus')}
-                </span>
-              </div>
-              <div
-                className="mt-3 h-1.5 overflow-hidden rounded-full bg-canvas"
-                role="progressbar"
-                aria-valuemin={0}
-                aria-valuemax={payrollProgress.stepsTotal}
-                aria-valuenow={payrollProgress.stepsDone}
-                aria-label={t('payrollTitle')}
-              >
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${progress}%`,
-                    background: 'var(--brand-gradient-inline)',
-                  }}
-                />
-              </div>
-              <p className="mt-2 text-xs text-muted">
-                {t('payrollSteps', {
-                  done: format.number(payrollProgress.stepsDone),
-                  total: format.number(payrollProgress.stepsTotal),
-                })}
-              </p>
-            </Link>
-          )}
-
           <button
             type="button"
             onClick={() => {
